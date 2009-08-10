@@ -29,6 +29,7 @@ export ARCH=`rootarch.sh`
 
 export CXXFLAGS=$ARCH
 export F90FLAGS=$ARCH
+export F77FLAGS=$ARCH
 export CFLAGS=$ARCH
 export FFLAGS=$ARCH
 export LDFLAGS=$ARCH

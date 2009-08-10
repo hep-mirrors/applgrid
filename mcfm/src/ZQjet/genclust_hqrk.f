@@ -220,7 +220,7 @@ c--- shuffle down jetlabel
       endif       
       
       if (verbalg) write(6,*) 'After pt and y # of jets =',jets
-      if (verbalg) pause
+C     if (verbalg) pause
 
 c--- now we have to do process-specific cuts
 

@@ -1,0 +1,278 @@
+#include <iostream>
+#include <string>
+#include <math.h>
+#include "TFile.h"
+#include "TMatrixT.h"
+#include "APPLgrid.h"
+#include "APPLpdf.h"
+//
+//
+//
+
+using namespace std;
+
+int main(int argc, char **argv) 
+{
+
+  static const int debug = 1;
+
+  //
+  //initialise grid from file
+  //
+  cout<<"\tReading in grid..."<<endl;
+
+  static const char* obsName = argv[1];
+  char weightFN[200];
+  sprintf(weightFN,"./weight_%s.root",obsName);
+  char standaloneFN[200];
+  sprintf(standaloneFN,"./standalone_%s.root",obsName);
+
+  APPL::grid *mygrid = new APPL::grid(weightFN);
+  if(!(mygrid->isOptimised()))
+    {
+      cout<<"GRID is not optimised!!!!"<<endl;
+      exit(1);
+    }
+  cout<<*mygrid<<endl;
+  cout<<"\tReading in grid...Done"<<endl;
+
+  APPL::pdf *mypdf = new APPL::pdf();
+  cout<<*mypdf<<endl;
+
+  //Find the MCFM total XS
+  double mcfmXS = mygrid->getCrossSection();
+  double runs   = mygrid->getRun();
+  
+  //find the binning information...
+  const int nbins = mygrid->Nobs();
+
+  double xbins[nbins + 1];
+  
+  // read in observables bins from grid 
+  for(int i = 1; i <= nbins+1; i++)
+    {
+      xbins[i-1]=mygrid->getReference()->GetBinLowEdge(i);
+    }
+
+  // book histograms for grid results
+  TH1D *grid_tot = new TH1D("grid_tot", "grid_tot", nbins, xbins);
+  TH1D *grid_ref = new TH1D("grid_ref", "grid_ref", nbins, xbins);
+
+  // book histograms for sub process contributions
+  TH1D** gridProc;  
+  gridProc  = new TH1D*[mygrid->Nsub()];
+  for (int isub = 0; isub < mygrid->Nsub(); isub++)
+    {
+      char hname[50], htitle[50];
+      sprintf(hname,"gridProc_%i",isub);
+      sprintf(htitle,"GRID value for SubProcess # %i contribution",isub);
+      gridProc[isub] = new TH1D(hname, htitle, nbins, xbins);
+      gridProc[isub]->SetDirectory(0);
+    }
+  //------------------------------------------------
+  // get reference subprocess contributions
+  TFile weightFile(weightFN);
+  TH1D** procRef;
+  procRef = new TH1D*[mygrid->Nobs()];
+  for (int isub = 0; isub < mygrid->Nsub() ; isub++)
+    {
+      char hname[50];
+      sprintf(hname,"procReference_%i",isub);
+      procRef[isub] = (TH1D*)weightFile.Get(hname);
+      procRef[isub]->SetDirectory(0);
+    }
+
+  // get reference observable
+  TH1D *observable;
+  char hname[50];
+  sprintf(hname,"obs_bins");
+  observable = (TH1D*)weightFile.Get(hname);
+  observable->SetDirectory(0);
+  observable->SetName("observable");
+
+  // get reference observable squared 
+  TH1D *observableSQ;
+  sprintf(hname,"obs_bins2");
+  observableSQ = (TH1D*)weightFile.Get(hname);
+  observableSQ->SetDirectory(0);
+  observableSQ->SetName("observableSQ");
+
+  weightFile.Close();
+  //-----------------------------------------------------
+
+  double x1, x2;
+  double* H;          // pointer to array of generalized pdf coefficients
+
+  const double pb_fac = 1.;
+  double born_weight, nlo_weight;
+  
+  double subProcessWeight[mygrid->Nobs()][mygrid->Nsub()];
+  for(int iobs = 0; iobs < mygrid->Nobs(); iobs++)
+    {
+      for(int isub = 0; isub < mygrid->Nsub(); isub++)
+	{
+	  subProcessWeight[iobs][isub] = 0.0;
+	}
+    }
+  
+  //
+  //
+  //    main loop
+  //
+  //
+  cout<<"Cross section after "<<int(runs + 0.5)<<" runs..."<<endl;
+  
+  for(int iobs = 0; iobs < mygrid->Nobs(); iobs++)
+    {   // loop over observables bins
+      cout<<"iobs="<<iobs<< " " <<xbins[iobs]<< " < obs < " <<xbins[iobs+1]<<endl;
+      
+      double obssum = 0.0;
+    
+      for(int isub = 0; isub < mygrid->Nsub(); isub++)
+	{ // loop over subprocesses
+	  for(int itau = 0; itau < mygrid->Ntau(); itau++)
+	    { // loop over Q2 bins
+	      for(int iy1 = 0; iy1 < mygrid->Ny(); iy1++)
+		{   // loop over x1 bins
+		  for(int iy2 = 0;iy2 < mygrid->Ny(); iy2++)
+		    { // loop over x2 bins
+		      
+		      born_weight = mygrid->getWeight(0, isub, iobs)->GetBinContent(iy1+1, iy2+1, itau+1);
+		      nlo_weight  = mygrid->getWeight(1, isub, iobs)->GetBinContent(iy1+1, iy2+1, itau+1);
+		      
+		      if(!(born_weight == 0.0))  //calculate cross section at born level
+			{
+			  int iorder = 0;
+			  x1 = mygrid->fx(mygrid->fy1(iorder,isub,iobs,iy1));  // get X1
+			  x2 = mygrid->fx(mygrid->fy2(iorder,isub,iobs,iy2));  // get X2
+			  
+			  double Q2 = mygrid->fQ2(mygrid->ftau(iorder,isub,iobs,itau));
+			  
+			  H = mypdf->calculate(x1, x2, std::sqrt(Q2));
+
+			  double pdfWeight = 1.0;
+			  if(mygrid->isWeighted())
+			    {
+			      pdfWeight = mygrid->pdfftr(x1) * mygrid->pdfftr(x2);
+			    }
+			  
+			  born_weight *= H[isub]/pdfWeight;
+			};
+	    
+		      if(!(nlo_weight == 0.0))   //calculate cross section at nlo level
+			{
+			  int iorder = 1;
+			  x1 = mygrid->fx(mygrid->fy1(iorder,isub,iobs,iy1));  // get X1
+			  x2 = mygrid->fx(mygrid->fy2(iorder,isub,iobs,iy2));  //get X2
+			  
+			  double Q2 = mygrid->fQ2(mygrid->ftau(iorder,isub,iobs,itau));
+			  
+			  H = mypdf->calculate(x1, x2, std::sqrt(Q2));
+
+			  double pdfWeight = 1.0;
+			  if(mygrid->isWeighted())
+			    {
+			      pdfWeight = mygrid->pdfftr(x1) * mygrid->pdfftr(x2);
+			    }
+			  
+			  nlo_weight *= H[isub]/pdfWeight;
+			  nlo_weight *= mypdf->getAlpha(sqrt(Q2));
+// 		if(debug)
+// 		  {
+// 		    cout<<"isub = "<<isub<<"  cw = "<<currentWeight<<" H = "<<H[isub]<<" grid = "<<nlo_weight<<endl;
+// 		    cout<<"x1 = "<<x1<<"  x2 = "<<x2<<"  Q2 = "<<Q2<<endl;	
+// 		    cout<<"*********************"<<endl;
+// 		    cout<<" ( ";
+// 		    for(int i=0;i<mygrid->Nsub();i++)cout<<subProcessWeight[iobs][i]<<" , ";
+// 		    cout<<" ) "<<endl;
+// 		    cout<<"*********************"<<endl;
+// 		  } 
+			}
+		      double currentWeight = born_weight + nlo_weight;
+		      
+		      obssum += currentWeight;
+		      subProcessWeight[iobs][isub] += currentWeight;
+		      
+		    } // end iy2
+		} // end iy1 
+	    } // end itau
+	} // end isub
+    
+    
+      double binwidth   = mygrid->deltaobs(iobs+1);
+      double gridweight = obssum/binwidth; //normalise by binwidth
+      
+      double refweight = mygrid->getReference()->GetBinContent(iobs + 1);
+      // fill histos for grid calcultion
+      grid_tot->SetBinContent(iobs+1,gridweight);
+      grid_ref->SetBinContent(iobs+1, refweight);
+      
+      for (int isub = 0; isub < mygrid->Nsub(); isub++)
+	{
+	  gridProc[isub]->SetBinContent(iobs+1, subProcessWeight[iobs][isub]/binwidth);
+	}
+      
+      cout<<"\tgrid="<<gridweight<<"\t reference: "<<refweight<<"\t\tgrid/reference="<<gridweight/refweight<<endl;
+      cout<<"----------------------------------------------------------"<<endl;
+      
+    }//end of loop over observable bins
+  //
+  //  end of main loop
+  //  
+  
+  TFile standaloneFile(standaloneFN,"RECREATE");
+  grid_tot->Write();
+  grid_ref->Write();
+  observable->Write();
+  observableSQ->Write();
+  for (int isub = 0; isub < mygrid->Nsub(); isub++)
+    {
+      gridProc[isub]->Write();
+      procRef[isub]->Write();
+    }
+  standaloneFile.Close();
+  
+  cout<<"*************************"<<endl;
+
+  double gridIntegral = 0.0;         // integral of observable grid version
+  double refIntegral = 0.0;    // integral of observable reference version
+  
+  for(int isub = 0; isub < mygrid->Nsub(); isub++) 
+    {
+      for(int iobs = 0; iobs < mygrid->Nobs(); iobs++)
+	{
+	  gridIntegral += subProcessWeight[iobs][isub];
+	  refIntegral += procRef[isub]->GetBinContent(iobs + 1)*mygrid->deltaobs(iobs+1);
+	}
+    }
+  
+  for(int isub = 0; isub < mygrid->Nsub(); isub++)
+    {
+      double gridSubProcess = 0.0, refSubProcess = 0.0;
+      for(int iobs = 0; iobs < mygrid->Nobs(); iobs++)
+	{
+	  gridSubProcess += subProcessWeight[iobs][isub];
+	  refSubProcess += procRef[isub]->GetBinContent(iobs + 1)*mygrid->deltaobs(iobs+1);
+	}
+      cout<<"contribution from sub process # "<<isub<<endl;
+      cout<<" grid =  "<<gridSubProcess<<" \t\t("<<100.*gridSubProcess/gridIntegral<<" % )"<<endl;;  
+      cout<<" ref  =  "<<refSubProcess<<" \t\t("<<100.*refSubProcess/refIntegral<<" % )";
+      cout<<"\t\t\tratio = "<<gridSubProcess/refSubProcess<<endl;  
+    }
+  cout<<"*************************"<<endl;
+  cout<<"grid Intergal = "<<gridIntegral<<"\treference integral = "<<refIntegral<<"\t G/R = "<<gridIntegral/refIntegral<<endl;
+  cout<<" MCFM total XS = "<<mcfmXS<<endl;
+  cout<<"*************************"<<endl;
+
+
+  delete grid_tot, grid_ref;
+  for(int isub = 0; isub < mygrid->Nsub(); isub++)
+    {
+      delete gridProc[isub];gridProc[isub] = NULL;
+      delete procRef[isub]; procRef[isub]  = NULL;
+    }
+  delete mygrid, mypdf;
+  return 0;
+}
+
+

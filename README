@@ -1,0 +1,189 @@
+Directory containing the APPLgrid code, including nlojet and mcfm.
+
+To compile it, adapt setup.sh and install.sh to your local 
+installation. To run the code it is enought to execute the 
+setup.sh. 
+
+include files and libraries are installed in the include and lib
+directories from the installation directory.
+
+The nlojet executable is installed in the bin directory below the 
+installation directory. 
+
+A: Install and run the code
+
+1) run the setup.sh or setup.csh script
+2) run the install.sh script. (./install clean to clean the directory before make ) 
+3) compile the fillgrid.cxx
+
+   cd $BASEDIR/appl-paper
+
+   make fillgrid
+
+4) Make the weighting tables with nlojet
+   
+   nlojet++ --calculate -c full -u fillgrid.la --max-event 1000010 
+ 
+  (This command explores first the phase space to optimise the
+   grid boundaries. In a next step the weighting tables are filled
+   There is a problem, if you run to few events, then the program 
+   never stops, since no weight file is produce. This we have to change...)
+
+   The weighting tables are in the output directory 
+   weight_c.root (central jets)
+   weight_f.root (forward jets)
+
+5) Example to convolute the weighting tables with the PDFs and alphas
+
+   make standalone
+
+  ./standalone output/weight_c.root
+
+6) Check the result
+   open root
+   .x check.C
+   to look at the histogram compring the results of the convolution
+   of the grid with the reference histograms
+
+B) Software organisation:
+
+   files and directories in BASEDIRECTORY:
+   README this files giving some basic explanations
+   setup.sh: setup.sh file to set variables need to run nlojet and standalone
+   install.sh: script to install all libraries and run some examples   
+
+
+   appl_grid: The source code of the applgrid    
+
+   appl-paper: nlojet examples to make weight tables and validating them  
+
+   lhpdf-1.0.0: The LHAPDF library  
+   pdf-conv-1.0: Gavins evolution code (written in f90)
+                 Needed in the convolution step 
+   mcfm:  The source library of the mcfm program                  
+
+   nlojet++-4.0.1   The source library of the NLOJET progrom 
+   bld-nlo: build directory of the nlojet program  
+   bld-pdf: build directory of the nlojet pdf-code implementation  
+
+C) appl_grid software:
+   
+   a) appl_grid.cxx  and appl_grid.h  (explained below)
+   b) appl_igrid.cxx and appl_igrid.h (explained below)
+   c) fappl_grid.cxx fortran callable wrapper 
+
+   d) implementation of sparse matrix to store the weighting grid
+   
+      tsparse1d.h tsparse2d.h
+      Sparse3d.h          tsparse3d.h
+      sparse.h            tsparse_base.h
+      SparseMatrix3d.cxx SparseMatrix3d.h
+
+    e) root file to store the CKM coefficients
+       ckm.root        
+
+    f) pdf class, stores the combinations of the variuos pdf 
+       elements to the more generalised subprocesses, ie 7 
+       for the pp combinations, rather than the 13x13 
+
+       base class: 
+       appl_pdf.cxx and appl_pdf.h
+
+       generalised pdf combinations for Z production: 
+       mcfmz_pdf.h         
+       mcfmz_pdf.cxx       
+
+       for W production:
+       mcfmw_pdf.h         
+       mcfmw_pdf.cxx         
+
+       and for jet production using either nlojet or jetrad:
+       nlojet_pdf.cxx nlojet_pdf.h             
+       jetrad_pdf.cxx  jetrad_pdf.h    
+
+    g) helper functions to test CPU performance
+       time-save0.cxx
+       appl_timer.c    
+       appl_timer.h    
+
+
+    h) basic standalone code example
+       cross.cxx       
+       kcrss.cxx        
+
+    i) Not needed
+       main.cxx        
+       main-old.cxx 
+       main-save.cxx   
+
+    j) helper function: TObject string vector class for writing string vectors
+       TFileString.cxx TFileStringDict.h
+       TFileStringDict.cxx TFileString.h
+
+
+ad C a) 
+        1) appl_grid.cxx  and appl_grid.h  (explained below)
+           user interface for the grid software
+
+        2) appl_igrid.cxx  and appl_igrid.h  (explained below)
+           internal grid function where the action is
+
+        3) constructors/distructors
+        4) operators to add/copy grids
+
+        5) void grid::fill_phasespace(const double x1, const double x2, const double Q2, 
+                           const double obs, 
+                           const double* weight, const int iorder)
+
+        fill a default grid to explore the phase space in order to
+        make a optimised grid in the next step
+
+        6) void grid::trim() untrim() ??
+   
+        7) void grid::print() ??
+           void grid::Write(const string& filename, const string& dirname)
+           write the grid to a root file  
+
+        8) void grid::pdfinterp(double x, double Q2, double* f) interpolate the pdfs
+        9) convolute the grid with the pdf
+
+        TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ), 
+                      double (*alphas)(const double& ), 
+                      int     nloops, 
+                      double  rscale_factor,
+                      double  fscale_factor,
+                      void (*splitting)(const double& , const double&, double* ) )
+
+        The use has to provide a pointer to the follwing functions:
+        pdf       the interface to the pdf function
+        alphas    the interface to the alphas function
+        splitting the interface to the splitting function needed for the
+                  factorisation scale dependence
+        nloops =0 leading order  =1: next to leading order =-1: only NLO
+
+        rscale_factor  renormalisation scale factor
+        fscale_factor  factorsation    scale factor
+
+        make a new operator in this function should be avoided
+
+        10) TH1D* grid::convolute_subproc(int subproc,
+                              void (*pdf)(const double& , const double&, double* ), 
+                              double (*alphas)(const double& ), 
+                              int     nloops, 
+                              double  rscale_factor,
+                              double  fscale_factor,
+                              void (*splitting)(const double& , const double&, double* ) )
+       as 9, but for each sub-process
+
+       11) void grid::optimise() 
+           void grid::optimise(int NQ2, int Nx)
+           
+           optimise the grid boundaries
+
+       12) redefine grid boundaries by hand
+           void grid::redefine(int iobs, int iorder,
+                    int NQ2, double Q2min, double Q2max, 
+                    int Nx,  double  xmin, double  xmax )
+       
+
+     b) appl_igrid.cxx and appl_igrid.h (explained below)

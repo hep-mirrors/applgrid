@@ -8,9 +8,9 @@ ALLPROG =
 # INSTALLDIR = $(HOME)
 
 ifdef BASEDIR
-INSTALLBASE = $(BASEDIR)
+INSTALLDIR = $(BASEDIR)
 else
-INSTALLBASE = ../..
+INSTALLDIR = ../..
 endif
 
 

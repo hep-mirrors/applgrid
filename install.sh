@@ -112,20 +112,31 @@ cd $BASEDIR/mcfm/run
 
 cd $BASEDIR
 
+
 echo  "bld-pdf" 
+
+if [ "$1" = "clean" ]; then
+    rm -rf bld-pdf
+fi
+
+if [ "$1" = "nloclean" ]; then
+    rm -rf bld-pdf
+fi
+
+
 if [ -e bld-pdf ]; then 
   echo "bld-pdf already exists" 
 else
+
   mkdir bld-pdf
-
-  cd bld-pdf
-  ../lhpdf-1.0.0/configure --prefix=$BASEDIR
-  # > $BASEDIR/lhpdf.log
-
 
   if [ "$1" = "clean" ]; then
     make clean
   fi
+
+  cd bld-pdf
+  ../lhpdf-1.0.0/configure --prefix=$BASEDIR
+  # > $BASEDIR/lhpdf.log
 
   make        
   #  >> $BASEDIR/lhpdf.log
@@ -170,7 +181,6 @@ echo $PATH
 echo "which create-nlojet-user"
 #echo "why. oh why, do we need these 'helper' routines that make automating things so difficult..."
 which create-nlojet-user
-
 
 
 

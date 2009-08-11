@@ -1,0 +1,5 @@
+mt.lo: mt.cc bits/rng-mt19937.h bits/hep-rng.h
+
+bits/rng-mt19937.h:
+
+bits/hep-rng.h:

@@ -1,0 +1,5 @@
+ranlux.lo: ranlux.cc bits/rng-ranlux.h bits/hep-rng.h
+
+bits/rng-ranlux.h:
+
+bits/hep-rng.h:

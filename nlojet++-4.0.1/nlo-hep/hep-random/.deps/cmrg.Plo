@@ -1,0 +1,5 @@
+cmrg.lo: cmrg.cc bits/rng-cmrg.h bits/hep-rng.h
+
+bits/rng-cmrg.h:
+
+bits/hep-rng.h:

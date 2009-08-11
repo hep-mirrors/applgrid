@@ -85,10 +85,10 @@ if [ ! -e $BASEDIR/lib/libgfortran.so ]; then
 fi
 #
 
-cd $BASEDIR/mcfm
-make install
+# cd $BASEDIR/mcfm
+# make install
 #
-echo "Don't forget to set the LD_LIBRARY_PATH for root and lhapdf if you have to"
+# echo "Don't forget to set the LD_LIBRARY_PATH for root and lhapdf if you have to"
 #
 
 ############################################
@@ -96,11 +96,11 @@ echo "Don't forget to set the LD_LIBRARY_PATH for root and lhapdf if you have to
 ############################################
 
 #
-cd $BASEDIR/mcfm/run
+# cd $BASEDIR/mcfm/run
 #
-../exe/*/mcfm Winput.DAT >&  mcfm-0.log
-../exe/*/mcfm Winput.DAT >&  mcfm-1.log
-../exe/*/stand grid-30-Wweight_eta4.root
+# ../exe/*/mcfm Winput.DAT >&  mcfm-0.log
+# ../exe/*/mcfm Winput.DAT >&  mcfm-1.log
+# ../exe/*/stand grid-30-Wweight_eta4.root
 #
 # echo EXITING......
 # exit

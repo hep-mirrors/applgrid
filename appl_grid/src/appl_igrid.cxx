@@ -624,16 +624,16 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       //	evolvepdf_(x, Q, fg[itau][iy1]);
       pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
       //TCdouble invx = 1/x;
-//CTC>> division by x should be done  in splitting
-//    for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
+      //CTC>> division by x should be done  in splitting
+      //    for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
       if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= fun;
       
       // splitting function table
       if ( nloop==1 && fscale_factor!=1 ) { 
 	splitting(x, fscale_factor*Q, m_fsplit1[itau][iy]);
-//CTC>> division by x should be done  in splitting
-//        for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= invx;
-//CTC<<
+	//CTC>> division by x should be done  in splitting
+	//        for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= invx;
+	//CTC<<
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= fun;
       }
     }
@@ -649,10 +649,10 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       //	evolvepdf_(x, Q, fg[itau][iy1]);
       // pdfs 
       //TC pdf(x,Q, m_fg2[itau][iy]);
-        pdf(x,  fscale_factor*Q, m_fg2[itau][iy]);
+      pdf(x,  fscale_factor*Q, m_fg2[itau][iy]);
       //TC     double invx = 1/x;
-//CTC>> division by x should be done  in splitting
-//      for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
+      //CTC>> division by x should be done  in splitting
+      //      for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
       if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= fun;
       
       // splitting functions
@@ -904,14 +904,13 @@ double igrid::convolute_subproc(int subproc,
   if ( subproc>=0 && subproc<genpdf->Nproc() )   ip = subproc;
   else throw exception("convolute_subproc() subprocess index out of range");
 
-  //for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
-    { 
-    if ( !m_weight[ip]->trimmed() )  {
+
+  if ( !m_weight[ip]->trimmed() )  {
       //  cout << "igrid::convolute() naughty, naughty!" << endl;
       m_weight[ip]->trim();
-    }
-    size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
   }
+  size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
+  
 
   // grid is empty
   if ( size==0 )  return 0;
@@ -920,7 +919,7 @@ double igrid::convolute_subproc(int subproc,
   setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, splitting);
 
   
-  double* sig = new double[m_Nproc];  // weights from grid
+  double  sig = 0;  // weights from grid
   double* H   = new double[m_Nproc];  // generalised pdf  
   double* HA  = NULL;  // generalised pdf
   double* HB  = NULL;  // generalised pdf
@@ -941,6 +940,7 @@ double igrid::convolute_subproc(int subproc,
     double alphas_tmp = m_alphas[itau];
     double _alphas  = 1;
     for ( int iorder=0 ; iorder<lo_order ; iorder++ ) _alphas *= alphas_tmp;
+    double alphaplus1 = _alphas*alphas_tmp;
 
     //    cout << "lo_order=" << lo_order << "\talpha^lo="<< _alphas << endl; 
 
@@ -957,7 +957,7 @@ double igrid::convolute_subproc(int subproc,
 	// or the convolution of the nlo grid with the pdf 
 	//for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
         {
-	  if ( sig[ip] = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) ) nonzero = true;
+	  if ( sig = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) ) nonzero = true;
 	}
 	
 	if ( nonzero ) { 	
@@ -967,29 +967,18 @@ double igrid::convolute_subproc(int subproc,
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
 
 	  // do the convolution
-	  // for ( int ip=0 ; ip<m_Nproc ; ip++ )  dsigma += _alphas*sig[ip]*H[ip];
-	  dsigma += _alphas*sig[ip]*H[ip];
+	  dsigma += _alphas*sig*H[ip];
 
-	  //	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) cout << "sig[" << ip << "]=" << sig[ip] << endl;
-	  
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
 	  if ( nloop==1 ) { 
 	    // do all the other convolution bits
-
-	    double rdsigma = 0;
-	    double fdsigma = 0;
-
-	    double alphaplus1 = _alphas*alphas_tmp;
-
 	    // now the the renorm and factorisation scale terms...
 	    
 	    // renormalisation scale dependent bit
 	    if ( rscale_factor!=1 ) { 
 	      //cout << "rscale=" << rscale_factor << endl;
-	      // for ( int ip=0 ; ip<m_Nproc ; ip++ )  rdsigma = alphaplus1*sig[ip]*H[ip];
-	      rdsigma = alphaplus1*sig[ip]*H[ip];
-	      dsigma += twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*rdsigma;  // nlo relative ln mu_R^2 term 
+	      dsigma += alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*sig*H[ip];  // nlo relative ln mu_R^2 term 
 	    }
 
 	    // factorisation scale dependent bit
@@ -997,10 +986,7 @@ double igrid::convolute_subproc(int subproc,
 	      //cout << "fscale=" << fscale_factor << endl;
 	      genpdf->evaluate( m_fg1    [itau][iy1],  m_fsplit2[itau][iy2], HA);
 	      genpdf->evaluate( m_fsplit1[itau][iy1],  m_fg2    [itau][iy2], HB);
-	      
-	      // for ( int ip=0 ; ip<m_Nproc ; ip++ )  fdsigma = alphaplus1*sig[ip]*(HA[ip]+HB[ip]);
-	      fdsigma = alphaplus1*sig[ip]*(HA[ip]+HB[ip]);
-	      dsigma -= log(fscale_factor*fscale_factor)*fdsigma;              // nlo relative ln mu_F^2 term 
+	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*sig*(HA[ip]+HB[ip]);              // nlo relative ln mu_F^2 term 
 	    }
 	  }
 	}  // nonzero
@@ -1011,7 +997,6 @@ double igrid::convolute_subproc(int subproc,
   
   //  cout << "\tconvoluted dsigma=" << dsigma << endl; 
   
-  delete[] sig;
   delete[] H;
   delete[] HA;
   delete[] HB;

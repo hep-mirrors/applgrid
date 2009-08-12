@@ -404,7 +404,7 @@ void grid::Write(const string& filename, const string& dirname) {
     fclose(f);
     _filename += "-save";
     string cmd = "mv " + filename + " " + _filename;
-    system(cmd.c_str());
+    int i = system(cmd.c_str());
   } 
 
   //  cout << "grid::Write() writing to file " << _filename << endl;
@@ -518,7 +518,7 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
     else if ( nloops==-1 ) {
       label = "nlo only";
       // nlo contribution only (only strict nlo contributions) 
-      dsigma = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
+      dsigma = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0, rscale_factor, fscale_factor);
     } 
     else if ( nloops==2 ) {
       // FIXME: not implemented completely yet 
@@ -526,7 +526,7 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts so only  muR=muF=mu
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 0);
+      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 1);
       // next to leading order contribution      
       double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
       // next to next to leading order contribution

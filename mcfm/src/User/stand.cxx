@@ -88,7 +88,7 @@ void lhapdf(const double& x, const double& Q, double* f) {
   //  cout << "\tdgl=" << xf[6] << endl;
 
   //  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i]/x;
-  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i];
+  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i]/x;
 
   return;
 }
@@ -111,7 +111,7 @@ void lhapdf2(const double& _x, const double& _Q, double* f) {
   //  cout << "\tdgl=" << xf[6] << endl;
 
   //  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i]/x;
-  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i];
+  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i]/x;
 
   return;
 }

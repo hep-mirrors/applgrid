@@ -62,7 +62,7 @@ export ROOTSYS=`root-config --prefix`
 export LHAPDFLIB=`lhapdf-config --prefix`/lib
 
 
-export PATH=$ROOTSYS/bin:$PATH
+export PATH=$ROOTSYS/bin:$BASEDIR/bin:$PATH
 export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$DYLD_LIBRARY_PATH
@@ -99,29 +99,24 @@ make  install
 
 cd $BASEDIR
 
-# if [ ! -e $BASEDIR/lib/libgfortran.so ]; then
-#    ln -s /usr/lib/libgfortran.so.2 $BASEDIR/lib/libgfortran.so
-# fi
-#
 
 ############################################
 # BUILD MCFM TEST EXECUTABLE
 ############################################
 cd $BASEDIR/mcfm
 make install
-#
-#
+
 
 ############################################
 # RUN THE MCFM TEST EXECUTABLE
 ############################################
 
 cd $BASEDIR/mcfm/run
-#
+
 ../exe/*/mcfm Winput.DAT >&  mcfm-0.log
 ../exe/*/mcfm Winput.DAT >&  mcfm-1.log
 ../exe/*/stand grid-30-Wweight_eta4.root
-#
+
 # echo EXITING......
 # exit
 
@@ -131,7 +126,6 @@ cd $BASEDIR/mcfm/run
 #############################
 
 cd $BASEDIR
-
 
 echo  "bld-pdf" 
 

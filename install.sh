@@ -29,14 +29,14 @@ cd $BASEDIR
 
 ROOTFOUND=`which root-config`
 
-if [ $ROOTFOUND="" ]; then 
+if [ "$ROOTFOUND" = "" ]; then 
   echo "root not setup"
   exit
 fi
 
 LHAPDFFOUND=`which lhapdf-config`
  
-if [ $LHAPDFFOUND="" ]; then 
+if [ "$LHAPDFFOUND" = "" ]; then 
   echo "lhapdf not setup"
   exit
 fi

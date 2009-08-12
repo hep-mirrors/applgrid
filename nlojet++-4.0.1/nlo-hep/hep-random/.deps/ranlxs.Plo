@@ -1,5 +1,0 @@
-ranlxs.lo: ranlxs.cc bits/rng-ranlxs.h bits/hep-rng.h
-
-bits/rng-ranlxs.h:
-
-bits/hep-rng.h:

@@ -1,5 +1,10 @@
 #!/bin/sh -v
 
+
+###############################################
+#  setup everything
+###############################################
+
 if [ "$COPYDIR" = "" ]; then 
   export COPYDIR=$PWD
 fi
@@ -22,6 +27,22 @@ fi
 cd $BASEDIR
 
 
+ROOTFOUND=`which root-config`
+
+if [ $ROOTFOUND="" ]; then 
+  echo "root not setup"
+  exit
+fi
+
+LHAPDFFOUND=`which lhapdf-config`
+ 
+if [ $LHAPDFFOUND="" ]; then 
+  echo "lhapdf not setup"
+  exit
+fi
+
+
+
 
 #  use root-config to decide what architecture root libraries will be used
  
@@ -36,9 +57,16 @@ export LDFLAGS=$ARCH
 
 
 
-export PATH=$BASEDIR/bin:$PATH
-export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LD_LIBRARY_PATH
-export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$DYLD_LIBRARY_PATH
+
+export ROOTSYS=`root-config --prefix`
+export LHAPDFLIB=`lhapdf-config --prefix`/lib
+
+
+export PATH=$ROOTSYS/bin:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$DYLD_LIBRARY_PATH
+
 
 
 
@@ -82,7 +110,6 @@ cd $BASEDIR
 cd $BASEDIR/mcfm
 make install
 #
-echo "Don't forget to set the LD_LIBRARY_PATH for root and lhapdf if you have to"
 #
 
 ############################################

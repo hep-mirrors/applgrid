@@ -22,9 +22,9 @@ fi
 cd $BASEDIR
 
 
-pwd
 
-
+#  use root-config to decide what architecture root libraries will be used
+ 
 export ARCH=`rootarch.sh`
 
 export CXXFLAGS=$ARCH
@@ -35,15 +35,6 @@ export FFLAGS=$ARCH
 export LDFLAGS=$ARCH
 
 
-
-#tar -xzf $COPYDIR/appl_grid.tgz
-#tar -xzf $COPYDIR/pdf-conv-1.0.tgz
-## tar -xzf $COPYDIR/mcfm.tgz mcfm
-#tar -xzf $COPYDIR/lhpdf-1.0.0.tgz 
-#tar -xzf $COPYDIR/nlojet++-4.0.1.tgz 
-#tar -xzf $COPYDIR/ap.tgz	
-#
-# exit
 
 export PATH=$BASEDIR/bin:$PATH
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LD_LIBRARY_PATH

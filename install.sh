@@ -266,3 +266,9 @@ fi
 which nlojet++
 # nlojet++ --calculate -u fillgrid.la --max-event 20000
 nlojet++ --calculate -u fillgrid.la 
+nlojet++ --calculate -u fillgrid.la 
+if [ -e output/weight_c.root ]; then 
+  standalone output/weight_c.root
+else
+  echo "nlojet grid code did not complete correctly" 
+endif

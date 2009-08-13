@@ -6,7 +6,7 @@
 //  
 //  Copyright (C) 2007 Mark Sutton (sutt@hep.ucl.ac.uk)    
 
-// $Id: appl_grid.cxx, v1.00 2007/10/16 17:01:39 sutt
+// $Id: appl_grid.cxx, v1.00 2007/10/16 17:01:39 sutt $
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -526,7 +526,7 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts so only  muR=muF=mu
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 1);
+      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 0);
       // next to leading order contribution      
       double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
       // next to next to leading order contribution
@@ -592,20 +592,16 @@ TH1D* grid::convolute_subproc(int subproc,
     }
     else if ( nloops==1 ) { 
       label = "nlo     ";
-      // cout << "convolute() nloop=1" << endl;
       // next to leading order cross section
-      // leading order contribution and scale dependent born dependent terms
+      // leading and next to order contributions and scale dependent born dependent terms
       double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order,   1, rscale_factor, fscale_factor, splitting);
-      // cout << "dsigma_lo=" << dsigma_lo << endl;
-      // next to leading order contribution
-      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, fscale_factor, splitting );
-      // cout << "dsigma_nlo=" << dsigma_nlo << endl;
+      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, fscale_factor );
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) { 
       label = "nlo only";
-      // nlo contribution only (only strict nlo contributions) 
-      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0);
+      // nlo contribution only (only strict nlo contributions)
+      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, fscale_factor);
     }
     else if ( nloops==2 ) { 
       // FIXME: not implemented completely yet 
@@ -613,8 +609,8 @@ TH1D* grid::convolute_subproc(int subproc,
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts, so only muR=muF=mu
-      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order, 0);
-      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0);
+      double dsigma_lo   = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order,   0);
+      double dsigma_nlo  = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0);
       double dsigma_nnlo = m_grids[2][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+2, 0);
       dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
     }

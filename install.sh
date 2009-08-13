@@ -230,9 +230,9 @@ which create-nlojet-user
 cd $BASEDIR
 
 
-echo "appl-paper"
-if [ -e $BASEDIR/appl-paper  ]; then
-   echo "appl-paper already exists"
+echo "nlojet-module"
+if [ -e $BASEDIR/nlojet-module  ]; then
+   echo "nlojet-module already exists"
 else 
 #   cp $COPYDIR/ap.tgz ap.tgz
     echo doing nowt
@@ -240,7 +240,7 @@ fi
 
 	
 echo "building fillgrid..."
-cd appl-paper
+cd nlojet-module
 
 if [ "$1" = "clean" ]; then
  make clean
@@ -267,6 +267,7 @@ which nlojet++
 # nlojet++ --calculate -u fillgrid.la --max-event 20000
 nlojet++ --calculate -u fillgrid.la 
 nlojet++ --calculate -u fillgrid.la 
+
 if [ -e output/weight_c.root ]; then 
   standalone output/weight_c.root
 else

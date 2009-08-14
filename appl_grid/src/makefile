@@ -19,7 +19,7 @@ else
 INSTALLBASE = ../..
 endif
 
-ARCH_TYPE = $(shell $(BASEDIR)/setarch.sh)
+ARCH_TYPE = $(shell setarch.sh)
 
 AGBASE = ..
 SRCDIR = .

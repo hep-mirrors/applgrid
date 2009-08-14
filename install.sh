@@ -21,6 +21,8 @@ fi
 cd $BASEDIR
 
 
+export PATH=$BASEDIR/bin:$PATH
+
 ROOTFOUND=`which root-config`
 
 if [ "$ROOTFOUND" = "" ]; then 
@@ -55,7 +57,7 @@ export ROOTSYS=`root-config --prefix`
 export LHAPDFLIB=`lhapdf-config --prefix`/lib
 
 
-export PATH=$ROOTSYS/bin:$BASEDIR/bin:$PATH
+export PATH=$ROOTSYS/bin:$PATH
 export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$LD_LIBRARY_PATH
 export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$DYLD_LIBRARY_PATH

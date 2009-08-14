@@ -8,7 +8,7 @@ LHAPDFLIB       = $(shell lhapdf-config --prefix)/lib
 LHAPDFLIBNAME   = LHAPDF
 
 # ARCH_TYPE = $(shell /usr/bin/sys)
-ARCH_TYPE = $(shell $(BASEDIR)/setarch.sh)
+ARCH_TYPE = $(shell setarch.sh)
 
 # MCFMHOME        = /Users/sutt/nlo/mcfm-pavel/mcfm
 # SOURCEDIR       = /Users/sutt/nlo/mcfm-pavel/mcfm/src
@@ -51,7 +51,7 @@ LIBFLAGS += -L$(LIBDIR) $(ROOTLIBS) $(LIBGRID)
 # FRTLLIB = -lgfortran
 # FRTLLIB = -lg2c -lgfortran
 # FRTLLIB = -L/usr/local/gfortran/lib/x86_64  -lgfortran
-FRTLLIB = $(shell $(BASEDIR)/gfortran.sh)
+FRTLLIB = $(shell gfortran.sh)
 #FRTLLIB = -L $(shell gfortran -print-file-name=) 
 #FRTLLIB = -L /usr/lib/gcc/i486-linux-gnu/4.3.3 -lgfortran
 # FRTLLIB = /usr/lib/gcc/i486-linux-gnu/4.3.3/libgfortran.a

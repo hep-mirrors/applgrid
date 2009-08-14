@@ -76,30 +76,38 @@ NLOLIBFLAGS = -Wl,$(ARCH),-lpthread,$(ALL_LIBS),-L$(INSTALLBASE)/lib,-lAPPLgrid,
 
 NLOINC = -I$(INSTALLBASE)/include/nlo++ 
 
+install : all
+all : fillgrid standalone stand
 
-
-standalone.o:	standalone.cxx 
-	$(CXX) -c $(CXXFLAGS) $(ALLMACRO) standalone.cxx -I$(INSTALLBASE)/include -I$(INSTALLBASE)/include/lhpdf $(APPLCXXFLAGS)
 
 standalone: standalone.o  InitMyPdf.o mypdfevolve.o
 	$(CXX) -o standalone $(LDFLAGS) $(ALLMACRO)  standalone.o InitMyPdf.o mypdfevolve.o	$(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
+
+stand: stand.o  InitMyPdf.o mypdfevolve.o
+	$(CXX) -o stand $(LDFLAGS) $(ALLMACRO)  stand.o InitMyPdf.o mypdfevolve.o	$(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
 
 
 fillgrid: LHAPDF.h nlogrid.o nlogrid.lo
 	$(INSTALLBASE)/bin/create-nlojet-user lhapdf_string_interface.f fillgrid.cxx -o fillgrid $(NLOCXXFLAGS) $(NLOFFLAGS) $(NLOLIBFLAGS) 
 
 
-InitMyPdf.o: InitMyPdf.f
+.SUFFIXES : .cxx .o .f .c
+
+.f.o :
 	$(F77) $(FFLAGS) -c $<
 
-mypdfevolve.o: mypdfevolve.f
-	$(F77) $(FFLAGS) -c $<
+.cxx.o:	 
+	$(CXX) -c $< $(CXXFLAGS) $(ALLMACRO) -I$(INSTALLBASE)/include -I$(INSTALLBASE)/include/lhpdf $(APPLCXXFLAGS)
 
 
 
+# obsolete single compilation rules 
 
-nlogrid.o: nlogrid.cxx
-	$(CXX) $(ALLMACRO) -g -c $(CXXFLAGS) nlogrid.cxx $(ROOTINCS) $(NLOINC) $(APPLCXXFLAGS) 
+# nlogrid.o: nlogrid.cxx
+# 	$(CXX) $(ALLMACRO) -g -c $(CXXFLAGS) nlogrid.cxx $(ROOTINCS) $(NLOINC) $(APPLCXXFLAGS) 
+
+# standalone.o:	standalone.cxx 
+#	$(CXX) -c $(CXXFLAGS) $(ALLMACRO) standalone.cxx -I$(INSTALLBASE)/include -I$(INSTALLBASE)/include/lhpdf $(APPLCXXFLAGS)
 
 NLOLIBTOOLFLAGS = -Wc,$(ARCH),$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/nlo++,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS)
 

@@ -1,3 +1,6 @@
+
+#include <sys/stat.h>
+
 #include <iostream>
 #include <string.h>
 
@@ -33,8 +36,10 @@ extern "C"
 //
 static const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb  
 static const int nScales = 5;
-static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
-static const double muf[nScales] = {1.0, 0.5, 2.00, 0.5, 1.0};
+// static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
+// static const double muf[nScales] = {1.0, 0.5, 2.00, 0.5, 1.0};
+static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
+static const double muf[nScales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
 
 static const int nLoops = 1;
 static const int nFlavours = 5;
@@ -126,7 +131,7 @@ void removeErrors(TH1D* hh)
 // wrapper to get the basic pdf rather than x*pdf
 // gavins evolution code
 
-void gavin(const double& x, const double& Q, double* f) { 
+void GetPdf(const double& x, const double& Q, double* f) { 
   
   double xf[13];
 
@@ -139,7 +144,7 @@ void gavin(const double& x, const double& Q, double* f) {
  return; 
 }
 
-void gavinSplit(const double& x, const double& Q, double* f) { 
+void GetPdfSplit(const double& x, const double& Q, double* f) { 
   
  const bool debug=false;
  if (debug)cout<<" x= "<<x<<" Q= "<<Q<<endl;
@@ -155,7 +160,7 @@ void gavinSplit(const double& x, const double& Q, double* f) {
  return;
 }
 
-  void Dump_ratio(TH1D *ratio){
+void Dump_ratio(TH1D *ratio){
 
   if (!ratio) {cout<<" Histo not found "<<endl; return;}
   ratio->Print();
@@ -165,7 +170,7 @@ void gavinSplit(const double& x, const double& Q, double* f) {
     cout<<ratio->GetName()<<" x= "<<ratio->GetBinCenter(i)<<" y= "<<ratio->GetBinContent(i)<<endl;
   }
   return;
- }
+}
 
 
 int main(int argc, char** argv) 
@@ -193,18 +198,18 @@ int main(int argc, char** argv)
   
   //  gridFileName += ".root";
   //  outFileName += ".root";
-  if (FILE* testfile = fopen(gridFileName.c_str(),"r"))
-    {
-      fclose(testfile);
-    }
-  else
-    {
+
+
+  //  if (FILE* testfile = fopen(gridFileName.c_str(),"r"))
+
+  struct stat stFileInfo;
+  // test if file exists, don't need to try to open it, 
+  if ( stat(gridFileName.c_str(),&stFileInfo) )   {
       cout <<"No such ROOT-file "<<gridFileName<<endl;
       return -1;
-    }
+  }
   
   const string _pdfname = "PDFsets/cteq6mE.LHgrid";  
-  //  const string _pdfname = "PDFsets/cteq6mE.LHgrid";  
   int Npdf = 0;
   // setup gavins code
   initmypdf_(_pdfname.c_str(), Npdf);
@@ -229,7 +234,7 @@ int main(int argc, char** argv)
   //  
   cout << "convoluting observable" << endl;
 
-  gridObservable = (TH1D*)g->convolute(gavin, alphaspdf_);
+  gridObservable = (TH1D*)g->convolute(GetPdf, alphaspdf_);
   gridObservable->Scale(pb_fac);
   gridObservable->SetName("gridObservable");
   gridObservable->SetTitle("Observable calculated via APPLgrid");
@@ -240,6 +245,7 @@ int main(int argc, char** argv)
 
   cout<<" Ratio reference/grid "<<endl;
   Dump_ratio(ratio);
+
 
   outfile.cd();
   reference->Write();
@@ -252,7 +258,7 @@ int main(int argc, char** argv)
 
 //   cout << "convoluting per order ...";
 
-//   grid_lo = g->convolute(gavin, alphaspdf_, 0);
+//   grid_lo = g->convolute(GetPdf, alphaspdf_, 0);
 //   grid_lo->Scale(pb_fac);
 //   grid_lo->SetName("grid_lo");
 //   grid_lo->SetTitle("Observable @LO calculated via APPLgrid");
@@ -264,7 +270,7 @@ int main(int argc, char** argv)
 
 //   cout <<"LO done, working with NLO ...";
 
-//   grid_nlo = g->convolute(gavin, alphaspdf_, -1);
+//   grid_nlo = g->convolute(GetPdf, alphaspdf_, -1);
 //   grid_nlo->Scale(pb_fac);
 //   grid_nlo->SetName("grid_nlo");
 //   grid_nlo->SetTitle("Observable @NLO calculated via APPLgrid");
@@ -306,7 +312,7 @@ int main(int argc, char** argv)
     {
       cout<<"\tworking with subprocess "<<iSub<<" ..."<<endl;
       //
-      grid_sub[iSub] = g->convolute_subproc(iSub, gavin, alphaspdf_);
+      grid_sub[iSub] = g->convolute_subproc(iSub, GetPdf, alphaspdf_);
       grid_sub[iSub]->Scale(pb_fac);
 
       sprintf(histtitle,"grid_sub_%d",iSub);
@@ -348,8 +354,8 @@ int main(int argc, char** argv)
   for (int iScale = 0; iScale < nScales; iScale++)
     {
       cout<<"\t  working with scale "<<iScale<<" ..."<<endl;
-      grid_scale[iScale] = g->convolute(gavin, alphaspdf_, nLoops, 
-					mur[iScale], muf[iScale], gavinSplit);
+      grid_scale[iScale] = g->convolute(GetPdf, alphaspdf_, nLoops, 
+					mur[iScale], muf[iScale],GetPdfSplit);
       grid_scale[iScale]->Scale(pb_fac);
 
       sprintf(histtitle,"grid_scale_%d",iScale);
@@ -378,14 +384,14 @@ int main(int argc, char** argv)
 	  grid_subscale[iSub][iScale] = 
 //
 //TC>>>>>>>>
-// 	    g->convolute_subproc(iSub, gavin, alphaspdf_,
+// 	    g->convolute_subproc(iSub, GetPdf, alphaspdf_,
 // 				 nLoops, 
 // 				 std::sqrt(mur[iScale]), 
-// 				 std::sqrt(muf[iScale]), gavinSplit);
- 	    g->convolute_subproc(iSub, gavin, alphaspdf_,
+// 				 std::sqrt(muf[iScale]), GetPdfSplit);
+ 	    g->convolute_subproc(iSub, GetPdf, alphaspdf_,
  				 nLoops, 
  				 mur[iScale], 
- 				 muf[iScale], gavinSplit);
+ 				 muf[iScale], GetPdfSplit);
 	  grid_subscale[iSub][iScale]->Scale(pb_fac);
 //TC<<<<<<<<
 	  sprintf(histtitle, "grid_subscale_%d_%d", iSub, iScale);
@@ -400,6 +406,9 @@ int main(int argc, char** argv)
 	  ratio_subscale[iSub][iScale]->Divide(grid_subscale[iSub][iScale]);
 	  sprintf(histtitle,"reference/grid ratio for  scales: #mu_{R} = %3.2f,  #mu_{F} = %3.2f in subProcess = %d", mur[iScale], muf[iScale], iSub);
 	  ratio_subscale[iSub][iScale]->SetTitle(histtitle);
+//TC>>
+          Dump_ratio(ratio_subscale[iSub][iScale]); 
+//TC<<
 	}
     }
 

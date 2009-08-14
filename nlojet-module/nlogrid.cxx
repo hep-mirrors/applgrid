@@ -1,3 +1,5 @@
+#include <sys/stat.h>
+
 #include <string>
 using std::string;
 
@@ -20,8 +22,10 @@ using appl::igrid;
 //
 //     renormalisation and factorisation scales
 //
-static const double mur[Nscales] = {1.0,0.5,2.0,1.0,0.5};
-static const double muf[Nscales] = {1.0,0.5,2.0,0.5,1.0};
+// static const double mur[Nscales] = {1.0,0.5,2.0,1.0,0.5};
+// static const double muf[Nscales] = {1.0,0.5,2.0,0.5,1.0};
+static const double mur[Nscales] = {1.0,0.5,2.0,1.0,1.0};
+static const double muf[Nscales] = {1.0,1.0,1.0,0.5,2.0};
 //
 //grid parameters
 //
@@ -69,10 +73,13 @@ nlogrid::nlogrid(std::string inputName)
   Directory nlogridDir(observableName);
   nlogridDir.push();
 
-  FILE * testfile; 
-  testfile = fopen (fullFileName.c_str(),"r");
+  //  FILE * testfile; 
+  //  testfile = fopen (fullFileName.c_str(),"r");
+  //  if (testfile == NULL) 
   
-  if (testfile == NULL) 
+  // test if file exists, don't need to try to open it, 
+  struct stat stFileInfo;
+  if ( stat(fullFileName.c_str(),&stFileInfo) )   
     {
       cout<<"Creating new grid... "<<endl;
       
@@ -98,15 +105,13 @@ nlogrid::nlogrid(std::string inputName)
       
       mode=1;
 
-      fclose(testfile);
-
       gridObject = new appl::grid(fullFileName);
       nlogridDir.push();
       if (gridObject->isOptimised())
 	{
 	  delete gridObject;
 	  std::cout <<"Grid is aready optimised. Quitting ..."<<std::endl;
-	  exit(0);
+	  exit(0); // should really throw an exception
 	}
       // reseting reference histgram
       TH1D* htemp = gridObject->getReference();

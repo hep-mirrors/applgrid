@@ -7,7 +7,8 @@ LHAPDFLIB       = $(shell lhapdf-config --prefix)/lib
 #LHAPDFLIB       = /home/tcarli/lhapdf-5.7.0/lib
 LHAPDFLIBNAME   = LHAPDF
 
-ARCH_TYPE = $(shell /usr/bin/sys)
+# ARCH_TYPE = $(shell /usr/bin/sys)
+ARCH_TYPE = $(shell $(BASEDIR)/setarch.sh)
 
 # MCFMHOME        = /Users/sutt/nlo/mcfm-pavel/mcfm
 # SOURCEDIR       = /Users/sutt/nlo/mcfm-pavel/mcfm/src

@@ -13,7 +13,13 @@
 #                   
 ######################################################################### 
 
-ARCH_TYPE = $(shell /usr/bin/sys)
+ifdef BASEDIR
+INSTALLBASE = $(BASEDIR)
+else
+INSTALLBASE = ../..
+endif
+
+ARCH_TYPE = $(shell $(BASEDIR)/setarch.sh)
 
 AGBASE = ..
 SRCDIR = .
@@ -23,11 +29,6 @@ LIBDIR = ../lib/$(ARCH_TYPE)
 OBJDIR = ../obj/$(ARCH_TYPE)
 EXEDIR = ../exe/$(ARCH_TYPE)
 
-ifdef BASEDIR
-INSTALLBASE = $(BASEDIR)
-else
-INSTALLBASE = ../..
-endif
 
 # Root variables
 ROOTCFLAGS   = $(shell root-config --cflags)

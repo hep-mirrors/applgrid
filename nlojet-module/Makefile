@@ -46,8 +46,8 @@ LD_FLAGS += $(APPLLIBS)
 #F90 libraries
 #
 # F90LIB= -L`which lf95 | sed s:bin/lf95:lib:` -lfj9i6 -lfj9f6 -lfj9e6 -lfccx86_6a
-
-FRTLLIB = -L/usr/local/gfortran/lib/x86_64  -lgfortran
+FRTLLIB = $(shell $(BASEDIR)/gfortran.sh )
+# FRTLLIB = -L/usr/local/gfortran/lib/x86_64  -lgfortran
 #FRTLLIB = -lg2c -lgfortran
 # FRTLLIB = -lgfortran
 F90LIB = $(FRTLLIB)

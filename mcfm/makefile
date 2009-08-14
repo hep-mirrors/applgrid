@@ -50,7 +50,7 @@ LIBFLAGS += -L$(LIBDIR) $(ROOTLIBS) $(LIBGRID)
 # FRTLLIB = -lgfortran
 # FRTLLIB = -lg2c -lgfortran
 # FRTLLIB = -L/usr/local/gfortran/lib/x86_64  -lgfortran
-FRTLLIB = $(shell gfortran.sh)
+FRTLLIB = $(shell $(BASEDIR)/gfortran.sh)
 #FRTLLIB = -L $(shell gfortran -print-file-name=) 
 #FRTLLIB = -L /usr/lib/gcc/i486-linux-gnu/4.3.3 -lgfortran
 # FRTLLIB = /usr/lib/gcc/i486-linux-gnu/4.3.3/libgfortran.a

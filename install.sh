@@ -84,7 +84,6 @@ fi
 make install
 
 
-
 cd $BASEDIR/pdf-conv-1.0/src
 
 if [ "$1" = "clean" ]; then
@@ -227,8 +226,8 @@ which create-nlojet-user
 # MODULES 
 ######################
 
-cd $BASEDIR
 
+cd $BASEDIR
 
 echo "nlojet-module"
 if [ -e $BASEDIR/nlojet-module  ]; then
@@ -246,9 +245,7 @@ if [ "$1" = "clean" ]; then
  make clean
 fi
 
-make fillgrid
-
-make standalone
+make install
 
 echo PATH is: $PATH
 
@@ -269,7 +266,11 @@ nlojet++ --calculate -u fillgrid.la
 nlojet++ --calculate -u fillgrid.la 
 
 if [ -e output/weight_c.root ]; then 
-  standalone output/weight_c.root
+  ./standalone output/weight_c.root
+  ./stand      output/weight_c.root
 else
   echo "nlojet grid code did not complete correctly" 
-endif
+fi
+
+
+

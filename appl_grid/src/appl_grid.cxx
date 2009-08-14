@@ -248,7 +248,7 @@ void grid::construct(int Nobs,
 
 
 grid::~grid() {
-  cout << "~grid() deleting grid" << endl;
+  // cout << "~grid() deleting grid" << endl;
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {  
     if( m_grids[iorder] ) { 
       for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  delete m_grids[iorder][iobs];

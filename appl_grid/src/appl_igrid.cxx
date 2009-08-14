@@ -611,13 +611,11 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     
 
     // y1 tables
-    // for ( int iy=iymin1 ; iy<=iymax1 ; iy++ ) { 
-    double x,y,fun;
     for ( int iy=0 ; iy<n_y1 ; iy++ ) { 
       
-      y = gety1(iy);
-      x = fx(y);
-      fun = 1;
+      double y = gety1(iy);
+      double x = fx(y);
+      double fun = 1;
       if ( m_reweight ) weightfun(x);
       
       // pdf table 
@@ -642,8 +640,9 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     //    for ( int iy=iymin2 ; iy<=iymax2 ; iy++ ) { 
     for ( int iy=0 ; iy<n_y2 ; iy++ ) { 
       
-      y = gety2(iy);
-      x = fx(y);
+      double y = gety2(iy);
+      double x = fx(y);
+      double fun = 1;
       if (m_reweight) fun = weightfun(x);
       
       //	evolvepdf_(x, Q, fg[itau][iy1]);
@@ -736,7 +735,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
   //const bool debug=false;  
 
   double alphas_tmp = 0.;  
-  double dsigma  = 0., xsigma = 0.;
+  double dsigma  = 0.; //, xsigma = 0.;
   double _alphas  = 1., alphaplus1=0.;
   // do the convolution  
   //if (debug) cout<<name<<" nloop= "<<nloop<<endl;
@@ -766,7 +765,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
     HB  = new double[m_Nproc];  // generalised splitting functions
   }
 
-  int N;
+  //  int N;
 
   // cross section for this igrid  
 
@@ -794,7 +793,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
 
 	  // do the convolution
-          xsigma=0.;
+          double xsigma=0.;
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
           dsigma+= _alphas*xsigma;
 
@@ -811,8 +810,8 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	  if ( nloop==1 ) { 
 	  // renormalisation scale dependent bit
 	    if ( rscale_factor!=1 ) { 
-// nlo relative ln mu_R^2 term 
-              dsigma+= alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
+	      // nlo relative ln mu_R^2 term 
+	      dsigma+= alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
   
               //if (debug) cout<<" xsigma= "<<xsigma
               //    <<" twopi= "<<twopi<<" beta0= "<<beta0
@@ -928,7 +927,7 @@ double igrid::convolute_subproc(int subproc,
     HB  = new double[m_Nproc];  // generalised pdf
   }
 
-  int N;
+  //  int N;
 
   // cross section for this igrid  
   double dsigma  = 0;
@@ -938,7 +937,7 @@ double igrid::convolute_subproc(int subproc,
   for ( int itau=0 ; itau<Ntau() ; itau++  ) {
     
     double alphas_tmp = m_alphas[itau];
-    double _alphas  = 1;
+    double _alphas = 1;
     for ( int iorder=0 ; iorder<lo_order ; iorder++ ) _alphas *= alphas_tmp;
     double alphaplus1 = _alphas*alphas_tmp;
 
@@ -956,11 +955,8 @@ double igrid::convolute_subproc(int subproc,
 	// basic convolution order component for either the born level
 	// or the convolution of the nlo grid with the pdf 
 	//for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
-        {
-	  if ( sig = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) ) nonzero = true;
-	}
-	
-	if ( nonzero ) { 	
+     
+	if ( sig = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) )  { 
 	  //	  cout << "alpha=" << _alphas << endl; 
 
 	  // build the generalised pdfs from the actual pdfs
@@ -989,7 +985,7 @@ double igrid::convolute_subproc(int subproc,
 	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*sig*(HA[ip]+HB[ip]);              // nlo relative ln mu_F^2 term 
 	    }
 	  }
-	}  // nonzero
+	}  // sig is nonzero
 	
       }  // iy2
     }  // iy1

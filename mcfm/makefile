@@ -71,7 +71,8 @@ PDFROUTINES = LHAPDF
 NTUPLES = NO
 
 
-F77 = g77
+# F77 = g77
+F77 = gfortran
 CXX = g++
 RM  = rm
 

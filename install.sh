@@ -261,10 +261,12 @@ run_nlojet_module () {
 
 ARGS=$*
 
+
+
 install_appl_grid   $ARGS
 install_pdf         $ARGS
 install_mcfm        $ARGS
-# run_mcfm        
+run_mcfm        
 install_nlojet         $ARGS
 install_nlojet_module  $ARGS
-# run_nlojet_module 
+run_nlojet_module 

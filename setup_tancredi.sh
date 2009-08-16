@@ -1,7 +1,13 @@
 #!/bin/zsh 
 
+
+if [ "$BASEDIR" = "" ]; then 
+  export BASEDIR=$PWD
+fi
+
+
 # How to access the svn directory
-export SVNUSR=svn+ssh://svn.cern.ch/reps/atlasusr/tcarli
+#export SVNUSR=svn+ssh://svn.cern.ch/reps/atlasusr/tcarli
 
 #export ROOTSYS=/home/tcarli/root/root5.24
 export LHAPDF=/home/tcarli/lhapdf-5.7.0

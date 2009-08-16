@@ -115,9 +115,10 @@ install_mcfm() {
 run_mcfm() { 
 
     cd $BASEDIR/mcfm/run
+    rm *.log
 
-    ../exe/*/mcfm Winput.DAT >&  mcfm-0.log
-    ../exe/*/mcfm Winput.DAT >&  mcfm-1.log
+    ../exe/*/mcfm Winput.DAT >  mcfm-0.log
+    ../exe/*/mcfm Winput.DAT >  mcfm-1.log
     ../exe/*/stand grid-30-Wweight_eta4.root
     
 }

@@ -21,7 +21,7 @@
 //   stdc++ includes
 #include <string>
 #include <iostream>
-
+#include <typeinfo>
 
 namespace nlo {
 

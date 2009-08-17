@@ -18,14 +18,15 @@ using appl::igrid;
 #endif
 
 #include "TFile.h"
+#include "TVectorT.h"
 
 //
 //     renormalisation and factorisation scales
 //
-// static const double mur[Nscales] = {1.0,0.5,2.0,1.0,0.5};
-// static const double muf[Nscales] = {1.0,0.5,2.0,0.5,1.0};
-static const double mur[Nscales] = {1.0,0.5,2.0,1.0,1.0};
-static const double muf[Nscales] = {1.0,1.0,1.0,0.5,2.0};
+static const double mur[Nscales] = {1.0,0.5,2.0,1.0,0.5};
+static const double muf[Nscales] = {1.0,0.5,2.0,0.5,1.0};
+// static const double mur[Nscales] = {1.0,0.5,2.0,1.0,1.0};
+// static const double muf[Nscales] = {1.0,1.0,1.0,0.5,2.0};
 //
 //grid parameters
 //
@@ -155,6 +156,7 @@ void nlogrid::writeGrid(long int& nRuns)
   Directory obs(observableName);
   obs.push();
   gridObject->Write(fullFileName);
+
   obs.pop();
 
 #ifdef REN_REFERENCE
@@ -213,7 +215,6 @@ void nlogrid::bookReferenceHistograms()
   Directory refDir(refDirName);
   refDir.push();
   
-
   char histname[3000]; char htit[3000];
   for(int is = 0; is < 7; is++) 
     {// loop over subprocesses
@@ -270,6 +271,23 @@ void nlogrid::writeReferenceHistograms()
   //cout << "nlogrid::writeReferenceHistograms() \t\t pwd=" << gDirectory->GetName() << endl;
 
   TFile myfile(fullFileName.c_str(),"UPDATE");
+
+  // write the scales to the histogram;
+
+  TVectorT<double> mur_v(Nscales);
+  TVectorT<double> muf_v(Nscales);
+  
+  for ( int i=0 ; i<Nscales ; i++ ) { 
+    mur_v(i) = mur[i];
+    muf_v(i) = muf[i];
+  }
+  
+  //  mur_v.Write("mu_r");
+  //  muf_v.Write("mu_f");
+  
+  mur_v.Write("mu_r");
+  muf_v.Write("mu_f");
+
   Directory refDir(refDirName);
   refDir.push();
   //  cout << "nlogrid::writeReferenceHistograms() \t\t pwd=" << gDirectory->GetName() << endl;  

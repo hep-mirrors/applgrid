@@ -32,8 +32,11 @@ static const int nScales = 5;
 // static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
 // static const double muf[nScales] = {1.0, 0.5, 2.00, 0.5, 1.0};
 
-static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
-static const double muf[nScales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
+// static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
+// static const double muf[nScales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
+
+static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 0.5 };
+static const double muf[nScales] = { 1.0, 0.5, 2.0, 0.5, 1.0 };
 
 static const int nLoops    = 1;
 static const int nFlavours = 5;
@@ -71,6 +74,23 @@ void GetPdfSplit(const double& x, const double& Q, double* f) {
  }
  return;
 }
+
+
+void increment( TH1D* h1, const TH1D* h2 ) {
+
+  if ( h1==NULL || h2==NULL ) return;
+ 
+  if ( DBG ) std::cout << "increment histograms " << h1->GetTitle() << " " << h2->GetTitle() << std::endl;
+
+  for ( int i=1 ; i<=h1->GetNbinsX() ; i++ ) { 
+    double b1 = h1->GetBinContent(i);
+    double b2 = h2->GetBinContent(i);
+
+    h1->SetBinContent(i, b1+b2); 
+  }
+
+}
+
 
 
 TH1D* divide( const TH1D* h1, const TH1D* h2 ) {
@@ -175,7 +195,7 @@ int main(int argc, char** argv) {
   // now calculate all the cross sections
   
   // setup lhapdf etc
-  const string _pdfname = "PDFsets/cteq6mE.LHgrid";  
+  const string _pdfname = "lhapdf/PDFsets/cteq6mE.LHgrid";  
   int Npdf = 0;
   // setup gavins code
   initmypdf_(_pdfname.c_str(), Npdf);
@@ -226,11 +246,36 @@ int main(int argc, char** argv) {
       xsec_subscale[i].back()->SetTitle(soft_subscale[i][j]->GetTitle());
     }
   }
+
+
+  // and specially for the sums over the subprocesses
+
+  TH1D* xsecsum_scale[nScales];
+
+  TH1D* xsecsum = (TH1D*)xsec_sub[0]->Clone(); 
+  xsecsum->SetName("xsecsum"); xsecsum->SetTitle(xsec->GetTitle());
+
+  for ( int i=0 ; i<nScales ; i++ ) { 
+    char hname[64];
+    sprintf( hname, "xsecsum_scale_%d", i); 
+    //    xsec_sub.push_back(  g.convolute_subproc( i, GetPdf, alphaspdf_ , nLoops) );
+    xsecsum_scale[i] = (TH1D*)xsec_subscale[i][0]->Clone();
+    xsecsum_scale[i]->SetName(hname);
+    xsecsum_scale[i]->SetTitle(xsec_scale[i]->GetTitle());
+  }
+  
+  for ( int j=1 ; j<Nsub ; j++ ) { 
+    increment( xsecsum, xsec_sub[j] );
+
+    for ( int i=0 ; i<nScales ; i++ ) increment( xsecsum_scale[i],  xsec_subscale[i][j] ); 
+  }
+
   
   xsecdir.pop();
 
-  // now take all the ratios etc
 
+
+  // now take all the ratios etc
 
   Directory ratiodir("ratio");
   ratiodir.push();
@@ -267,6 +312,23 @@ int main(int argc, char** argv) {
       ratio_subscale[i].push_back( divide( xsec_subscale[i][j], soft_subscale[i][j] ) );
       if ( ratio_subscale[i].back() ) ratio_subscale[i].back()->SetName(hsname);
     }
+  }
+
+
+
+  TH1D* subratio = divide( xsec, xsecsum ); if ( subratio ) subratio->SetName("subratio");
+
+  TH1D* subratio_scale[nScales];
+  
+  for ( int i=nScales ; i-- ; ) { 
+    
+    // get histo for this scale 
+    
+    char hname[64];
+    sprintf( hname, "subratio_scale_%d", i); 
+    
+    subratio_scale[i] = divide( xsec_scale[i], xsecsum_scale[i] );
+    if ( subratio_scale[i] ) subratio_scale[i]->SetName(hname);
   }
 
   

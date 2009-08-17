@@ -38,8 +38,12 @@ static const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb
 static const int nScales = 5;
 // static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
 // static const double muf[nScales] = {1.0, 0.5, 2.00, 0.5, 1.0};
-static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
-static const double muf[nScales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
+// static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
+// static const double muf[nScales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
+
+static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
+static const double muf[nScales] = {1.0, 0.5, 2.00, 0.5, 1.0};
+
 
 static const int nLoops = 1;
 static const int nFlavours = 5;

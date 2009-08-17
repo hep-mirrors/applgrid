@@ -616,7 +616,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       double y = gety1(iy);
       double x = fx(y);
       double fun = 1;
-      if ( m_reweight ) weightfun(x);
+      if ( m_reweight ) fun = weightfun(x);
       
       // pdf table 
       //	evolvepdf_(x, Q, fg[itau][iy1]);

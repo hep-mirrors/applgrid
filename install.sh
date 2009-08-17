@@ -245,8 +245,7 @@ run_nlojet_module () {
     else  
 	which nlojet++
 #       nlojet++ --calculate -u fillgrid.la --max-event 20000
-	nlojet++ --calculate -u fillgrid.la 
-	nlojet++ --calculate -u fillgrid.la 
+        nlojet++ --calculate -c full -u fillgrid.la --max-event 1000010
     fi
 
     if [ -e output/weight_c.root ]; then 

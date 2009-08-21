@@ -195,7 +195,8 @@ int main(int argc, char** argv) {
   // now calculate all the cross sections
   
   // setup lhapdf etc
-  const string _pdfname = "lhapdf/PDFsets/cteq6mE.LHgrid";  
+  // const string _pdfname = "lhapdf/PDFsets/cteq6mE.LHgrid";  
+  const string _pdfname = "PDFsets/cteq6mE.LHgrid";  
   int Npdf = 0;
   // setup gavins code
   initmypdf_(_pdfname.c_str(), Npdf);

@@ -245,6 +245,9 @@ run_nlojet_module () {
     else  
 	which nlojet++
 #       nlojet++ --calculate -u fillgrid.la --max-event 20000
+#       generate the grid phase space
+        nlojet++ --calculate -c full -u fillgrid.la --max-event 1000010
+#       now optimise it and generate the weights properly
         nlojet++ --calculate -c full -u fillgrid.la --max-event 1000010
     fi
 

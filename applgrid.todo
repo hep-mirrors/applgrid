@@ -1,0 +1,43 @@
+Code:
+
+o) in sub_prcess convolution: take muf-dependence off, issue wanring mesage
+
+o) introduce enumeratr for PDF indices to make CKM matrices more readble
+   (some for steering options ? in igrid::igrid(TFile& f, const string& s) 
+
+o) move standalone to separate directory, e.g. usercode
+   introduce: standalone_diagnostics
+              standalone_simple      ...better names welcome, standalone not needed
+o) use source-forge version of pdf-evof in install script
+ 
+   gavin will provide configure for gfortan
+
+o) introduce one convolute method that gives back vector instead of
+   histogram
+   write another one that call this one and creates a histo 
+
+   
+o) getPdfSplit
+   move to appl_grid directory, link against HOPPET
+   should only be done, if fac scale variation is needed
+
+
+ long-term: 
+o)   table for subprocesses to be included in XXX__pdf.h
+
+o) fast nlo interfact for most important grid tables as example
+
+
+Paper:
+
+o) test scaling a different cms energy
+
+o) test ren&fact scale variation with pdf-weighting
+
+
+Future:
+
+o) ask J. Cambell about best way to interface to MCFM
+
+o) think about NNLO code
+

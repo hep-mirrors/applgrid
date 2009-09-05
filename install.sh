@@ -47,7 +47,8 @@ export CXXFLAGS=$ARCH
 export F90FLAGS=$ARCH
 export F77FLAGS=$ARCH
 export CFLAGS=$ARCH
-export FFLAGS=$ARCH
+export FC=gfortran
+export FFLAGS="$ARCH -O"
 export LDFLAGS=$ARCH
 
 
@@ -87,13 +88,22 @@ install_appl_grid() {
 ############################
 install_pdf() { 
 
-    cd $BASEDIR/pdf-conv-1.0/src
-    
+    cd $BASEDIR/hoppet
     if [ "$1" = "clean" ]; then
 	make clean
     fi
-    
-    make  install
+    ./configure --prefix=$BASEDIR FC=$FC FFLAGS="$FFLAGS"
+    make
+    make check
+    make install
+
+    # cd $BASEDIR/pdf-conv-1.0/src
+    # 
+    # if [ "$1" = "clean" ]; then
+    # 	make clean
+    # fi
+    # 
+    # make  install
     
 }
 
@@ -266,10 +276,10 @@ ARGS=$*
 
 
 
-# install_appl_grid   $ARGS
-# install_pdf         $ARGS
-# #install_mcfm        $ARGS
-# #run_mcfm        
-# install_nlojet         $ARGS
-# install_nlojet_module  $ARGS
+install_appl_grid   $ARGS
+install_pdf         $ARGS
+#install_mcfm        $ARGS
+#run_mcfm        
+install_nlojet         $ARGS
+install_nlojet_module  $ARGS
 run_nlojet_module 

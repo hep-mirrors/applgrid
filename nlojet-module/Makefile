@@ -52,7 +52,8 @@ FRTLLIB = $(shell gfortran.sh )
 # FRTLLIB = -lgfortran
 F90LIB = $(FRTLLIB)
 #PDFCONVLIBS = -L$(INSTPATH)/pdf-conv-1.0/src -ldglap $(F90LIB)
-PDFCONVLIBS = -L$(INSTALLBASE)/lib -ldglap $(F90LIB) $(LHAPDFLIBS)
+#PDFCONVLIBS = -L$(INSTALLBASE)/lib -ldglap $(F90LIB) $(LHAPDFLIBS)
+PDFCONVLIBS = -L$(INSTALLBASE)/lib -lhoppet_v1 $(F90LIB) $(LHAPDFLIBS)
 
 
 # macros to setup contact interactions and reference histograms

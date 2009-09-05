@@ -85,7 +85,9 @@ struct {
 //
 //const  long int saveAfterEvents = 1001;
 //const long int maxNumberEvents = 1000;
-const  long int saveAfterEvents = 100001;
+// GPS tmp reduction
+const  long int saveAfterEvents = 10001;
+//const  long int saveAfterEvents = 100001;
 const long int maxNumberEvents = 1000000;
 
 const int debug = 0;

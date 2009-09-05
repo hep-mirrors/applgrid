@@ -27,7 +27,7 @@ C         dy    = 0.01d0     !
           dy    = 0.1d0     ! the internal grid spacing (smaller->higher accuarcy)
                            ! 0.1 should provide at least 10^{-3} accuracy
          nloop = 2         ! the number of loops to initialise (max=3!)
-         call dglapStart(dy, nloop)
+         call hoppetStart(dy, nloop)
 
          hitend = 0
          do i = 1, maxlen
@@ -56,13 +56,13 @@ C         call InitPDFsetByName(f77name(1:hitend))
 
          ! initialise our PDF using the LHAPDF subroutine for PDF-access
          ! (any other subroutine with same interface can be used in its place)
-C         call dglapAssign(evolvePDF)
-         call dglapAssign(mypdfevolve)
+C         call hoppetAssign(evolvePDF)
+         call hoppetAssign(mypdfevolve)
 
          ! for testing timing.
          !do i = 1, 100
          !   write(0,*) "hello"
-         !   call dglapAssign(mypdfevolve)
+         !   call hoppetAssign(mypdfevolve)
          !end do
 
        return 

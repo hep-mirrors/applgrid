@@ -9,6 +9,7 @@
 // #include "appl_grid/appl_pdf.h"
 
 #include "appl_grid/appl_timer.h"
+#include "hoppet_v1.h"
 
 #include <TH1D.h>
 #include <TFile.h>
@@ -16,8 +17,8 @@
 extern "C" 
 {
   
-  void dglapeval_(const double& _x, const double& _Q, double* f);
-  void dglapevalsplit_(const double& _x, const double& _Q, const int&, const int&, double* f);
+  //void dglapeval_(const double& _x, const double& _Q, double* f);
+  //void dglapevalsplit_(const double& _x, const double& _Q, const int&, const int&, double* f);
   void initmypdf_(const char* name, const int& set);
   
   double alphaspdf_(const double& Q);
@@ -50,7 +51,7 @@ void GetPdf(const double& x, const double& Q, double* f) {
   
   double xf[13];
 
-  dglapeval_( x, Q, xf);    
+  hoppeteval_( x, Q, xf);    
   //if (debug) cout << "\t evo=" << xf[6];
   //if (debug) cout << " x= "<<" Q= "<<Q<<"\tdgl=" << xf[6] << endl;
  double invx=0.;
@@ -64,7 +65,7 @@ void GetPdfSplit(const double& x, const double& Q, double* f) {
  const bool debug=false;
  if (debug)cout<<" x= "<<x<<" Q= "<<Q<<endl;
  double xf[13];
- dglapevalsplit_( x, Q, nLoops, nFlavours, xf); 
+ hoppetevalsplit_( x, Q, nLoops, nFlavours, xf); 
  double invx=0.;
  if (x!=0.) invx=1./x;
  for (int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;

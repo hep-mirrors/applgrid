@@ -1,4 +1,101 @@
-#!/bin/sh -v
+#!/bin/sh 
+
+######################################################
+#  installation script - now greatly improved 
+#  by default installs and runs everything 
+#  except mcfm
+#  
+#  has control flags to allow any combination 
+#  of jobs to be done. 
+# 
+#    APPLGRID - install appl_grid
+#    PDF      - install hoppet
+#    MCFM     - install mcfm
+#    RMCFM    - run mcfm
+#    NLO      - install nlojet
+#    NLOMOD   - instal nlojet module
+#    RNLOMOD  - run nlojet module
+#  
+#  To do a single job, 
+#  diasble everything with --none, ie 
+#
+#   install.sh --none --appl
+#
+######################################################
+
+
+ARGS=$*
+
+# control flags
+
+APPLGRID=1
+PDF=1
+MCFM=0
+RMCFM=0
+NLO=1
+NLOMOD=1
+RNLOMOD=1
+
+
+#   echo "setting everything"
+setall() { 
+    APPLGRID=1
+    PDF=1
+    MCFM=1
+    RMCFM=1
+    NLO=1
+    NLOMOD=1
+    RNLOMOD=1
+}
+
+#   echo "unsetting everything"
+unsetall() { 
+    APPLGRID=0
+    PDF=0
+    MCFM=0
+    RMCFM=0
+    NLO=0
+    NLOMOD=0
+    RNLOMOD=0
+}
+
+# usage message
+usage() { 
+    echo "usage: install.sh [OPTIONS]\n"
+    echo "  --help| -h   this help"
+    echo "  --all|-a     do everything"
+    echo "  --none|-n    don't do anything"
+    echo "  --appl       install appl_grid"
+    echo "  --pdf        install hoppet"
+    echo "  --mcfm       install mcfm"
+    echo "  --nlo        install nlojet"
+    echo "  --mod        install nlojet module"
+    echo "  --runmcfm    run mcfm"
+    echo "  --runmod     run nlojet module"
+    echo "\nReport bugs to <sutt@cern.ch>" 
+#   exit
+}
+
+
+###############################################
+# parse arguments and set control flags 
+###############################################
+
+for WORD in $ARGS ; do
+   case $WORD in
+       --all|-a)   setall;;  
+       --none|-n)  unsetall;;
+       --appl)     APPLGRID=1;;
+       --pdf)      PDF=1;;
+       --mcfm)     MCFM=1;;
+       --runmcfm)  RMCFM=1;;
+       --nlo)      NLO=1;;
+       --mod)      NLOMOD=1;;
+       --runmod)   RNLOMOD=1;;
+       --help|-h)  usage;exit;;
+   esac
+done
+
 
 
 ###############################################
@@ -48,7 +145,8 @@ export F90FLAGS=$ARCH
 export F77FLAGS=$ARCH
 export CFLAGS=$ARCH
 export FC=gfortran
-export FFLAGS="$ARCH -O"
+# export FFLAGS="$ARCH -O"
+export FFLAGS=$ARCH
 export LDFLAGS=$ARCH
 
 
@@ -125,12 +223,13 @@ install_mcfm() {
 run_mcfm() { 
 
     cd $BASEDIR/mcfm/run
-    rm *.log
+    rm -f *.log
 
-    ../exe/*/mcfm Winput.DAT >  mcfm-0.log
-    ../exe/*/mcfm Winput.DAT >  mcfm-1.log
-    ../exe/*/stand grid-30-Wweight_eta4.root
-    
+    if [ -e ../exe/$ARCH/mcfm ]; then 
+      ../exe/$ARCH/mcfm Winput.DAT >  mcfm-0.log
+      ../exe/$ARCH/mcfm Winput.DAT >  mcfm-1.log
+      ../exe/$ARCH/stand grid-30-Wweight_eta4.root
+    fi
 }
 
 
@@ -208,10 +307,9 @@ install_nlojet() {
 
 
 
-######################
-# INSTALL GRID FILLING
-# MODULES 
-######################
+######################################
+# INSTALL NLOJET GRID FILLING MODULES 
+######################################
 install_nlojet_module() { 
 
     echo "nlojet-module"
@@ -245,7 +343,9 @@ install_nlojet_module() {
 }
 
 
-
+##################################
+# RUN NLOJET GRID FILLING MODULES 
+##################################
 run_nlojet_module () { 
 
     cd $BASEDIR/nlojet-module
@@ -271,15 +371,14 @@ run_nlojet_module () {
 }
 
 
+###########################
+# ACTUALLY RUN THE STAGES 
+###########################
 
-ARGS=$*
-
-
-
-install_appl_grid   $ARGS
-install_pdf         $ARGS
-#install_mcfm        $ARGS
-#run_mcfm        
-install_nlojet         $ARGS
-install_nlojet_module  $ARGS
-run_nlojet_module 
+if [ "$APPLGRID" = 1 ]; then install_appl_grid  $ARGS; fi
+if [ "$PDF" = 1 ];      then install_pdf        $ARGS; fi
+if [ "$MCFM" = 1 ];     then install_mcfm       $ARGS; fi
+if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi        
+if [ "$NLO" = 1 ];      then    install_nlojet         $ARGS; fi
+if [ "$NLOMOD" = 1 ];   then    install_nlojet_module  $ARGS; fi
+if [ "$RNLOMOD" = 1 ];  then    run_nlojet_module;            fi 

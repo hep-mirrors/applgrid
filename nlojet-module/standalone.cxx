@@ -37,15 +37,16 @@ extern "C"
 //
 //
 static const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb  
-static const int nScales = 5;
+// static const int nScales = 5;
 // static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
 // static const double muf[nScales] = {1.0, 0.5, 2.00, 0.5, 1.0};
 // static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
 // static const double muf[nScales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
 
-static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
-static const double muf[nScales] = {1.0, 0.5, 2.00, 0.5, 1.0};
+// static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
+// static const double muf[Nscales] = {1.0, 0.5, 2.00, 0.5, 1.0};
 
+#include "scales.h"
 
 static const int nLoops = 1;
 static const int nFlavours = 5;
@@ -55,13 +56,13 @@ TH1D* soft_sub  [7];
 TH1D* grid_sub  [7];
 TH1D* ratio_sub [7];
 // reference histogram for 7 subprocesses and  3 scales
-TH1D* soft_subscale  [7][nScales];            
-TH1D* grid_subscale  [7][nScales];            
-TH1D* ratio_subscale [7][nScales];            
+TH1D* soft_subscale  [7][Nscales];            
+TH1D* grid_subscale  [7][Nscales];            
+TH1D* ratio_subscale [7][Nscales];            
 // reference histograms to test renormalisation & factorisation scales deps
-TH1D* soft_scale  [nScales];
-TH1D* grid_scale  [nScales];
-TH1D* ratio_scale [nScales];
+TH1D* soft_scale  [Nscales];
+TH1D* grid_scale  [Nscales];
+TH1D* ratio_scale [Nscales];
 
 TH1D* reference;
 TH1D* gridObservable;
@@ -91,7 +92,7 @@ void readReferenceHistograms(TFile* myfile)
     {
       sprintf(histname,"%s/soft_sub_%i",refDirName.c_str(),is);
       soft_sub[is] = (TH1D*)(myfile->Get(histname));
-      for(int ir=0; ir < nScales; ir++)
+      for(int ir=0; ir < Nscales; ir++)
 	{
 	  sprintf(histname,"%s/soft_subscale_%d_%d", refDirName.c_str(), is, ir);
 	  soft_subscale[is][ir] = (TH1D*)myfile->Get(histname);
@@ -357,7 +358,7 @@ int main(int argc, char** argv)
   //
   cout << "convoluting observable per scale and subprocess" << endl;
 
-  for (int iScale = 0; iScale < nScales; iScale++)
+  for (int iScale = 0; iScale < Nscales; iScale++)
     {
       cout<<"\t  working with scale "<<iScale<<" ..."<<endl;
       grid_scale[iScale] = g->convolute(GetPdf, alphaspdf_, nLoops, 
@@ -422,7 +423,7 @@ int main(int argc, char** argv)
   outfile.cd();
   Directory dirScale("scale");
   dirScale.push();
-  for (int iScale = 0; iScale < nScales; iScale++)
+  for (int iScale = 0; iScale < Nscales; iScale++)
     {
       grid_scale [iScale]->Write();
       soft_scale [iScale]->Write();
@@ -435,7 +436,7 @@ int main(int argc, char** argv)
   outfile.cd();
   Directory dirSubScale("subScale");
   dirSubScale.push(); 
-  for (int iScale = 0; iScale < nScales; iScale++)
+  for (int iScale = 0; iScale < Nscales; iScale++)
     {
       for (int iSub = 0; iSub < 7; iSub++)
 	{

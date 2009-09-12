@@ -29,15 +29,19 @@ extern "C"
 
 
 static const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb  
-static const int nScales = 5;
-// static const double mur[nScales] = {1.0, 0.5, 2.00, 1.0, 0.5};
-// static const double muf[nScales] = {1.0, 0.5, 2.00, 0.5, 1.0};
 
-// static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
-// static const double muf[nScales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
 
-static const double mur[nScales] = { 1.0, 0.5, 2.0, 1.0, 0.5 };
-static const double muf[nScales] = { 1.0, 0.5, 2.0, 0.5, 1.0 };
+// static const int Nscales = 5;
+// static const double mur[Nscales] = {1.0, 0.5, 2.00, 1.0, 0.5};
+// static const double muf[Nscales] = {1.0, 0.5, 2.00, 0.5, 1.0};
+
+// static const double mur[Nscales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
+// static const double muf[Nscales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
+
+// static const double mur[Nscales] = { 1.0, 0.5, 2.0, 1.0, 0.5 };
+// static const double muf[Nscales] = { 1.0, 0.5, 2.0, 0.5, 1.0 };
+
+#include "scales.h"
 
 static const int nLoops    = 1;
 static const int nFlavours = 5;
@@ -118,8 +122,8 @@ TH1D* divide( const TH1D* h1, const TH1D* h2 ) {
     if ( DBG ) std::cout << "\tx=" << h->GetBinCenter(i) << "\tratio=" << r << std::endl;
   } 
   
-  if ( h->GetMaximum()<1.1 ) h->SetMaximum(1.1);
-  if ( h->GetMinimum()>0.9 ) h->SetMinimum(0.9);
+  if ( h->GetMaximum()<1.01 ) h->SetMaximum(1.01);
+  if ( h->GetMinimum()>0.99 ) h->SetMinimum(0.99);
 
   return h;
 }
@@ -141,10 +145,10 @@ int main(int argc, char** argv) {
 
   TH1D* reference = (TH1D*)f->Get("grid/reference"); reference->Write();
 
-  TH1D* soft_scale[nScales];
+  TH1D* soft_scale[Nscales];
 
   std::vector<TH1D*> soft_sub;
-  std::vector<TH1D*> soft_subscale[nScales];
+  std::vector<TH1D*> soft_subscale[Nscales];
 
   // get number of sub proc
 
@@ -168,7 +172,7 @@ int main(int argc, char** argv) {
   //     own file, and the grid kept by itself in it's own special
   //     grid file
 
-  for ( int i=nScales ; i-- ; ) { 
+  for ( int i=Nscales ; i-- ; ) { 
 
     // get histo for this scale 
     
@@ -213,10 +217,10 @@ int main(int argc, char** argv) {
   xsec->SetName("xsec");
   xsec->SetTitle(reference->GetTitle());
 
-  TH1D* xsec_scale[nScales];
+  TH1D* xsec_scale[Nscales];
 
   std::vector<TH1D*> xsec_sub;
-  std::vector<TH1D*> xsec_subscale[nScales];
+  std::vector<TH1D*> xsec_subscale[Nscales];
   
   for ( int i=0 ; i<Nsub ; i++ ) {
     char hname[64];
@@ -227,7 +231,7 @@ int main(int argc, char** argv) {
     xsec_sub.back()->SetTitle(soft_sub[i]->GetTitle());
   }
 
-  for ( int i=nScales ; i-- ; ) { 
+  for ( int i=Nscales ; i-- ; ) { 
     
     // get histo for this scale 
     
@@ -252,12 +256,12 @@ int main(int argc, char** argv) {
 
   // and specially for the sums over the subprocesses
 
-  TH1D* xsecsum_scale[nScales];
+  TH1D* xsecsum_scale[Nscales];
 
   TH1D* xsecsum = (TH1D*)xsec_sub[0]->Clone(); 
   xsecsum->SetName("xsecsum"); xsecsum->SetTitle(xsec->GetTitle());
 
-  for ( int i=0 ; i<nScales ; i++ ) { 
+  for ( int i=0 ; i<Nscales ; i++ ) { 
     char hname[64];
     sprintf( hname, "xsecsum_scale_%d", i); 
     //    xsec_sub.push_back(  g.convolute_subproc( i, GetPdf, alphaspdf_ , nLoops) );
@@ -269,7 +273,7 @@ int main(int argc, char** argv) {
   for ( int j=1 ; j<Nsub ; j++ ) { 
     increment( xsecsum, xsec_sub[j] );
 
-    for ( int i=0 ; i<nScales ; i++ ) increment( xsecsum_scale[i],  xsec_subscale[i][j] ); 
+    for ( int i=0 ; i<Nscales ; i++ ) increment( xsecsum_scale[i],  xsec_subscale[i][j] ); 
   }
 
   
@@ -284,10 +288,10 @@ int main(int argc, char** argv) {
 
   TH1D* ratio = divide( xsec, reference ); if ( ratio ) ratio->SetName("ratio");
   
-  TH1D* ratio_scale[nScales];
+  TH1D* ratio_scale[Nscales];
 
   std::vector<TH1D*> ratio_sub;
-  std::vector<TH1D*> ratio_subscale[nScales];
+  std::vector<TH1D*> ratio_subscale[Nscales];
   
   for ( int i=0 ; i<Nsub ; i++ ) {
     char hname[64];
@@ -296,7 +300,7 @@ int main(int argc, char** argv) {
     if ( ratio_sub.back() ) ratio_sub.back()->SetName(hname);
   }
 
-  for ( int i=nScales ; i-- ; ) { 
+  for ( int i=Nscales ; i-- ; ) { 
     
     // get histo for this scale 
     
@@ -320,9 +324,9 @@ int main(int argc, char** argv) {
 
   TH1D* subratio = divide( xsec, xsecsum ); if ( subratio ) subratio->SetName("subratio");
 
-  TH1D* subratio_scale[nScales];
+  TH1D* subratio_scale[Nscales];
   
-  for ( int i=nScales ; i-- ; ) { 
+  for ( int i=Nscales ; i-- ; ) { 
     
     // get histo for this scale 
     

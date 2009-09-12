@@ -13,7 +13,8 @@
 #include "pdf-cteq6.h"
 #endif
 
-const int Nscales=5;
+#include "scales.h"
+
 class nlogrid
 {
  public:

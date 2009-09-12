@@ -21,10 +21,11 @@ using appl::igrid;
 #include "TVectorT.h"
 
 //
-//     renormalisation and factorisation scales
-//
-static const double mur[Nscales] = {1.0,0.5,2.0,1.0,0.5};
-static const double muf[Nscales] = {1.0,0.5,2.0,0.5,1.0};
+//     renormalisation and factorisation scales from file
+//     for consistency
+
+#include "scales.h"
+
 // static const double mur[Nscales] = {1.0,0.5,2.0,1.0,1.0};
 // static const double muf[Nscales] = {1.0,1.0,1.0,0.5,2.0};
 //

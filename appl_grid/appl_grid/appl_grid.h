@@ -124,6 +124,46 @@ public:
   // get the interpolated pdf's
   void pdfinterp(double x1, double Q2, double* f);
 
+
+  // perform the convolution to a specified number of loops
+  // nloops=-1 gives the nlo part only
+  std::vector<double>  vconvolute(void   (*pdf)(const double& , const double&, double* ), 
+				  double (*alphas)(const double& ), 
+				  int     nloops, 
+				  double  rscale_factor=1,
+				  double  fscale_factor=1,
+				  void (*splitting)(const double& , const double&, double* )=NULL );
+
+
+  // perform the convolution to the max number of loops in grid
+  std::vector<double> vconvolute(void   (*pdf)(const double& , const double&, double* ), 
+				 double (*alphas)(const double& ) )   { 
+    return vconvolute( pdf, alphas, m_order-1 ); 
+  } 
+
+
+  // perform the convolution to a specified number of loops 
+  // for a single sub process, nloops=-1 gives the nlo part only
+  std::vector<double> vconvolute_subproc(int subproc, 
+					 void   (*pdf)(const double& , const double&, double* ), 
+					 double (*alphas)(const double& ), 
+					 int     nloops, 
+					 double  rscale_factor=1,
+					 double  fscale_factor=1,
+					 void (*splitting)(const double& , const double&, double* )=NULL );
+  
+
+  // perform the convolution to the max number of loops in grid 
+  // for a single sub process
+  std::vector<double> vconvolute_subproc(int subproc, 
+					 void   (*pdf)(const double& , const double&, double* ), 
+					 double (*alphas)(const double& ) )   { 
+    return vconvolute_subproc( subproc, pdf, alphas, m_order-1 ); 
+  } 
+  
+
+
+
   // perform the convolution to a specified number of loops
   // nloops=-1 gives the nlo part only
   TH1D* convolute(void   (*pdf)(const double& , const double&, double* ), 

@@ -470,24 +470,26 @@ void grid::Write(const string& filename, const string& dirname) {
 // takes pdf as the pdf lib wrapper for the pdf set for the convolution.
 // type specifies which sort of partons should be included:
 
-TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ), 
-		      double (*alphas)(const double& ), 
-		      int     nloops, 
-		      double  rscale_factor,
-		      double  fscale_factor,
-		      void (*splitting)(const double& , const double&, double* ) )
+std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, double* ), 
+				     double (*alphas)(const double& ), 
+				     int     nloops, 
+				     double  rscale_factor,
+				     double  fscale_factor,
+				     void (*splitting)(const double& , const double&, double* ) )
 { 
   
   struct timeval _ctimer = appl_timer_start();
+  
+  std::vector<double> hvec;
 
-  TH1D* h = new TH1D(*m_obs_bins);
-  h->SetName("xsec");
+  //  TH1D* h = new TH1D(*m_obs_bins);
+  //  h->SetName("xsec");
 
   string label;
 
   if ( nloops>=m_order ) { 
     cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << endl;   
-    return h;
+    return hvec;
   } 
 
   for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
@@ -522,7 +524,7 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
     } 
     else if ( nloops==2 ) {
       // FIXME: not implemented completely yet 
-      return h;
+      return hvec;
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts so only  muR=muF=mu
@@ -535,9 +537,13 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
     }
 
 
-    double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
-    h->SetBinContent(iobs+1, dsigma/(deltaobs));
-    h->SetBinError(iobs+1, 0);
+    //   double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
+    //   h->SetBinContent(iobs+1, dsigma/(deltaobs));
+    //   h->SetBinError(iobs+1, 0);
+
+    double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);
+    
+    hvec.push_back( dsigma/deltaobs );
 
     //    cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << endl;
   }  // iobs   
@@ -546,30 +552,29 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
 
   cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << endl;
 
-  return h;
+  return hvec;
 }
 
 
 
 
-
-
-
-TH1D* grid::convolute_subproc(int subproc,
-			      void (*pdf)(const double& , const double&, double* ), 
-			      double (*alphas)(const double& ), 
-			      int     nloops, 
-			      double  rscale_factor,
-			      double  fscale_factor,
-			      void (*splitting)(const double& , const double&, double* ) )
+std::vector<double> grid::vconvolute_subproc(int subproc,
+					     void (*pdf)(const double& , const double&, double* ), 
+					     double (*alphas)(const double& ), 
+					     int     nloops, 
+					     double  rscale_factor,
+					     double  fscale_factor,
+					     void (*splitting)(const double& , const double&, double* ) )
 { 
   
   struct timeval _ctimer = appl_timer_start();
 
   //  genpdf = genpdf_map[m_genpdfname];
     
-  TH1D* h = new TH1D(*m_obs_bins);
-  h->SetName("xsec");
+  //  TH1D* h = new TH1D(*m_obs_bins);
+  //  h->SetName("xsec");
+
+  std::vector<double> hvec;
 
   string label;
 
@@ -577,7 +582,7 @@ TH1D* grid::convolute_subproc(int subproc,
 
   if ( nloops>=m_order ) { 
     cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << endl;   
-    return h;
+    return hvec;
   } 
   
   for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
@@ -605,7 +610,7 @@ TH1D* grid::convolute_subproc(int subproc,
     }
     else if ( nloops==2 ) { 
       // FIXME: not implemented completely yet 
-      return h;
+      return hvec;
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts, so only muR=muF=mu
@@ -614,11 +619,16 @@ TH1D* grid::convolute_subproc(int subproc,
       double dsigma_nnlo = m_grids[2][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+2, 0);
       dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
     }
+    
+    
+    //   double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
+    //   h->SetBinContent(iobs+1, dsigma/(deltaobs));
+    //   h->SetBinError(iobs+1, 0);
 
+    double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);
+    
+    hvec.push_back( dsigma/deltaobs );
 
-    double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
-    h->SetBinContent(iobs+1, dsigma/(deltaobs));
-    h->SetBinError(iobs+1, 0);
 
     //    cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << endl;
 
@@ -632,8 +642,59 @@ TH1D* grid::convolute_subproc(int subproc,
 
   cout << "grid::convolute_subproc(" << subproc << ") " << label << " convolution time=" << _ctime << " ms" << endl;
 
-  return h;
+  return hvec;
 }
+
+
+
+TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ), 
+		      double (*alphas)(const double& ), 
+		      int     nloops, 
+		      double  rscale_factor,
+		      double  fscale_factor,
+		      void (*splitting)(const double& , const double&, double* ) ) {
+
+    TH1D* h = new TH1D(*m_obs_bins);
+    h->SetName("xsec");
+    
+    std::vector<double> dvec = vconvolute( pdf, alphas, nloops, rscale_factor, fscale_factor, splitting );
+    
+    for ( int i=0 ; i<dvec.size() ; i++ ) { 
+      h->SetBinContent( i+1, dvec[i] );
+      h->SetBinError( i+1, 0 );
+    }
+    
+    return h;
+
+}
+
+
+
+
+
+TH1D* grid::convolute_subproc(int subproc,
+			      void (*pdf)(const double& , const double&, double* ), 
+			      double (*alphas)(const double& ), 
+			      int     nloops, 
+			      double  rscale_factor,
+			      double  fscale_factor,
+			      void (*splitting)(const double& , const double&, double* ) ) { 
+
+    TH1D* h = new TH1D(*m_obs_bins);
+    h->SetName("xsec");
+  
+    std::vector<double> dvec = vconvolute_subproc( subproc, pdf, alphas, nloops, rscale_factor, fscale_factor, splitting );
+    
+    for ( int i=0 ; i<dvec.size() ; i++ ) { 
+      h->SetBinContent( i+1, dvec[i] );
+      h->SetBinError( i+1, 0 );
+    }
+  
+  return h;
+  
+}
+
+
 
 
 

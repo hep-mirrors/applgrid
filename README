@@ -12,11 +12,17 @@ installation directory.
 
 A: Install and run the code
 
-1) run the setup.sh or setup.csh script
-2) run the install.sh script. (./install clean to clean the directory before make ) 
+1) run the install script 
+
+   install.sh
+
+More detail:
+
+1) run the setup.sh or setup.csh script (Only if you need to, should shouldn't)
+2) run the install.sh script. (./install.sh clean to clean the directory before make ) 
 3) compile the fillgrid.cxx
 
-   cd $BASEDIR/appl-paper
+   cd $BASEDIR/jetmod
 
    make fillgrid
 
@@ -35,9 +41,9 @@ A: Install and run the code
 
 5) Example to convolute the weighting tables with the PDFs and alphas
 
-   make standalone
+   make stand
 
-  ./standalone output/weight_c.root
+  ./stand output/weight_c.root
 
 6) Check the result
    open root
@@ -55,11 +61,10 @@ B) Software organisation:
 
    appl_grid: The source code of the applgrid    
 
-   appl-paper: nlojet examples to make weight tables and validating them  
+   jetmod: nlojet examples to make weight tables and validating them  
 
    lhpdf-1.0.0: The LHAPDF library  
-   pdf-conv-1.0: Gavins evolution code (written in f90)
-                 Needed in the convolution step 
+
    mcfm:  The source library of the mcfm program                  
 
    nlojet++-4.0.1   The source library of the NLOJET progrom 

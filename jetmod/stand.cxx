@@ -33,17 +33,6 @@ extern "C"
 
 static const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb  
 
-
-// static const int Nscales = 5;
-// static const double mur[Nscales] = {1.0, 0.5, 2.00, 1.0, 0.5};
-// static const double muf[Nscales] = {1.0, 0.5, 2.00, 0.5, 1.0};
-
-// static const double mur[Nscales] = { 1.0, 0.5, 2.0, 1.0, 1.0 };
-// static const double muf[Nscales] = { 1.0, 1.0, 1.0, 0.5, 2.0 };
-
-// static const double mur[Nscales] = { 1.0, 0.5, 2.0, 1.0, 0.5 };
-// static const double muf[Nscales] = { 1.0, 0.5, 2.0, 0.5, 1.0 };
-
 #include "scales.h"
 
 static const int nLoops    = 1;

@@ -568,13 +568,12 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
 					     void (*pdf)(const double& , const double&, double* ), 
 					     double (*alphas)(const double& ), 
 					     int     nloops, 
-					     double  rscale_factor,
-					     double  fscale_factor,
-					     void (*splitting)(const double& , const double&, double* ) )
+					     double  rscale_factor )
 { 
   
   struct timeval _ctimer = appl_timer_start();
 
+  
   //  genpdf = genpdf_map[m_genpdfname];
     
   //  TH1D* h = new TH1D(*m_obs_bins);
@@ -585,12 +584,11 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
   string label;
 
   int lo_order = m_leading_order;
-
   if ( nloops>=m_order ) { 
     cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << endl;   
     return hvec;
   } 
-  
+
   for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
 
     double dsigma = 0;
@@ -605,14 +603,14 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
       label = "nlo     ";
       // next to leading order cross section
       // leading and next to order contributions and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order,   1, rscale_factor, fscale_factor, splitting);
-      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, fscale_factor );
+      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order,   1, rscale_factor );
+      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor );
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) { 
       label = "nlo only";
       // nlo contribution only (only strict nlo contributions)
-      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, fscale_factor);
+      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor );
     }
     else if ( nloops==2 ) { 
       // FIXME: not implemented completely yet 
@@ -682,14 +680,12 @@ TH1D* grid::convolute_subproc(int subproc,
 			      void (*pdf)(const double& , const double&, double* ), 
 			      double (*alphas)(const double& ), 
 			      int     nloops, 
-			      double  rscale_factor,
-			      double  fscale_factor,
-			      void (*splitting)(const double& , const double&, double* ) ) { 
+			      double  rscale_factor ) {
 
     TH1D* h = new TH1D(*m_obs_bins);
     h->SetName("xsec");
-  
-    std::vector<double> dvec = vconvolute_subproc( subproc, pdf, alphas, nloops, rscale_factor, fscale_factor, splitting );
+    
+    std::vector<double> dvec = vconvolute_subproc( subproc, pdf, alphas, nloops, rscale_factor );
     
     for ( int i=0 ; i<dvec.size() ; i++ ) { 
       h->SetBinContent( i+1, dvec[i] );

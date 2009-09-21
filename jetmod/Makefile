@@ -78,7 +78,7 @@ NLOLIBFLAGS = -Wl,$(ARCH),-lpthread,$(ALL_LIBS),-L$(INSTALLBASE)/lib,-lAPPLgrid,
 NLOINC = -I$(INSTALLBASE)/include/nlo++ 
 
 install : all
-all : fillgrid standalone stand
+all : fillgrid stand
 
 
 standalone: standalone.o  InitMyPdf.o mypdfevolve.o

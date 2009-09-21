@@ -148,9 +148,7 @@ public:
 					 void   (*pdf)(const double& , const double&, double* ), 
 					 double (*alphas)(const double& ), 
 					 int     nloops, 
-					 double  rscale_factor=1,
-					 double  fscale_factor=1,
-					 void (*splitting)(const double& , const double&, double* )=NULL  );
+					 double  rscale_factor=1 ); 
 
 
   // perform the convolution to the max number of loops in grid 
@@ -187,10 +185,7 @@ public:
 			  void   (*pdf)(const double& , const double&, double* ), 
 			  double (*alphas)(const double& ), 
 			  int     nloops, 
-			  double  rscale_factor=1,
-			  double  fscale_factor=1,
-			  void (*splitting)(const double& , const double&, double* )=NULL );
-
+			  double  rscale_factor=1 );
 
   // perform the convolution to the max number of loops in grid 
   // for a single sub process

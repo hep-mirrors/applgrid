@@ -52,6 +52,8 @@ map<const string, igrid::transform_vec> igrid::m_fmap = igrid::init_fmap();
 
 
 
+double Escale = 1;
+
 
 igrid::igrid() : 
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),
@@ -547,7 +549,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 		     int nloop,
 		     double rscale_factor,
 		     double fscale_factor,
-		     void   (*splitting)(const double& , const double&, double* )  ) 
+		     void   (*splitting)(const double& , const double&, double* ), double beam_scale ) 
 {
 
   const int n_tau = Ntau();
@@ -569,7 +571,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 
   // alphas table
   m_alphas = new double[Ntau()];
-  
+
   // allocate tables
   for ( int i=0 ; i<n_tau ; i++ ) {
     
@@ -588,6 +590,10 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     }
   }
   
+  bool scale_beams = false;
+  if ( beam_scale!=1 ) scale_beams = true;
+  
+
   // set up pdf grid, splitting function grid 
   // and alpha_s grid
   //  for ( int itau=m_Ntau ; itau-- ; ) {
@@ -620,7 +626,18 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       
       // pdf table 
       //	evolvepdf_(x, Q, fg[itau][iy1]);
+     
+      if ( scale_beams ) { 
+	x *= beam_scale;
+
+	if ( x>1 ) { 
+	  for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip]=0; 
+	  continue; 
+	}     
+      }
+
       pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
+ 
       //TCdouble invx = 1/x;
       //CTC>> division by x should be done  in splitting
       //    for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
@@ -648,6 +665,16 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       //	evolvepdf_(x, Q, fg[itau][iy1]);
       // pdfs 
       //TC pdf(x,Q, m_fg2[itau][iy]);
+
+      if ( scale_beams ) { 
+	x *= beam_scale;
+	
+	if ( x>1 ) { 
+	  for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip]=0; 
+	  continue; 
+	}
+      }
+
       pdf(x,  fscale_factor*Q, m_fg2[itau][iy]);
       //TC     double invx = 1/x;
       //CTC>> division by x should be done  in splitting

@@ -49,7 +49,7 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
 	   string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false), 
-  m_transform(transform), m_genpdfname(genpdfname) {
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("reference","Bin-Info for Observable", Nobs, obsmin, obsmax);
   //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
@@ -68,7 +68,7 @@ grid::grid(int Nobs, const double* obsbins,
 	   string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),
-  m_transform(transform), m_genpdfname(genpdfname) {
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("reference","Bin-Info for Observable", Nobs, obsbins);
@@ -88,7 +88,7 @@ grid::grid(const vector<double> obs,
 	   string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),  
-  m_transform(transform), m_genpdfname(genpdfname) { 
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) { 
 
   if ( obs.size()==0 ) { 
     cerr << "grid::not enough bins in observable" << endl;
@@ -172,7 +172,7 @@ grid::grid(const string& filename, const string& dirname)  :
   // hmmm, have to use TVectorT<double> since TVector<int> 
   // apparently has no constructor (???)
   TVectorT<double>* setup=(TVectorT<double>*)gridfile.Get((dirname+"/State").c_str());
-  // TVectorT<double>* setup=(TVectorT<double>*)gridfile.Get("State");
+ 
   m_run        = int((*setup)(0)+0.5);
   m_optimised  = ( (*setup)(1)!=0 ? true : false );
   m_symmetrise = ( (*setup)(2)!=0 ? true : false );  
@@ -180,7 +180,11 @@ grid::grid(const string& filename, const string& dirname)  :
   m_leading_order = int((*setup)(3)+0.5);  
   m_order         = int((*setup)(4)+0.5);  
 
-  //  cout << "grid::grid()::m_symmetrise=" << m_symmetrise << endl; 
+  if ( setup->GetNoElements()>5 ) m_cmsScale = (*setup)(5);
+  else                            m_cmsScale = 0;
+ 
+  //  std::cout << "grid::grid()::m_cmsScale "   << m_cmsScale   << std::endl;
+  //  std::cout << "grid::grid()::m_symmetrise=" << m_symmetrise << std::endl; 
 
   delete setup;
 
@@ -216,8 +220,9 @@ grid::grid(const string& filename, const string& dirname)  :
 grid::grid(const grid& g) : 
   m_obs_bins(new TH1D(*g.m_obs_bins)), 
   m_leading_order(g.m_leading_order), m_order(g.m_order), 
-  m_run(g.m_run), m_optimised(g.m_optimised), m_trimmed(g.m_trimmed), m_symmetrise(g.m_symmetrise) {
- 
+  m_run(g.m_run), m_optimised(g.m_optimised), m_trimmed(g.m_trimmed), m_symmetrise(g.m_symmetrise),
+  m_cmsScale(g.m_cmsScale) {
+  
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     m_grids[iorder] = new igrid*[Nobs()];
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
@@ -437,12 +442,13 @@ void grid::Write(const string& filename, const string& dirname) {
 
 
   // state information
-  TVectorT<double>* setup=new TVectorT<double>(5); 
+  TVectorT<double>* setup=new TVectorT<double>(10); // add a few extra just in case 
   (*setup)(0) = m_run;
   (*setup)(1) = ( m_optimised  ? 1 : 0 );
   (*setup)(2) = ( m_symmetrise ? 1 : 0 );
   (*setup)(3) =   m_leading_order ;
   (*setup)(4) =   m_order ;
+  (*setup)(5) =   m_cmsScale ;
   setup->Write("State");
   
   //  int _size     = 0;

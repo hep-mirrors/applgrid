@@ -27,6 +27,9 @@ class nlogrid
 
   TH1D* getGridReference(){return gridObject->getReference();};
 
+  appl::grid* getGridObject() { return gridObject; }
+
+
   void writeGrid(long int&);
   
   void fillPhaseSpace(

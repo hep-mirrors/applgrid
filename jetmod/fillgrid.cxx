@@ -113,8 +113,8 @@ public:
   void userfunc(const event_hhc&, const amplitude_hhc&);
   
   static const int numberOfJets = 1;// MIN number of jets in event
-  //  static const int sqrts = 14000;   // initial energy
-  static const int sqrts = 10000;   // initial energy
+  static const int sqrts = 14000;   // initial energy
+  // static const int sqrts = 10000;   // initial energy
 
   double x1;                        // initial parton1 momentum fraction
   double x2;                        // initial parton2 momentum fraction

@@ -312,12 +312,12 @@ install_nlojet() {
 ######################################
 install_nlojet_module() { 
 
-    echo "nlojet-module"
-    if [ -e $BASEDIR/nlojet-module  ]; then
-	echo "cd nlojet-module"
-	cd $BASEDIR/nlojet-module
+    echo "jetmod"
+    if [ -e $BASEDIR/jetmod  ]; then
+	echo "cd jetmod"
+	cd $BASEDIR/jetmod
     else 
-	echo "$BASEDIR/nlojet-module doesn't exist"
+	echo "$BASEDIR/jetmod doesn't exist"
 	exit
     fi
     
@@ -348,7 +348,7 @@ install_nlojet_module() {
 ##################################
 run_nlojet_module () { 
 
-    cd $BASEDIR/nlojet-module
+    cd $BASEDIR/jetmod
 
     if [ -e output/weight_c.root ]; then
 	echo "nlojet already executed"
@@ -362,7 +362,7 @@ run_nlojet_module () {
     fi
 
     if [ -e output/weight_c.root ]; then 
-	./standalone output/weight_c.root
+#	./standalone output/weight_c.root
 	./stand      output/weight_c.root
     else
 	echo "nlojet grid code did not complete correctly" 

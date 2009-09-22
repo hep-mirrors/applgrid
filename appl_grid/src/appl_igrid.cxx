@@ -40,6 +40,24 @@ using std::setprecision;
 
 #include "appl_grid/TFileString.h"
 
+// splitting function code
+
+#ifdef HOPPET
+#include "hoppet_v1.h"
+#endif
+
+void Splitting(const double& x, const double& Q, double* f) {
+#ifdef HOPPET
+  static const int nLoops    = 1;
+  static const int nFlavours = 5;
+  hoppetevalsplit_( x, Q, nLoops, nFlavours, f); 
+#else
+  std::cerr << "hoppet library not included - cannot call splitting function" << std::endl;
+  exit(0);
+#endif
+  return;
+}
+
 
 // pdf reweighting
 bool   igrid::m_reweight   = false;
@@ -544,13 +562,16 @@ void igrid::fill_index(const int ix1, const int ix2, const int iQ2, const double
 } 
 
 
+
 void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 		     double (*alphas)(const double&),
 		     int nloop,
 		     double rscale_factor,
 		     double fscale_factor,
-		     void   (*splitting)(const double& , const double&, double* ), double beam_scale ) 
+		     double beam_scale ) 
 {
+  void (*splitting)(const double& , const double&, double* ) = Splitting;
+		     
   const int n_tau = Ntau();
   const int n_y1  = Ny1();
   const int n_y2  = Ny2();
@@ -634,17 +655,18 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 
       pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
  
-      //TCdouble invx = 1/x;
+      double invx = 1/x;
       //CTC>> division by x should be done  in splitting
-      //    for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
+      for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
+  
+
       if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= fun;
       
       // splitting function table
       if ( nloop==1 && fscale_factor!=1 ) { 
 	splitting(x, fscale_factor*Q, m_fsplit1[itau][iy]);
 	//CTC>> division by x should be done  in splitting
-	//        for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= invx;
-	//CTC<<
+	for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= invx;
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= fun;
       }
     }
@@ -671,14 +693,16 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       }
 
       pdf(x,  fscale_factor*Q, m_fg2[itau][iy]);
-      //TC     double invx = 1/x;
+
+      double invx = 1/x;
       //CTC>> division by x should be done  in splitting
-      //      for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
-      if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= fun;
-      
-      // splitting functions
+      for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
+      if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= fun;      
+ 
+     // splitting functions
       if ( nloop==1 && fscale_factor!=1 ) { 
 	splitting(x, fscale_factor*Q, m_fsplit2[itau][iy]);
+	for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= invx;
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= fun;
       }
     }
@@ -747,7 +771,6 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 			int     nloop, 
 			double  rscale_factor,
 			double  fscale_factor,
-			void   (*splitting)(const double& , const double&, double* ),
 			double Escale) 
 { 
 
@@ -779,7 +802,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 
   // 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, splitting, Escale);
+  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, Escale);
 
   double* sig = new double[m_Nproc];  // weights from grid
   double* H   = new double[m_Nproc];  // generalised pdf  
@@ -909,7 +932,6 @@ double igrid::convolute_subproc(int subproc,
 				int     nloop, 
 				double  rscale_factor,
 				double  fscale_factor,
-				void   (*splitting)(const double& , const double&, double* ), 
 				double Escale ) 
 { 
 
@@ -943,7 +965,7 @@ double igrid::convolute_subproc(int subproc,
   if ( size==0 )  return 0;
 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, splitting, Escale);
+  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, Escale);
 
   
   double  sig = 0;  // weights from grid

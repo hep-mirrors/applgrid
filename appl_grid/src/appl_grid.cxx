@@ -481,7 +481,6 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
 				     int     nloops, 
 				     double  rscale_factor,
 				     double  fscale_factor,
-				     void (*splitting)(const double& , const double&, double* ), 
 				     double Escale )
 { 
   
@@ -510,28 +509,28 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
     if ( nloops==0 ) {
       label = "lo      ";
       // leading order cross section
-      dsigma = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 0, 1, 1, NULL, Escale);
+      dsigma = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 0, 1, 1, Escale);
     }
     else if ( nloops==1 ) { 
       label = "nlo     ";
       // next to leading order cross section
       // cout << "convolute() nloop=1" << endl;
       // leading order contribution and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 1, rscale_factor, fscale_factor, splitting, Escale);
+      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
       // cout << "dsigma_lo=" << dsigma_lo << endl;
       // next to leading order contribution
       //      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
       // GPS: the NLO piece must use the same rscale_factor and fscale_factor as
       //      the LO piece -- that's the convention that defines how NLO calculations
       //      are done.
-      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, NULL, Escale);
+      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
       // cout << "dsigma_nlo=" << dsigma_nlo << endl;
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) {
       label = "nlo only";
       // nlo contribution only (only strict nlo contributions) 
-      dsigma = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, NULL, Escale);
+      dsigma = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
     } 
     else if ( nloops==2 ) {
       // FIXME: not implemented completely yet 
@@ -605,20 +604,20 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
       label = "lo      ";
       //      cout << "convolute() nloop=0" << iobs << endl;
       // leading order cross section
-      dsigma = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order, 0, 1, 1, NULL, Escale);
+      dsigma = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order, 0, 1, 1, Escale);
     }
     else if ( nloops==1 ) { 
       label = "nlo     ";
       // next to leading order cross section
       // leading and next to order contributions and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order,   1, rscale_factor, 1, NULL, Escale );
-      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, 1, NULL, Escale );
+      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order,   1, rscale_factor, 1,  Escale );
+      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, 1,  Escale );
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) { 
       label = "nlo only";
       // nlo contribution only (only strict nlo contributions)
-      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, 1, NULL, Escale );
+      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, 1, Escale );
     }
     else if ( nloops==2 ) { 
       // FIXME: not implemented completely yet 
@@ -664,13 +663,12 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
 		      int     nloops, 
 		      double  rscale_factor,
 		      double  fscale_factor,
-		      void (*splitting)(const double& , const double&, double* ),
 		      double Escale ) {
 
     TH1D* h = new TH1D(*m_obs_bins);
     h->SetName("xsec");
     
-    std::vector<double> dvec = vconvolute( pdf, alphas, nloops, rscale_factor, fscale_factor, splitting, Escale );
+    std::vector<double> dvec = vconvolute( pdf, alphas, nloops, rscale_factor, fscale_factor, Escale );
     
     for ( int i=0 ; i<dvec.size() ; i++ ) { 
       h->SetBinContent( i+1, dvec[i] );

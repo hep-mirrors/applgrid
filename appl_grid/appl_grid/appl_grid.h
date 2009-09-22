@@ -132,7 +132,7 @@ public:
 				  int     nloops, 
 				  double  rscale_factor=1,
 				  double  fscale_factor=1,
-				  void (*splitting)(const double& , const double&, double* )=NULL, double Escale=1 );
+				  double Escale=1 );
 
   // perform the convolution to a specified number of loops
   // nloops=-1 gives the nlo part only
@@ -141,9 +141,8 @@ public:
 				  double (*alphas)(const double& ), 
 				  int     nloops, 
 				  double  rscale_factor=1,
-				  double  fscale_factor=1,
-				  void (*splitting)(const double& , const double&, double* )=NULL ) { 
-    return vconvolute(pdf, alphas, nloops, rscale_factor, fscale_factor, splitting, Escale); 
+				  double  fscale_factor=1  ) { 
+    return vconvolute(pdf, alphas, nloops, rscale_factor, fscale_factor, Escale); 
   }
 
 
@@ -208,16 +207,15 @@ public:
 		  int     nloops, 
 		  double  rscale_factor=1,
 		  double  fscale_factor=1,
-		  void (*splitting)(const double& , const double&, double* )=NULL, double Escale=1 );
+		  double  Escale=1 );
 
   TH1D* convolute(double Escale,
 		  void   (*pdf)(const double& , const double&, double* ), 
 		  double (*alphas)(const double& ), 
 		  int     nloops, 
 		  double  rscale_factor=1,
-		  double  fscale_factor=1,
-		  void (*splitting)(const double& , const double&, double* )=NULL ) { 
-    return convolute(pdf, alphas, nloops, rscale_factor, fscale_factor, splitting, Escale); 
+		  double  fscale_factor=1 ) { 
+    return convolute(pdf, alphas, nloops, rscale_factor, fscale_factor, Escale); 
   }
 
 

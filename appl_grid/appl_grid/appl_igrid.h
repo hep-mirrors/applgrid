@@ -305,7 +305,7 @@ public:
 		int nloop=0, 
 		double rscale_factor=1,
 		double fscale_factor=1,
-		void   (*splitting)(const double& , const double&, double* )=NULL, double beam_scale=1 );
+		double beam_scale=1 );
 
   // get the interpolated pdf's
   void pdfinterp(double x1, double Q2, double* f);
@@ -317,7 +317,7 @@ public:
 		   int     nloop=0, 
 		   double  rscale_factor=1,
 		   double  fscale_factor=1,
-		   void   (*splitting)(const double& , const double&, double* )=NULL, double Escale=1 );
+		   double Escale=1 );
 
 
   double convolute_subproc(int subproc, 
@@ -328,7 +328,7 @@ public:
 			   int     nloop=0, 
 			   double  rscale_factor=1,
 			   double  fscale_factor=1,
-			   void   (*splitting)(const double& , const double&, double* )=NULL, double Escale=1 );
+			   double Escale=1 );
   
 
   // some useful algebraic operators

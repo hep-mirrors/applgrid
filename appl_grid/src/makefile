@@ -39,7 +39,7 @@ ROOTGLIBS    = $(shell root-config --glibs)
 # CLHEPCFLAGS = $(shell clhep-config --include)
 CLHEPCFLAGS = 
 
-
+HOPPETFLAG = $(shell hoppet.sh $(BASEDIR)/include/hoppet_v1.h) -I$(BASEDIR)/include
 
 # BASEDIR   = $(shell ./cwd.sh -h)
 # BASEDIR   = .
@@ -53,7 +53,7 @@ DEPENDENCIES = $(patsubst %.cpp, %.d, $(CSOURCES))
 
 
 CFLAGS   += -O3 -fPIC -I$(AGBASE)
-CXXFLAGS += -O3 -fPIC $(ROOTCFLAGS) $(CLHEPCFLAGS) -I$(AGBASE) -Wno-deprecated  
+CXXFLAGS += -O3 -fPIC $(ROOTCFLAGS) $(CLHEPCFLAGS) -I$(AGBASE) $(HOPPETFLAG) -Wno-deprecated  
 
 
 

@@ -50,11 +50,13 @@ void GetPdf(const double& x, const double& Q, double* f) {
   hoppeteval_( x, Q, xf);    
   //if (debug) cout << "\t evo=" << xf[6];
   //if (debug) cout << " x= "<<" Q= "<<Q<<"\tdgl=" << xf[6] << endl;
- double invx=0.;
- if (x!=0.) invx=1./x;
- for ( int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
- return; 
+  double invx=0.;
+  if (x!=0.) invx=1./x;
+  for ( int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
+  return; 
 }
+
+
 
 void GetPdfSplit(const double& x, const double& Q, double* f) { 
   
@@ -71,6 +73,7 @@ void GetPdfSplit(const double& x, const double& Q, double* f) {
  }
  return;
 }
+
 
 
 void increment( TH1D* h1, const TH1D* h2 ) {
@@ -135,6 +138,7 @@ TH1D* divide( const TH1D* h1, const TH1D* h2 ) {
 
 
 
+// extern double Escale;
 
 int main(int argc, char** argv) { 
 
@@ -146,7 +150,13 @@ int main(int argc, char** argv) {
 
   // get all the reference histograms
 
-  TFile* f = new TFile(argv[1]);
+
+  double Escale = 1;
+  if ( argc>3 ) Escale = atof(argv[3]);
+
+  TFile* f;
+  if ( argc>2 ) f = new TFile(argv[2]);
+  else          f = new TFile(argv[1]);
   TFile* fout = new TFile("xsec.root", "recreate");
   Directory ref("reference");
   ref.push();
@@ -213,13 +223,12 @@ int main(int argc, char** argv) {
   TCanvas* ratioc = new TCanvas("ratio",     "ratio",     500, 500);
   TCanvas* refc   = new TCanvas("reference", "reference", 500, 500);
 
-
   Directory xsecdir("xsec");
   xsecdir.push();
 
 
   //  TH1D* xsec = g.convolute( GetPdf, alphaspdf_ , nLoops ); xsec->SetName("xsec");
-  TH1D* xsec = g.convolute( GetPdf, alphaspdf_ ); 
+  TH1D* xsec = g.convolute( Escale, GetPdf, alphaspdf_ ); 
   xsec->SetName("xsec");
   xsec->SetTitle(reference->GetTitle());
 
@@ -234,7 +243,7 @@ int main(int argc, char** argv) {
     char hname[64];
     sprintf( hname, "xsec_sub_%d", i); 
     //    xsec_sub.push_back(  g.convolute_subproc( i, GetPdf, alphaspdf_ , nLoops) );
-    xsec_sub.push_back(  g.convolute_subproc( i, GetPdf, alphaspdf_ ) );
+    xsec_sub.push_back(  g.convolute_subproc( i, Escale, GetPdf, alphaspdf_ ) );
     xsec_sub.back()->SetName(hname);
     xsec_sub.back()->SetTitle(soft_sub[i]->GetTitle());
   }
@@ -247,7 +256,7 @@ int main(int argc, char** argv) {
     char hname[64];
     sprintf( hname, "xsec_scale_%d", i); 
 
-    xsec_scale[i] = g.convolute( GetPdf, alphaspdf_ , nLoops, mur[i], muf[i], GetPdfSplit );
+    xsec_scale[i] = g.convolute( Escale, GetPdf, alphaspdf_ , nLoops, mur[i], muf[i], GetPdfSplit );
     xsec_scale[i]->SetName(hname);
     xsec_scale[i]->SetTitle(soft_scale[i]->GetTitle());
 

@@ -33,9 +33,11 @@ o) fast nlo interfact for most important grid tables as example
 
 Paper:
 
-o) test scaling a different cms energy
+// COMPLETE
+// o) test scaling a different cms energy
 
-o) test ren&fact scale variation with pdf-weighting
+// COMPLETED - this also works
+// o) test ren&fact scale variation with pdf-weighting
 
 
 Future:

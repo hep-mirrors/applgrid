@@ -191,10 +191,10 @@ public:
     
     double yp = y;
     double x, delta, deriv;
-    for ( int iter=0 ; iter<imax ; iter++ ) {
+    for ( int iter=imax ; iter-- ; ) {
       x = exp(-yp);
       delta = y - yp - m_transvar*(1-x);
-      if ( fabs(delta)<eps ) return x; // we have found good solution
+      if ( std::fabs(delta)<eps ) return x; // we have found good solution
       deriv = -1 - m_transvar*x;
       yp  -= delta/deriv;
     }
@@ -311,14 +311,13 @@ public:
   void pdfinterp(double x1, double Q2, double* f);
 
   double convolute(void   (*pdf)(const double& , const double&, double* ), 
-		   //		   void   (*genpdf)(const double*, const double*, double* ),
 		   appl_pdf* genpdf, 
 		   double (*alphas)(const double& ), 
 		   int     lo_order=0,  
 		   int     nloop=0, 
 		   double  rscale_factor=1,
 		   double  fscale_factor=1,
-		   void   (*splitting)(const double& , const double&, double* )=NULL );
+		   void   (*splitting)(const double& , const double&, double* )=NULL, double Escale=1 );
 
 
   double convolute_subproc(int subproc, 
@@ -329,7 +328,7 @@ public:
 			   int     nloop=0, 
 			   double  rscale_factor=1,
 			   double  fscale_factor=1,
-			   void   (*splitting)(const double& , const double&, double* )=NULL );
+			   void   (*splitting)(const double& , const double&, double* )=NULL, double Escale=1 );
   
 
   // some useful algebraic operators

@@ -52,7 +52,7 @@ map<const string, igrid::transform_vec> igrid::m_fmap = igrid::init_fmap();
 
 
 
-double Escale = 1;
+// double Escale = 1;
 
 
 igrid::igrid() : 
@@ -551,7 +551,6 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 		     double fscale_factor,
 		     void   (*splitting)(const double& , const double&, double* ), double beam_scale ) 
 {
-
   const int n_tau = Ntau();
   const int n_y1  = Ny1();
   const int n_y2  = Ny2();
@@ -593,7 +592,6 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
   bool scale_beams = false;
   if ( beam_scale!=1 ) scale_beams = true;
   
-
   // set up pdf grid, splitting function grid 
   // and alpha_s grid
   //  for ( int itau=m_Ntau ; itau-- ; ) {
@@ -615,7 +613,6 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     // grid not filled for iy<iymin || iy>iymax so no need to 
     // consider outside this range
     
-
     // y1 tables
     for ( int iy=0 ; iy<n_y1 ; iy++ ) { 
       
@@ -629,11 +626,10 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
      
       if ( scale_beams ) { 
 	x *= beam_scale;
-
-	if ( x>1 ) { 
+	if ( x>=1 ) { 
 	  for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip]=0; 
 	  continue; 
-	}     
+	}    
       }
 
       pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
@@ -667,9 +663,8 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       //TC pdf(x,Q, m_fg2[itau][iy]);
 
       if ( scale_beams ) { 
-	x *= beam_scale;
-	
-	if ( x>1 ) { 
+	x *= beam_scale;	
+	if ( x>=1 ) { 
 	  for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip]=0; 
 	  continue; 
 	}
@@ -689,7 +684,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     }
 
   }
- 
+
 }
 
 
@@ -733,6 +728,7 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 
 
 
+
 // takes pdf as the pdf lib wrapper for the pdf set for the convolution.
 // takes genpdf as a function to form the generalised parton distribution.
 // alphas is a function for the calculation of alpha_s (surprisingly)
@@ -751,8 +747,10 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 			int     nloop, 
 			double  rscale_factor,
 			double  fscale_factor,
-			void   (*splitting)(const double& , const double&, double* ) ) 
+			void   (*splitting)(const double& , const double&, double* ),
+			double Escale) 
 { 
+
   //char name[]="appl_grid:igrid::convolute(): ";
   static const double twopi = 2*M_PI;
   static const int nc = 3;
@@ -781,7 +779,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 
   // 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, splitting);
+  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, splitting, Escale);
 
   double* sig = new double[m_Nproc];  // weights from grid
   double* H   = new double[m_Nproc];  // generalised pdf  
@@ -880,9 +878,10 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
   
   deletepdftable();
   
-  //  cout << "done" << endl; 
-
-  return dsigma;
+  // NB!!! the return value dsigma must be scaled by Escale*Escale which 
+  // is done in grid::vconvolute. It would be better here, but is reduces 
+  // the number of operations if in grid. 
+  return dsigma; 
 }
 
 
@@ -910,8 +909,10 @@ double igrid::convolute_subproc(int subproc,
 				int     nloop, 
 				double  rscale_factor,
 				double  fscale_factor,
-				void   (*splitting)(const double& , const double&, double* ) ) 
+				void   (*splitting)(const double& , const double&, double* ), 
+				double Escale ) 
 { 
+
   static const double twopi = 2.*M_PI;
 
   const int nc = 3;
@@ -942,7 +943,7 @@ double igrid::convolute_subproc(int subproc,
   if ( size==0 )  return 0;
 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, splitting);
+  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, splitting, Escale);
 
   
   double  sig = 0;  // weights from grid
@@ -1026,9 +1027,7 @@ double igrid::convolute_subproc(int subproc,
   
   deletepdftable();
   
-  //  cout << "done" << endl; 
-
-  return dsigma;
+  return dsigma*Escale*Escale;
 }
 
 

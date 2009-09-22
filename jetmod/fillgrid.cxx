@@ -88,7 +88,7 @@ struct {
 // GPS tmp reduction
 const  long int saveAfterEvents = 10001;
 //const  long int saveAfterEvents = 100001;
-const long int maxNumberEvents = 20000;
+const long int maxNumberEvents = 100000;
 
 const int debug = 0;
 const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb  

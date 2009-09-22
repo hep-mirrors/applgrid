@@ -14,7 +14,41 @@ A: Install and run the code
 
 1) run the install script 
 
-   install.sh
+    install.sh
+
+   the install script can be given arguments
+
+   usage: install.sh [OPTIONS]
+
+     --help| -h   this help
+     --all|-a     do everything
+     --none|-n    don't do anything
+     --appl       install appl_grid
+     --pdf        install hoppet
+     --mcfm       install mcfm
+     --nlo        install nlojet
+     --mod        install nlojet module
+     --runmcfm    run mcfm
+     --runmod     run nlojet module
+
+   The default is to install and run everything (except mcfm) so to 
+   eg compile the appl_grid code only you should use
+
+    install.sh --none --appl
+
+   the argument --none being used to switch off everything before 
+   enabling the appl_grid compilation.
+
+   Additional arguments are used to control the compilation itself
+   eg
+
+    install.sh clean
+
+   will clean the installation before reinstalling
+
+    install.sh clean --none --appl
+
+   will do a fresh install of the appl_grid code
 
 More detail:
 

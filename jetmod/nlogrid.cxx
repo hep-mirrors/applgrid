@@ -39,6 +39,7 @@ static const double xlow = 1e-5, xup = 1.0;
 
 static const double apramval=5.;
 static const bool pdfWeight = false;
+// static const bool pdfWeight = true;
 
 static const string pdf_function = "nlojet";
 

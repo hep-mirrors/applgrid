@@ -142,30 +142,35 @@ void GetPdf(const double& x, const double& Q, double* f) {
   
   double xf[13];
 
-  hoppeteval_( x, Q, xf);    
+  //  hoppeteval_( x, Q, xf);    
+  hoppeteval_( x, Q, f);    
   //if (debug) cout << "\t evo=" << xf[6];
   //if (debug) cout << " x= "<<" Q= "<<Q<<"\tdgl=" << xf[6] << endl;
- double invx=0.;
- if (x!=0.) invx=1./x;
- for ( int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
+  // double invx=0.;
+  // if (x!=0.) invx=1./x;
+  // for ( int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
  return; 
 }
 
+#if 0
 void GetPdfSplit(const double& x, const double& Q, double* f) { 
   
- const bool debug=false;
- if (debug)cout<<" x= "<<x<<" Q= "<<Q<<endl;
- double xf[13];
- hoppetevalsplit_( x, Q, nLoops, nFlavours, xf); 
- double invx=0.;
- if (x!=0.) invx=1./x;
- for (int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
- if (debug){
-   for (int i=0; i<13 ; i++ )
-   cout<<i<<" f= "<<f[i]<<endl;
- }
- return;
+  // const bool debug=false;
+  // if (debug)cout<<" x= "<<x<<" Q= "<<Q<<endl;
+  // double xf[13];
+  //hoppetevalsplit_( x, Q, nLoops, nFlavours, xf); 
+  hoppetevalsplit_( x, Q, nLoops, nFlavours, f); 
+  // double invx=0.;
+  // if (x!=0.) invx=1./x;
+  // for (int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
+  if (debug){
+    for (int i=0; i<13 ; i++ )
+      cout<<i<<" f= "<<f[i]<<endl;
+  }
+  return;
 }
+#endif
+
 
 void Dump_ratio(TH1D *ratio){
 
@@ -362,7 +367,7 @@ int main(int argc, char** argv)
     {
       cout<<"\t  working with scale "<<iScale<<" ..."<<endl;
       grid_scale[iScale] = g->convolute(GetPdf, alphaspdf_, nLoops, 
-					mur[iScale], muf[iScale],GetPdfSplit);
+					mur[iScale], muf[iScale]);
       grid_scale[iScale]->Scale(pb_fac);
 
       sprintf(histtitle,"grid_scale_%d",iScale);
@@ -398,7 +403,7 @@ int main(int argc, char** argv)
  	    g->convolute_subproc(iSub, GetPdf, alphaspdf_,
  				 nLoops, 
  				 mur[iScale], 
- 				 muf[iScale], GetPdfSplit);
+ 				 muf[iScale]);
 	  grid_subscale[iSub][iScale]->Scale(pb_fac);
 //TC<<<<<<<<
 	  sprintf(histtitle, "grid_subscale_%d_%d", iSub, iScale);

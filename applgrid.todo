@@ -20,10 +20,14 @@ o) move standalone to separate directory, e.g. usercode
 //    write another one that call this one and creates a histo 
 
    
-o) getPdfSplit
-   move to appl_grid directory, link against HOPPET
-   should only be done, if fac scale variation is needed
-
+// COMPLETED
+// o) getPdfSplit
+//   move to appl_grid directory, link against HOPPET
+//   should only be done, if fac scale variation is needed
+// NB: includes hoppet call if hoppet it is present, but will only be 
+//    called if needed. If hoppet is not present, error code is 
+//    compiled, if an attempt to call it is made, prints an error
+//    and returns
 
  long-term: 
 o)   table for subprocesses to be included in XXX__pdf.h

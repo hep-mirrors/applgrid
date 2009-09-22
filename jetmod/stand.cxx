@@ -40,39 +40,22 @@ static const int nFlavours = 5;
 
 
 
-// wrapper to get the basic pdf rather than x*pdf
-// gavins evolution code
+// wrapper to get the x*pdf from gavins evolution code.
+// in fact, don't actually need this wrapper any longer - we could
+// just pass the routine directly
 
 void GetPdf(const double& x, const double& Q, double* f) { 
-  
-  double xf[13];
-
-  hoppeteval_( x, Q, xf);    
+  //  double xf[13];
+  //  hoppeteval_( x, Q, xf);    
+  hoppeteval_( x, Q, f);    
   //if (debug) cout << "\t evo=" << xf[6];
   //if (debug) cout << " x= "<<" Q= "<<Q<<"\tdgl=" << xf[6] << endl;
-  double invx=0.;
-  if (x!=0.) invx=1./x;
-  for ( int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
+  //  double invx=0.;
+  //  if (x!=0.) invx=1./x;
+  //  for ( int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
   return; 
 }
 
-
-
-void GetPdfSplit(const double& x, const double& Q, double* f) { 
-  
- const bool debug=false;
- if (debug)cout<<" x= "<<x<<" Q= "<<Q<<endl;
- double xf[13];
- hoppetevalsplit_( x, Q, nLoops, nFlavours, xf); 
- double invx=0.;
- if (x!=0.) invx=1./x;
- for (int i=0; i<13 ; i++ ) f[i] = xf[i]*invx;
- if (debug){
-   for (int i=0; i<13 ; i++ )
-   cout<<i<<" f= "<<f[i]<<endl;
- }
- return;
-}
 
 
 
@@ -148,11 +131,19 @@ int main(int argc, char** argv) {
   g.trim();
   g *= pb_fac;
 
-  // get all the reference histograms
+  // get grid cms energy
 
+  double gridEnergy = g.getCMSScale();
+
+  std::cout << "grid CMS energy " << gridEnergy << std::endl; 
+
+  // get energy scale argument if needed
 
   double Escale = 1;
   if ( argc>3 ) Escale = atof(argv[3]);
+
+
+  // get all the reference histograms
 
   TFile* f;
   if ( argc>2 ) f = new TFile(argv[2]);
@@ -161,6 +152,8 @@ int main(int argc, char** argv) {
   Directory ref("reference");
   ref.push();
 
+
+
   TH1D* reference = (TH1D*)f->Get("grid/reference"); reference->Write();
 
   TH1D* soft_scale[Nscales];
@@ -168,7 +161,7 @@ int main(int argc, char** argv) {
   std::vector<TH1D*> soft_sub;
   std::vector<TH1D*> soft_subscale[Nscales];
 
-  // get number of sub proc
+  // get number of sub processes
 
   int Nsub = g.subProcesses();
 
@@ -227,6 +220,8 @@ int main(int argc, char** argv) {
   xsecdir.push();
 
 
+  
+
   //  TH1D* xsec = g.convolute( GetPdf, alphaspdf_ , nLoops ); xsec->SetName("xsec");
   TH1D* xsec = g.convolute( Escale, GetPdf, alphaspdf_ ); 
   xsec->SetName("xsec");
@@ -256,7 +251,7 @@ int main(int argc, char** argv) {
     char hname[64];
     sprintf( hname, "xsec_scale_%d", i); 
 
-    xsec_scale[i] = g.convolute( Escale, GetPdf, alphaspdf_ , nLoops, mur[i], muf[i], GetPdfSplit );
+    xsec_scale[i] = g.convolute( Escale, GetPdf, alphaspdf_ , nLoops, mur[i], muf[i] );
     xsec_scale[i]->SetName(hname);
     xsec_scale[i]->SetTitle(soft_scale[i]->GetTitle());
 

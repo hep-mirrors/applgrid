@@ -56,6 +56,16 @@ double xbins[nobs+1]=
     1600.,1700.,1800.,1900.,2000.,
     2500.,3000.,3500.,4000.,4500.
   };
+
+// clone a histogram, scale it and write it, then delete it
+void ScaleWrite(TH1D* h, double d ) { 
+  std::string name = std::string("soft_") + std::string(h->GetName());
+  TH1D* _h = (TH1D*)h->Clone(name.c_str());
+  _h->Scale(d);
+  _h->Write("",TObject::kOverwrite);
+  delete _h;
+}
+
 //
 //
 //
@@ -220,19 +230,19 @@ void nlogrid::bookReferenceHistograms()
   char histname[3000]; char htit[3000];
   for(int is = 0; is < 7; is++) 
     {// loop over subprocesses
-      sprintf(histname,"soft_sub_%d",is);
+      sprintf(histname,"sub_%d",is);
       sprintf(htit,"addRefHist. subProcess = %d",is);
       soft_sub[is] = new TH1D(histname, htit, nobs, xbins);
       soft_sub[is]->Sumw2();
       for(int ir = 0; ir <  Nscales; ir++)
 	{ // loop ren scal variations
-	      sprintf(histname, "soft_subscale_%d_%d", is, ir);
+	      sprintf(histname, "subscale_%d_%d", is, ir);
 	      sprintf(htit,"addRefHist. scales: #mu_{R} = %3.2f,  #mu_{F} = %3.2f, subProcess = %d ", mur[ir], muf[ir], is);
 	      soft_subscale[is][ir] = new TH1D(histname, htit, nobs, xbins);
 	      soft_subscale[is][ir]->Sumw2();
 	      if (is == 0)
 		{
-		  sprintf(histname,"soft_scale_%d",ir);
+		  sprintf(histname,"scale_%d",ir);
 		  sprintf(htit,"addRefHist. scales  #mu_{R} = %3.2f, #mu_{F} = %3.2f", mur[ir], muf[ir]);
 		  soft_scale[ir] = new TH1D(histname, htit, nobs, xbins);
 		  soft_scale[ir]->Sumw2();
@@ -294,18 +304,16 @@ void nlogrid::writeReferenceHistograms()
   refDir.push();
   //  cout << "nlogrid::writeReferenceHistograms() \t\t pwd=" << gDirectory->GetName() << endl;  
   
-  for(int is=0; is<7; is++) 
-    {
-      soft_sub[is]->Write("",TObject::kOverwrite);
-      for(int ir=0; ir< Nscales; ir++)
-	{
-	  soft_subscale[is][ir]->Write("",TObject::kOverwrite);
-	  if(is == 0)
-	    {
-	      soft_scale[ir]->Write("",TObject::kOverwrite);   
-	    }
-	}
-    }
+  double invNruns = 1;
+  if ( gridObject->run()!=0 ) invNruns = 1/double(gridObject->run());
+
+  for(int is=0; is<7; is++)   {
+      ScaleWrite(soft_sub[is], invNruns);
+      for(int ir=0; ir< Nscales; ir++) ScaleWrite(soft_subscale[is][ir], invNruns); 
+  }
+  
+  for(int ir=0; ir< Nscales; ir++) ScaleWrite(soft_scale[ir], invNruns); 
+  
   refDir.pop();
   myfile.Close();
 

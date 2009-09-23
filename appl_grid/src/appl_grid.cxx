@@ -51,7 +51,7 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false), 
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
-  m_obs_bins=new TH1D("reference","Bin-Info for Observable", Nobs, obsmin, obsmax);
+  m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
   //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
   m_genpdf = appl_pdf::getpdf(m_genpdfname);
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
@@ -71,7 +71,7 @@ grid::grid(int Nobs, const double* obsbins,
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
-  m_obs_bins=new TH1D("reference","Bin-Info for Observable", Nobs, obsbins);
+  m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
   //   m_genpdf = genpdf_map.find(m_genpdfname)->second;  
   m_genpdf = appl_pdf::getpdf(m_genpdfname);
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform );
@@ -100,7 +100,7 @@ grid::grid(const vector<double> obs,
   int Nobs = obs.size()-1;
 
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
-  m_obs_bins=new TH1D("reference","Bin-Info for Observable", Nobs, obsbins);
+  m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
   //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
   m_genpdf = appl_pdf::getpdf(m_genpdfname);
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
@@ -194,6 +194,8 @@ grid::grid(const string& filename, const string& dirname)  :
   //  gridfile.GetObject("obs_bins", m_obs_bins );
   m_obs_bins = (TH1D*)gridfile.Get((dirname+"/reference").c_str());
   m_obs_bins->SetDirectory(0);
+  m_obs_bins->Scale(run());
+  m_obs_bins->SetName("referenceInternal");
 
   //  cout << "grid::grid() read obs bins" << endl;
 
@@ -467,7 +469,11 @@ void grid::Write(const string& filename, const string& dirname) {
   //  cout <<"grid::Write() size(untrimmed)=" << _size 
   //     << "\tsize(trimmed)="              << trim_size << endl;
   //  d.pop();
-  m_obs_bins->Write();
+
+  TH1D* reference = (TH1D*)m_obs_bins->Clone("reference");
+  if ( run() ) reference->Scale(1/double(run()));
+  reference->Write();
+  delete reference;
   rootfile.Close();
   d.pop();
 }
@@ -491,6 +497,11 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
   if ( Escale!=1 ) Escale2 = Escale*Escale;
   
   std::vector<double> hvec;
+
+  double invNruns = 1;
+  if ( run() ) invNruns /= double(run());
+
+  //  std::cout << "grid::run() " << run() << std::endl; 
 
   //  TH1D* h = new TH1D(*m_obs_bins);
   //  h->SetName("xsec");
@@ -553,7 +564,8 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
 
     double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);
     
-    hvec.push_back( Escale2*dsigma/deltaobs );
+    hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+    // hvec.push_back( Escale2*dsigma/deltaobs );
 
     //    cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << endl;
   }  // iobs   
@@ -581,6 +593,11 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
  
   if ( Escale!=1 ) Escale2 = Escale*Escale;
   
+  double invNruns = 1;
+  if ( run() ) invNruns /= double(run());
+
+  //  std::cout << "grid::run() " << run() << std::endl; 
+
   //  genpdf = genpdf_map[m_genpdfname];
     
   //  TH1D* h = new TH1D(*m_obs_bins);
@@ -638,7 +655,8 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
 
     double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);
     
-    hvec.push_back( Escale2*dsigma/deltaobs );
+    hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+    // hvec.push_back( Escale2*dsigma/deltaobs );
 
 
     //    cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << endl;

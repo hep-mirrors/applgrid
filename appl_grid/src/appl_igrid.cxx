@@ -649,6 +649,9 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 	x *= beam_scale;
 	if ( x>=1 ) { 
 	  for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip]=0; 
+	  if ( nloop==1 && fscale_factor!=1 ) { 
+	    for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] = 0;
+	  }
 	  continue; 
 	}    
       }
@@ -688,6 +691,9 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 	x *= beam_scale;	
 	if ( x>=1 ) { 
 	  for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip]=0; 
+	  if ( nloop==1 && fscale_factor!=1 ) { 
+	    for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] = 0;
+	  }
 	  continue; 
 	}
       }

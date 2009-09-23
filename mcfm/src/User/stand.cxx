@@ -1,200 +1,189 @@
-//
-//   standalone.cxx        
-//                   
-// 
-//   Copyright (C) 2007 M.Sutton (sutt@hep.ucl.ac.uk)    
-//
-//   $Id: main.cxx, v   Sat Mar 15 15:51:49 GMT 2008 sutt
-
-
 #include <iostream>
-
-using std::cerr;
-using std::cout;
-using std::endl;
+#include <string>
+#include <vector>
+#include <stdio.h>
 
 #include "appl_grid/appl_grid.h"
-using appl::grid;
+#include "appl_grid/Directory.h"
 
-#include "appl_grid/appl_pdf.h"
-using appl::appl_pdf;
+// #include "appl_grid/appl_pdf.h"
 
 #include "appl_grid/appl_timer.h"
-// #include <gtttimer.h>
+#include "hoppet_v1.h"
 
+#include <TCanvas.h>
 #include <TH1D.h>
 #include <TFile.h>
-
-#include "parden.h"
-
-extern "C" void   dglapeval_(const double& _x, const double& _Q, double* f);
-extern "C" void   initmypdf_(const char* name, const int& set);
-extern "C" double alphaspdf_(const double& Q);
+#include <TPad.h>
 
 
-
-
-double rmsdev(TH1D* h, TH1D* href, int cheat=0) { 
+extern "C" 
+{
   
-  double sum=0;
+  //void dglapeval_(const double& _x, const double& _Q, double* f);
+  //void dglapevalsplit_(const double& _x, const double& _Q, const int&, const int&, double* f);
+  void initmypdf_(const char* name, const int& set);
+  
+  double alphaspdf_(const double& Q);
+} 
 
-  for ( int i=1 ; i<=h->GetNbinsX()-cheat ; i++ ) { 
-    double hc = h->GetBinContent(i);
-    double hr = href->GetBinContent(i);
 
-    double diff = 0;
-    if ( hr!=0 ) diff = (hc/hr-1);
 
-    if ( hr!=0 ) sum += diff*diff;
+
+// wrapper to get the x*pdf from gavins evolution code.
+// in fact, don't actually need this wrapper any longer - we could
+// just pass the routine directly
+
+void GetPdf(const double& x, const double& Q, double* f) { 
+
+  hoppeteval_( x, Q, f);    
+
+  return; 
+}
+
+
+
+
+
+TH1D* divide( const TH1D* h1, const TH1D* h2 ) {
+
+  if ( h1==NULL || h2==NULL ) return NULL;
+ 
+  TH1D* h = (TH1D*)h1->Clone();
+
+  std::cout << "histograms " << h1->GetTitle() << " " << h2->GetTitle() << std::endl;
+
+  
+
+  for ( int i=1 ; i<=h1->GetNbinsX() ; i++ ) { 
+    double b  = h2->GetBinContent(i);
+    double be = h2->GetBinError(i);
+    double t  = h1->GetBinContent(i);
+    double te = h1->GetBinError(i);
+
+    double r  = ( b!=0 ? t/b : 0 );
+    //    double re = ( b!=0 ? sqrt((r+1)*r/b) : 0 );
+    double re = 0;
+    
+    h->SetBinContent( i, r );
+    h->SetBinError( i, re ) ;
+
+    //    if ( DBG ) std::cout << "\tx=" << h->GetBinCenter(i) << "\tratio=" << r << std::endl;
+  } 
+
+  double hmin = h->GetBinContent(1);
+  double hmax = h->GetBinContent(1);
+  
+  for ( int i=2 ; i<=h->GetNbinsX() ; i++ ) { 
+    double d = h->GetBinContent(i);
+    if ( hmin>d ) hmin=d;
+    if ( hmax<d ) hmax=d; 
   }
- 
-  return sqrt(sum/h->GetNbinsX());
-}
 
-
-
-
-
-double maxdev(TH1D* h, TH1D* href, int cheat=0) { 
+  std::cout << "\tmin ratio = " << hmin << "\tmax ratio = " << hmax << std::endl;
   
-  double sum=0;
+  if ( h->GetMaximum()<1.01 ) h->SetMaximum(1.01);
+  if ( h->GetMinimum()>0.99 ) h->SetMinimum(0.99);
 
-  for ( int i=1 ; i<=h->GetNbinsX()-cheat ; i++ ) { 
-    double hc = h->GetBinContent(i);
-    double hr = href->GetBinContent(i);
-
-    double diff = 0;
-    if ( hr!=0 ) diff = (hc/hr-1);
-
-    if ( fabs(diff)>sum ) sum = fabs(diff);
-  }
- 
-  return sum;
+  return h;
 }
 
-
-
-// wrapper to get the basic pdf rather than x*pdf
-// gavins evolution code
- 
-void lhapdf(const double& x, const double& Q, double* f) { 
-
-  double xf[13];
-
-  //  evolvepdf_(x, Q, xf); 
-  //  cout << "\tevo=" << xf[6];
-
-  dglapeval_( x, Q, xf); 
-  //  cout << "\tdgl=" << xf[6] << endl;
-
-  //  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i]/x;
-  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i]/x;
-
-  return;
-}
-
-
-
-// wrapper to get the basic pdf rather than x*pdf
-// lhapdf evolution 
-
-void lhapdf2(const double& _x, const double& _Q, double* f) { 
-  double x = _x; 
-  double Q = _Q;
-  
-  double xf[13];
-
-  evolvepdf_(x, Q, xf); 
-  //  cout << "\tevo=" << xf[6];
-
-  //  dglapeval_(_x, _Q, xf); 
-  //  cout << "\tdgl=" << xf[6] << endl;
-
-  //  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i]/x;
-  for ( int i=0 ;i<13 ; i++ ) f[i] = xf[i]/x;
-
-  return;
-}
 
 
 
 int main(int argc, char** argv) { 
 
-  cout << "main()" << endl;
-
   if ( argc<2 ) return -1;
 
-  string filename(argv[1]);
+  appl::grid g(argv[1]);
+  g.trim();
 
-  cout << "argv[1]=" << filename << "<" << endl;
+  // get grid cms energy
+
+  double gridEnergy = g.getCMSScale();
+
+  std::cout << "grid CMS energy " << gridEnergy << std::endl; 
+
+
+  // get all the reference histograms
+
+  TFile* f;
+  if ( argc>2 ) f = new TFile(argv[2]);
+  else          f = new TFile(argv[1]);
+
+  TFile* fout = new TFile("xsec.root", "recreate");
+  Directory ref("reference");
+  ref.push();
+
+
+
+  TH1D* reference = (TH1D*)f->Get("grid/reference"); reference->Write();
+
+
+  ref.pop();
+
 
   
-  // set up lhapdf :(
-
-  //  const char _pdfname[256] = "/usr/local/share/lhapdf/PDFsets/cteq6mE.LHgrid";  
-  //  const string _pdfname = "/usr/local/share/lhapdf/PDFsets/cteq6mE.LHgrid";  
-  //  const string _pdfname = "/home/sutt/share/lhapdf/PDFsets/cteq6mE.LHgrid";  
-  const string _pdfname = "cteq6mE.LHgrid";  
-  //  const char _pdfname[256] = "/usr/local/share/lhapdf/PDFsets/cteq6m.LHpdf";  
-  //  initpdfset_(_pdfname);
-
-  // const string _pdfname = "cteq6mE.LHgrid";  
-
-
+  // now calculate all the cross sections
+  
+  // setup lhapdf etc
+  // const string _pdfname = "lhapdf/PDFsets/cteq6mE.LHgrid";  
+  const string _pdfname = "PDFsets/cteq6mE.LHgrid";  
   int Npdf = 0;
-
   // setup gavins code
   initmypdf_(_pdfname.c_str(), Npdf);
 
-  cout << "lhapdf..." << endl;
+  bool first = true;
 
-  // initialise lhapdf if needed
-  // initpdfset_(_pdfname.c_str());
+  TCanvas* ratioc = new TCanvas("ratio",     "ratio",     500, 500);
+  TCanvas* refc   = new TCanvas("reference", "reference", 500, 500);
 
-  //  cout << "set up lhapdf" << endl;
+  Directory xsecdir("xsec");
+  xsecdir.push();
 
-  //  initpdfset_(_pdfname.c_str());
 
-  //  double R = 0;
-  //  getrenfac_(R);
+ 
+  //  TH1D* xsec = g.convolute( GetPdf, alphaspdf_ , nLoops ); xsec->SetName("xsec");
+  TH1D* xsec = g.convolute( GetPdf, alphaspdf_ ); 
+  xsec->SetName("xsec");
+  xsec->SetTitle(reference->GetTitle());
   
-  //  int iset = 1;
-  //  initpdf_(iset);
+  xsecdir.pop();
 
+  // now take all the ratios etc
 
-  // read in the grid
+  Directory ratiodir("ratio");
+  ratiodir.push();
+
+  TH1D* ratio = divide( xsec, reference ); if ( ratio ) ratio->SetName("ratio");
   
 
-  grid g0(filename);
+  // some test output 
+ 
+  ratioc->cd();
+  if ( first ) ratio->DrawCopy();
+  else         ratio->DrawCopy("same");
 
-  TFile outfile("cross-duff.root", "recreate");
+  refc->cd();
+  if ( first ) reference->DrawCopy();
+  else         reference->DrawCopy("same");
 
-  g0.trim();
+  first = false;
+
+  // done
   
-  TH1D* htot3   = g0.convolute(lhapdf2, alphaspdf_ );   
+  ratiodir.pop();
 
-  string labels[16] = { "0", "1", "2", "3", 
-			"4", "5", "6", "7", 
-			"8", "9", "a", "b", 
-			"c", "d", "e", "f"  };
 
-  for ( int i=0 ; i<appl_pdf::getpdf(g0.getGenpdf())->Nproc() ; i++ )  {
+  ratioc->cd();
+  gPad->Print("ratio.gif");
 
-    TH1D* h = g0.convolute_subproc(i, lhapdf2, alphaspdf_ );  
-    h->SetName(labels[i].c_str());
+  refc->cd();
+  gPad->SetLogy();
+  gPad->Print("reference.gif");
 
-  }
+ 
+  fout->Write(); 
 
-  outfile.Write();
-  outfile.Close();
-  
   return 0;
 }
-
-
-
-
-
-
-
-

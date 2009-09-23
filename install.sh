@@ -139,6 +139,7 @@ fi
 #  use root-config to decide what architecture root libraries will be used
  
 export ARCH=`rootarch.sh`
+export SYSARCH=`setarch.sh`
 
 export CXXFLAGS=$ARCH
 export F90FLAGS=$ARCH
@@ -222,13 +223,21 @@ install_mcfm() {
 ############################################
 run_mcfm() { 
 
+
     cd $BASEDIR/mcfm/run
     rm -f *.log
 
-    if [ -e ../exe/$ARCH/mcfm ]; then 
-      ../exe/$ARCH/mcfm Winput.DAT >  mcfm-0.log
-      ../exe/$ARCH/mcfm Winput.DAT >  mcfm-1.log
-      ../exe/$ARCH/stand grid-30-Wweight_eta4.root
+    if [ -e PDFsets ]; then 
+	ls -ld PDFsets
+    else
+	ln -s `lhapdf-config --pdfsets-path` .
+	ls -ld PDFsets
+    fi
+    
+    if [ -e ../exe/$SYSARCH/mcfm ]; then 
+      ../exe/$SYSARCH/mcfm Winput.DAT >  mcfm-0.log
+      ../exe/$SYSARCH/mcfm Winput.DAT >  mcfm-1.log
+      ../exe/$SYSARCH/stand grid-30-Wweight_eta4.root
     fi
 }
 

@@ -79,7 +79,7 @@ RM  = rm
 GRIDINCS = -I$(GRIDPATH)/include
 
 FFLAGS 	 += -fno-automatic -fno-f2c -O3 -g -I$(INCPATH)
-CXXFLAGS += -fPIC -O3 -g $(ROOTINCS) $(GRIDINCS)
+CXXFLAGS += -fPIC -O3 -g $(ROOTINCS) $(GRIDINCS) -I$(GRIDPATH)/include
 
 
 DIRS	=	$(MCFMHOME):\
@@ -849,7 +849,7 @@ $(BINDIR)/mcfm: $(patsubst %,$(OBJDIR)/%,$(ALLMCFM))
 	@echo LDFLAGS $(LDFLAGS)
 	@echo CXXFLAGS $(CXXFLAGS)
 	$(CXX) $(LDFLAGS) -o $@ \
-	$(patsubst %,$(OBJDIR)/%,$(ALLMCFM) $(GRIDFILES)) $(LIBFLAGS) $(FRTLLIB)
+	$(patsubst %,$(OBJDIR)/%,$(ALLMCFM) $(GRIDFILES)) $(LIBFLAGS) $(FRTLLIB) $(PDFCONVLIBS)
 	@echo $(PDFMSG)
 	@echo $(NTUPMSG) 
 
@@ -880,7 +880,8 @@ $(OBJDIR)/mypdfevolve.o: PDF/mypdfevolve.f
 
 F90LIB= -L`which lf95 | sed s:bin/lf95:lib:` -lfj9i6 -lfj9f6 -lfj9e6 -lfccx86_6a
 # PDFCONVLIBS = -L$(HOME)/nlo/mcfm-pavel/mcfm-v0/PDF/pdf-conv-1.0/src -ldglap -lgfortran -L/sw/lib -lg2c 
-PDFCONVLIBS = -L$(DGLAPDIR) -ldglap -ldglap $(FRTLLIB)
+# PDFCONVLIBS = -L$(DGLAPDIR) -ldglap -ldglap $(FRTLLIB)
+PDFCONVLIBS = -L$(INSTALLBASE)/lib -lhoppet_v1 $(FRTLLIB)
 #$(F90LIB)
 
 

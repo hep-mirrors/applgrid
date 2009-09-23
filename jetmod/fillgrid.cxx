@@ -90,6 +90,7 @@ const  long int saveAfterEvents = 10001;
 //const  long int saveAfterEvents = 100001;
 const long int maxNumberEvents = 100000;
 
+
 const int debug = 0;
 const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb  
 const double pb_fac_Unity = 1.0;        // unit factor
@@ -425,6 +426,7 @@ void UserHHC::userfunc(const event_hhc& p, const amplitude_hhc& amp)
 	  for (int iSubProcess = 0; iSubProcess <= 6; iSubProcess++)
 	    {
 	      weight[iGrid][iSubProcess] = amp(SCALE2[iGrid], SCALE2[iGrid])[iSubProcess];
+	      weight[iGrid][iSubProcess] *= pb_fac;
 	    }
 	}
     }

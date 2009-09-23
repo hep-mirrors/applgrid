@@ -31,7 +31,7 @@ extern "C"
 #define DBG true
 
 
-static const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb  
+// static const double pb_fac = 3.89379656e8 ;    // conversion GeV^2 -> pb  
 
 #include "scales.h"
 
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
 
   appl::grid g(argv[1]);
   g.trim();
-  g *= pb_fac;
+  //  g *= pb_fac;
 
   // get grid cms energy
 

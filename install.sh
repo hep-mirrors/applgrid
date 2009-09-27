@@ -72,6 +72,7 @@ usage() {
     echo "  --mod        install nlojet module"
     echo "  --runmcfm    run mcfm"
     echo "  --runmod     run nlojet module"
+    echo "  --user       build and run simple user example"
     echo "\nReport bugs to <sutt@cern.ch>" 
 #   exit
 }
@@ -92,6 +93,7 @@ for WORD in $ARGS ; do
        --nlo)      NLO=1;;
        --mod)      NLOMOD=1;;
        --runmod)   RNLOMOD=1;;
+       --user)     USER=1;;
        --help|-h)  usage;exit;;
    esac
 done
@@ -380,6 +382,19 @@ run_nlojet_module () {
 }
 
 
+run_user () { 
+    cd $BASEDIR/user
+    make all
+    if [ -e PDFsets ]; then 
+	ls -ld PDFsets
+    else
+	ln -s `lhapdf-config --pdfsets-path` .
+	ls -ld PDFsets
+    fi
+    ./stand ../jetmod/output/weight_c.root
+}
+
+
 ###########################
 # ACTUALLY RUN THE STAGES 
 ###########################
@@ -391,3 +406,4 @@ if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi
 if [ "$NLO" = 1 ];      then    install_nlojet         $ARGS; fi
 if [ "$NLOMOD" = 1 ];   then    install_nlojet_module  $ARGS; fi
 if [ "$RNLOMOD" = 1 ];  then    run_nlojet_module;            fi 
+if [ "$USER" = 1 ];     then    run_user;            fi 

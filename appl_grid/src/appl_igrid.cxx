@@ -42,21 +42,7 @@ using std::setprecision;
 
 // splitting function code
 
-#ifdef HOPPET
-#include "hoppet_v1.h"
-#endif
-
-void Splitting(const double& x, const double& Q, double* f) {
-#ifdef HOPPET
-  static const int nLoops    = 1;
-  static const int nFlavours = 5;
-  hoppetevalsplit_( x, Q, nLoops, nFlavours, f); 
-#else
-  std::cerr << "hoppet library not included - cannot call splitting function" << std::endl;
-  exit(0);
-#endif
-  return;
-}
+void Splitting(const double& x, const double& Q, double* f);
 
 
 // pdf reweighting

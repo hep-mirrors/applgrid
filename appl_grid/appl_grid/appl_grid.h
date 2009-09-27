@@ -43,6 +43,12 @@ using std::string;
 #include "appl_grid/appl_igrid.h"
 using appl::igrid;
 
+
+#ifdef HOPPET
+#include "hoppet_v1.h"
+#include "appl_grid/hoppet_init.h"
+#endif
+
 #include "TH1D.h"
 
 
@@ -56,8 +62,7 @@ namespace appl {
 
 class grid {
 
-
-private:
+public:
 
   // grid error exception
   class exception { 
@@ -399,6 +404,10 @@ private:
   static const string m_version;
 
   double m_cmsScale;
+
+#ifdef HOPPET
+  static hoppet_init* hoppet;
+#endif
 
 };
 

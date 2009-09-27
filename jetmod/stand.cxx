@@ -9,7 +9,7 @@
 // #include "appl_grid/appl_pdf.h"
 
 #include "appl_grid/appl_timer.h"
-#include "hoppet_v1.h"
+// #include "hoppet_v1.h"
 
 #include <TCanvas.h>
 #include <TH1D.h>
@@ -22,6 +22,7 @@ extern "C"
   
   //void dglapeval_(const double& _x, const double& _Q, double* f);
   //void dglapevalsplit_(const double& _x, const double& _Q, const int&, const int&, double* f);
+  void evolvepdf_(const double& , const double& , double* );
   void initmypdf_(const char* name, const int& set);
   
   double alphaspdf_(const double& Q);
@@ -44,10 +45,11 @@ static const int nFlavours = 5;
 // in fact, don't actually need this wrapper any longer - we could
 // just pass the routine directly
 
-void GetPdf(const double& x, const double& Q, double* f) { 
+void GetPdf(const double& x, const double& Q, double* xf) { 
   //  double xf[13];
   //  hoppeteval_( x, Q, xf);    
-  hoppeteval_( x, Q, f);    
+  //  hoppeteval_( x, Q, xf);    
+  evolvepdf_( x, Q, xf);    
   //if (debug) cout << "\t evo=" << xf[6];
   //if (debug) cout << " x= "<<" Q= "<<Q<<"\tdgl=" << xf[6] << endl;
   //  double invx=0.;

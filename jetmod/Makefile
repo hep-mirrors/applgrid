@@ -15,6 +15,10 @@ CXXFLAGS += -O3 -fPIC -g
 # CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 
+HOPPETFLAG = $(shell hoppet.sh $(BASEDIR)/include/hoppet_1.h) -I$(BASEDIR)/include
+
+CXXFLAGS += $(HOPPETFLAG)
+
 FFLAGS += -g 
 
 # F2CFLAG = -lg2c
@@ -82,10 +86,10 @@ all : fillgrid stand
 
 
 standalone: standalone.o  InitMyPdf.o mypdfevolve.o
-	$(CXX) -o standalone $(LDFLAGS) $(ALLMACRO)  standalone.o InitMyPdf.o mypdfevolve.o	$(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
+	$(CXX) -o standalone $(LDFLAGS) $(ALLMACRO)  standalone.o InitMyPdf.o mypdfevolve.o    $(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
 
 stand: stand.o  InitMyPdf.o mypdfevolve.o
-	$(CXX) -o stand $(LDFLAGS) $(ALLMACRO)  stand.o InitMyPdf.o mypdfevolve.o	$(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
+	$(CXX) -o stand $(LDFLAGS) $(ALLMACRO)  stand.o InitMyPdf.o mypdfevolve.o    $(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
 
 
 fillgrid: LHAPDF.h nlogrid.o nlogrid.lo

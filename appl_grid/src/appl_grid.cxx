@@ -41,6 +41,33 @@ using appl::grid;
 const string grid::m_version = "version-1.0";
 
 
+
+
+#ifdef HOPPET
+
+// include hoppet splitting function code
+
+hoppet_init* grid::hoppet = NULL;
+
+void Splitting(const double& x, const double& Q, double* xf) {
+  static const int nLoops    = 1;
+  static const int nFlavours = 5;
+  hoppetevalsplit_( x, Q, nLoops, nFlavours, xf); 
+  return;
+}
+
+#else
+
+void Splitting(const double& x, const double& Q, double* xf) {
+  throw grid::exception( std::cerr << "hoppet library not included - cannot call splitting function"  ); 
+  return; // technically, don't need this - should throw an exception
+}
+
+#endif
+
+
+
+
 grid::grid(int NQ2, double Q2min, double Q2max, int Q2order, 
 	   int Nx,  double xmin,  double xmax,  int xorder,
 	   int Nobs,  double obsmin, double obsmax, 
@@ -265,6 +292,12 @@ grid::~grid() {
   }
   if(m_obs_bins) delete m_obs_bins;
   m_obs_bins=NULL;
+
+#ifdef HOPPET
+  if ( hoppet ) delete hoppet; 
+  hoppet=NULL; 
+#endif
+
 }
 
 
@@ -506,6 +539,16 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
   //  TH1D* h = new TH1D(*m_obs_bins);
   //  h->SetName("xsec");
 
+#ifdef HOPPET
+  // check if we need to use the splitting function, and if so see if we 
+  // need to initialise it again, and do so if required
+  if ( fscale_factor!=1 ) {
+    if ( hoppet == NULL ) hoppet = new hoppet_init();
+    bool newpdf = hoppet->compareCache(pdf);
+    //   if ( newpdf ) hoppet->fillCache( pdf );
+  }
+#endif
+
   string label;
 
   if ( nloops>=m_order ) { 
@@ -595,6 +638,18 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
   
   double invNruns = 1;
   if ( run() ) invNruns /= double(run());
+
+#ifdef HOPPET
+  //  factorisation scale variation is disabled for the subprocess
+  //  convolution
+  //  // check if we need to use the splitting function, and if so see if we 
+  //  // need to initialise it again, and do so if required
+  //  if ( fscale_factor!=1 ) {
+  //    if ( hoppet == NULL ) hoppet = new hoppet_init();
+  //    bool newpdf = hoppet->compareCache(pdf);
+  //    //   if ( newpdf ) hoppet->fillCache( pdf );
+  //  }
+#endif
 
   //  std::cout << "grid::run() " << run() << std::endl; 
 

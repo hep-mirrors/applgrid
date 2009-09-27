@@ -8,9 +8,9 @@ INSTALLBASE = $(BASEDIR)
 CXX = g++
 F77 = gfortran
 
-FFLAGS += -g -m64
+FFLAGS += -g 
 
-CXXFLAGS += -m64 -O3 -fPIC -g 
+CXXFLAGS +=  -O3 -fPIC -g 
 CXXFLAGS += -I$(INSTALLBASE)/include
 
 
@@ -30,7 +30,7 @@ APPLLIBS   = -L$(INSTALLBASE)/lib -lAPPLgrid
 FRTLLIB    = $(shell gfortran.sh )
 
 
-LD_FLAGS += -m64 -L$(LHAPDFDIR) -lLHAPDF
+LD_FLAGS +=  -L$(LHAPDFDIR) -lLHAPDF
 
 
 PDFCONVLIBS = -L$(INSTALLBASE)/lib -lhoppet_v1 $(F90LIB) $(LHAPDFLIBS)
@@ -44,7 +44,7 @@ LIBS += $(ROOTLIBS)  $(LHAPDFLIBS) $(APPLLIBS) $(FRTLLIB) $(PDFCONVLIBS)
 install : all
 all : stand
 stand: stand.o InitMyPdf.o
-	$(CXX) -m64 -o stand $(LDFLAGS) $(ALLMACRO)  stand.o  InitMyPdf.o $(LIBS) 
+	$(CXX)  -o stand $(LDFLAGS) $(ALLMACRO)  stand.o  InitMyPdf.o $(LIBS) 
 
 
 .SUFFIXES : .cxx .o .f .c
@@ -59,4 +59,3 @@ stand: stand.o InitMyPdf.o
 
 clean:
 	rm -rf ./.libs ./.obj *.lo *.o *.la stand
-

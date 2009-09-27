@@ -26,9 +26,9 @@ public:
 
   virtual ~hoppet_init();
 
-  void hoppet_init::fillCache( void (*pdf)(const double&, const double&, double* )  );
+  void fillCache( void (*pdf)(const double&, const double&, double* )  );
   
-  bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double* )  );
+  bool compareCache( void (*pdf)(const double&, const double&, double* )  );
 
 private:
 

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <stdio.h>
+#include <cstdlib>
 
 #include "appl_grid/appl_grid.h"
 #include "appl_grid/Directory.h"
@@ -142,7 +143,7 @@ int main(int argc, char** argv) {
   // get energy scale argument if needed
 
   double Escale = 1;
-  if ( argc>3 ) Escale = atof(argv[3]);
+  if ( argc>3 ) Escale = std::atof(argv[3]);
 
 
   // get all the reference histograms

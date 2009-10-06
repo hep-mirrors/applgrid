@@ -313,15 +313,6 @@ void igrid::deletepdftable() {
     m_fg1=NULL;
   }
   
-  if ( m_fg2 ) { 
-    for ( int i=0 ; i<m_Ntau ; i++ ) {
-      for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fg2[i][j];
-      delete[] m_fg2[i];
-    }
-    delete[] m_fg2;
-    m_fg2=NULL;
-  }
-  
   //  cout << "deleting splitting tables" << endl;
 
   if ( m_fsplit1 ) { 
@@ -333,13 +324,32 @@ void igrid::deletepdftable() {
     m_fsplit1=NULL;
   }
 
-  if ( m_fsplit2 ) { 
-    for ( int i=0 ; i<m_Ntau ; i++ ) {
-      for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fsplit2[i][j];
-      delete[] m_fsplit2[i];
-    }
-    delete[] m_fsplit2;
+  // if grid is symmetric, then don't need to deallocate 
+  // x2 pdf values and splitting functions 
+  if ( isSymmetric() ) { 
+    m_fg2=NULL;
     m_fsplit2=NULL;
+  }
+  else { 
+    if ( m_fg2 ) { 
+      for ( int i=0 ; i<m_Ntau ; i++ ) {
+	for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fg2[i][j];
+	delete[] m_fg2[i];
+      }
+      delete[] m_fg2;
+      m_fg2=NULL;
+    }
+    
+    
+    //  cout << "deleting splitting tables" << endl;
+    if ( m_fsplit2 ) { 
+      for ( int i=0 ; i<m_Ntau ; i++ ) {
+	for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fsplit2[i][j];
+	delete[] m_fsplit2[i];
+      }
+      delete[] m_fsplit2;
+      m_fsplit2=NULL;
+    }
   }
 
   //  cout << "delete alphas table" << endl;
@@ -564,7 +574,8 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 
   // pdf table
   m_fg1 = new double**[Ntau()];
-  m_fg2 = new double**[Ntau()];
+  if ( isSymmetric() ) m_fg2 = m_fg1;
+  else                 m_fg2 = new double**[Ntau()];
 
   const double invtwopi = 0.5/(M_PI);
 
@@ -572,7 +583,8 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
   // factorisation scale dependence
   if ( nloop==1 && fscale_factor!=1 ) { 
     m_fsplit1 = new double**[Ntau()];
-    m_fsplit2 = new double**[Ntau()];
+    if ( isSymmetric() ) m_fsplit2 = m_fsplit1;
+    else                 m_fsplit2 = new double**[Ntau()];
   }
 
   // alphas table
@@ -583,18 +595,22 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     
     // pdf table
     m_fg1[i] = new double*[n_y1];
-    m_fg2[i] = new double*[n_y2];
     for ( int j=0 ; j<n_y1 ; j++ ) m_fg1[i][j] = new double[13];
-    for ( int j=0 ; j<n_y2 ; j++ ) m_fg2[i][j] = new double[13];   
+    if ( !isSymmetric() ) { 
+      m_fg2[i] = new double*[n_y2];
+      for ( int j=0 ; j<n_y2 ; j++ ) m_fg2[i][j] = new double[13];   
+    }    
     
     // splitting function table
     if ( nloop==1 && fscale_factor!=1 ) { 
       m_fsplit1[i] = new double*[n_y1];
-      m_fsplit2[i] = new double*[n_y2];
       for ( int j=0 ; j<n_y1 ; j++ ) m_fsplit1[i][j] = new double[13];
-      for ( int j=0 ; j<n_y2 ; j++ ) m_fsplit2[i][j] = new double[13];   
+      if ( !isSymmetric() ) { 
+	m_fsplit2[i] = new double*[n_y2];
+	for ( int j=0 ; j<n_y2 ; j++ ) m_fsplit2[i][j] = new double[13];   
+      }
     }
-  }
+  }  
   
   bool scale_beams = false;
   if ( beam_scale!=1 ) scale_beams = true;
@@ -614,9 +630,15 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     int iymin1 = m_weight[0]->ymin();
     int iymax1 = m_weight[0]->ymax();
     
-    int iymin2 = m_weight[0]->zmin();
-    int iymax2 = m_weight[0]->zmax();
-  
+    if ( isSymmetric() ) { 
+      int iymin2 = iymin1;
+      int iymax2 = iymax1;
+    }
+    else {
+      int iymin2 = m_weight[0]->zmin();
+      int iymax2 = m_weight[0]->zmax();
+    }  
+
     // grid not filled for iy<iymin || iy>iymax so no need to 
     // consider outside this range
     
@@ -643,12 +665,11 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       }
 
       pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
- 
+
       double invx = 1/x;
       //CTC>> division by x should be done  in splitting
       for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
   
-
       if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= fun;
       
       // splitting function table
@@ -660,46 +681,50 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       }
     }
     
-    // y2 tables
-    //    for ( int iy=iymin2 ; iy<=iymax2 ; iy++ ) { 
-    for ( int iy=0 ; iy<n_y2 ; iy++ ) { 
-      
-      double y = gety2(iy);
-      double x = fx(y);
-      double fun = 1;
-      if (m_reweight) fun = weightfun(x);
-      
-      //	evolvepdf_(x, Q, fg[itau][iy1]);
-      // pdfs 
-      //TC pdf(x,Q, m_fg2[itau][iy]);
-
-      if ( scale_beams ) { 
-	x *= beam_scale;	
-	if ( x>=1 ) { 
-	  for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip]=0; 
-	  if ( nloop==1 && fscale_factor!=1 ) { 
-	    for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] = 0;
+    if ( !isSymmetric() ) {
+ 
+      // y2 tables
+      //    for ( int iy=iymin2 ; iy<=iymax2 ; iy++ ) { 
+      for ( int iy=0 ; iy<n_y2 ; iy++ ) { 
+	
+	double y = gety2(iy);
+	double x = fx(y);
+	double fun = 1;
+	if (m_reweight) fun = weightfun(x);
+	
+	//	evolvepdf_(x, Q, fg[itau][iy1]);
+	// pdfs 
+	//TC pdf(x,Q, m_fg2[itau][iy]);
+	
+	if ( scale_beams ) { 
+	  x *= beam_scale;	
+	  if ( x>=1 ) { 
+	    for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip]=0; 
+	    if ( nloop==1 && fscale_factor!=1 ) { 
+	      for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] = 0;
+	    }
+	    continue; 
 	  }
-	  continue; 
+	}
+	
+	pdf(x,  fscale_factor*Q, m_fg2[itau][iy]);
+	
+	double invx = 1/x;
+	//CTC>> division by x should be done  in splitting
+	for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
+	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= fun;      
+	
+	// splitting functions
+	if ( nloop==1 && fscale_factor!=1 ) { 
+	  splitting(x, fscale_factor*Q, m_fsplit2[itau][iy]);
+	  for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= invx;
+	  if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= fun;
 	}
       }
 
-      pdf(x,  fscale_factor*Q, m_fg2[itau][iy]);
+    } // isSymmetric()
 
-      double invx = 1/x;
-      //CTC>> division by x should be done  in splitting
-      for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
-      if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= fun;      
- 
-     // splitting functions
-      if ( nloop==1 && fscale_factor!=1 ) { 
-	splitting(x, fscale_factor*Q, m_fsplit2[itau][iy]);
-	for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= invx;
-	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= fun;
-      }
-    }
-
-  }
+  } // loop over itau
 
 }
 
@@ -776,9 +801,11 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 
   double alphas_tmp = 0.;  
   double dsigma  = 0.; //, xsigma = 0.;
-  double _alphas  = 1., alphaplus1=0.;
+  double _alphas = 1.;
+  double  alphaplus1 = 0.;
   // do the convolution  
-  //if (debug) cout<<name<<" nloop= "<<nloop<<endl;
+  // if (debug) cout<<name<<" nloop= "<<nloop<<endl;
+  //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
   // is the grid empty
   int size=0;
   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
@@ -805,8 +832,6 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
     HB  = new double[m_Nproc];  // generalised splitting functions
   }
 
-  //  int N;
-
   // cross section for this igrid  
 
   // loop over the grid 
@@ -817,8 +842,10 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
     for ( int iorder=0 ; iorder<lo_order ; iorder++ ) _alphas *= alphas_tmp;
     alphaplus1 = _alphas*alphas_tmp;
 
-    for ( int iy1=0 ; iy1<Ny1() ; iy1++ ) {            
-      for ( int iy2=0 ; iy2<Ny2() ; iy2++ ) { 
+    //    for ( int iy1=0 ; iy1<Ny1() ; iy1++ ) {            
+    //      for ( int iy2=0 ; iy2<Ny2() ; iy2++ ) { 
+    for ( int iy1=Ny1() ; iy1-- ;  ) {            
+      for ( int iy2=Ny2() ; iy2-- ;  ) { 
 	// test if this element is actually filled
 	// if ( !m_weight[0]->trimmed(itau,iy1,iy2) ) continue; 
 	bool nonzero = false;
@@ -831,10 +858,12 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	if ( nonzero ) { 	
 	  // build the generalised pdfs from the actual pdfs
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
-
+	
+	  //	  for  ( int ipp=0 ; ipp<m_Nproc ; ipp++ ) H[ipp]=1;
+  
 	  // do the convolution
           double xsigma=0.;
-	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
+	  for ( int ip=0 ; ip<m_Nproc ; ip++ )  xsigma+=sig[ip]*H[ip];
           dsigma+= _alphas*xsigma;
 
           //if (debug) 

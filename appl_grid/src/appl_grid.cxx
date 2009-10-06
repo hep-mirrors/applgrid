@@ -79,6 +79,7 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
+  m_obs_bins->SetDirectory(0);
   //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
   m_genpdf = appl_pdf::getpdf(m_genpdfname);
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
@@ -99,6 +100,7 @@ grid::grid(int Nobs, const double* obsbins,
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
+  m_obs_bins->SetDirectory(0);
   //   m_genpdf = genpdf_map.find(m_genpdfname)->second;  
   m_genpdf = appl_pdf::getpdf(m_genpdfname);
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform );
@@ -128,10 +130,48 @@ grid::grid(const vector<double> obs,
 
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
+  m_obs_bins->SetDirectory(0);
+  delete[] obsbins;
+
   //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
   m_genpdf = appl_pdf::getpdf(m_genpdfname);
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
 }
+
+
+
+grid::grid(const vector<double> obs, 
+	   string genpdfname,
+	   int leading_order, int nloops, 
+	   string transform )  :
+  m_leading_order(leading_order), m_order(nloops+1), 
+  m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),  
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) 
+{ 
+
+  if ( obs.size()==0 ) { 
+    cerr << "grid::not enough bins in observable" << endl;
+    exit(0);
+  } 
+  
+  double* obsbins = new double[obs.size()];  
+  for ( int i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
+  int Nobs = obs.size()-1;
+
+  // Initialize histogram that saves the correspondence obsvalue<->obsbin
+  m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
+  m_obs_bins->SetDirectory(0);
+  delete[] obsbins;
+
+  //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
+  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+
+  for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
+    m_grids[iorder] = new igrid*[Nobs];
+  }
+
+}
+
 
 
 grid::grid(const string& filename, const string& dirname)  :
@@ -275,6 +315,30 @@ void grid::construct(int Nobs,
 					Nx, xmin, xmax, xorder, 
 					transform, m_genpdf->Nproc());
     }
+  }
+
+}
+
+
+// add a single grid
+void grid::add_igrid(int bin, int order, igrid* g) { 
+
+  if ( !(order>=0 && order<m_order) ) { 
+    std::cerr << "grid::add_igrid() order out of range " << order << std::endl; 
+    return;
+  } 
+
+  if ( !(bin>=0 && bin<Nobs() ) ) {
+    std::cerr << "grid::add_igrid() observable bin out of range " << bin << std::endl; 
+    return;
+  }
+
+  m_grids[order][bin] = g;
+
+  if ( g->transform()!=m_transform ) { 
+    std::cerr << "grid::add_igrid() transform " << m_transform 
+	      << " does not match that from added igrid, " << g->transform() << std::endl;
+    m_transform = g->transform();
   }
 
 }
@@ -453,13 +517,12 @@ void grid::Write(const string& filename, const string& dirname) {
   cout << "grid::Write() writing to file " << filename << endl;
   TFile rootfile(filename.c_str(),"recreate");
 
-
-  cout << "pwd=" << gDirectory->GetName() << endl;
+  //  cout << "pwd=" << gDirectory->GetName() << endl;
 
   Directory d(dirname);
   d.push();
   
-  cout << "pwd=" << gDirectory->GetName() << endl;
+  //  cout << "pwd=" << gDirectory->GetName() << endl;
 
   // write the name of the transform pair and the
   // generalised pdf
@@ -588,7 +651,7 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
     } 
     else if ( nloops==2 ) {
       // FIXME: not implemented completely yet 
-      return hvec;
+      //      return hvec;
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts so only  muR=muF=mu
@@ -599,7 +662,11 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
       double dsigma_nnlo = m_grids[2][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+2, 0);
       dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
     }
-
+    else if ( nloops==-2 ) {
+      label = "nnlo only";
+      // next to next to leading order contribution
+      dsigma = m_grids[2][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+2, 0);
+    }
 
     //   double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
     //   h->SetBinContent(iobs+1, dsigma/(deltaobs));

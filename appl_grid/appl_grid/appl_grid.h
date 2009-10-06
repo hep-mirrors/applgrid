@@ -94,10 +94,18 @@ public:
 	int leading_order=0, int nloops=1, 
 	string transform="f2" );
 
+  // build a grid but don't build the internal igrids - these can be added later
+  grid( const vector<double> obs,
+	string genpdf="nlojet_pdf", 
+	int leading_order=0, int nloops=1, 
+	string transform="f2" );
+
   grid(const grid& g);
 
   grid(const string& filename="./grid.root", const string& dirname="grid");
 
+  // add an igrid for a given bin and a given order 
+  void add_igrid(int bin, int order, igrid* g);
 
   ~grid();
   
@@ -381,7 +389,7 @@ private:
   int  m_order;
 
   // the actual weight grids themselves
-  igrid** m_grids[2]; 
+  igrid** m_grids[3]; 
 
   // total cross section qand uncertainty
   double m_total;

@@ -106,14 +106,18 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
 
   m_y1min   = m_y2min = ymin;
   m_y1max   = m_y2max = ymax;
-  m_deltay1 = (m_y1max-m_y1min)/(m_Ny1-1);
-  m_deltay2 = (m_y2max-m_y2min)/(m_Ny2-1);
+  if ( m_Ny1>1 ) m_deltay1 = (m_y1max-m_y1min)/(m_Ny1-1);
+  else           m_deltay1 = 0;
+  
+  if ( m_Ny2>1 ) m_deltay2 = (m_y2max-m_y2min)/(m_Ny2-1);
+  else           m_deltay2 = 0;
   
   double taumin=ftau(Q2min);
   double taumax=ftau(Q2max);
   m_taumin   = taumin;
   m_taumax   = taumax;
-  m_deltatau = (taumax-taumin)/(m_Ntau-1);
+  if ( m_Ntau>1 ) m_deltatau = (taumax-taumin)/(m_Ntau-1);
+  else            m_deltatau = 0;
 
   if ( m_Ny1-1<m_yorder ) { 
     cerr << "igrid() not enough nodes for this interpolation order Ny1=" << m_Ny1 
@@ -566,6 +570,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 		     double fscale_factor,
 		     double beam_scale ) 
 {
+
   void (*splitting)(const double& , const double&, double* ) = Splitting;
 		     
   const int n_tau = Ntau();
@@ -627,6 +632,10 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     // alpha_s table 
     m_alphas[itau] = alphas(rscale_factor*Q)*invtwopi;
 
+    //    std::cout << itau << "\ttau " << tau 
+    //              << "\tQ2 " << Q2 << "\tQ" << Q 
+    //              << "\t" << m_alphas[itau] << std::endl; 
+    
     int iymin1 = m_weight[0]->ymin();
     int iymax1 = m_weight[0]->ymax();
     
@@ -768,8 +777,6 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 }
 
 
-
-
 // takes pdf as the pdf lib wrapper for the pdf set for the convolution.
 // takes genpdf as a function to form the generalised parton distribution.
 // alphas is a function for the calculation of alpha_s (surprisingly)
@@ -816,6 +823,8 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
     size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
   }
 
+
+
   // grid is empty
   if ( size==0 )  return 0;
 
@@ -855,16 +864,37 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	  if ( sig[ip] = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) ) nonzero = true;
 	}
 	
-	if ( nonzero ) { 	
+	//	for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << sig[ip]; 
+	//	std::cout << std::endl;
+
+	if ( true || nonzero ) { 	
 	  // build the generalised pdfs from the actual pdfs
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
 	
+	  //	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) H[ip] = 1;
+	  //    std::cout << "H return" << std::endl;
+	  //    for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << H[ip] << std::endl;
+
 	  //	  for  ( int ipp=0 ; ipp<m_Nproc ; ipp++ ) H[ipp]=1;
   
 	  // do the convolution
           double xsigma=0.;
-	  for ( int ip=0 ; ip<m_Nproc ; ip++ )  xsigma+=sig[ip]*H[ip];
-          dsigma+= _alphas*xsigma;
+	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
+	  dsigma+= _alphas*xsigma;
+
+#if 0
+	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
+	    xsigma=sig[ip]*H[ip];
+	    dsigma+= _alphas*xsigma;
+	    // dsigma+= xsigma;
+
+	    std::cout << "o " << nloop << "\ta " << _alphas 
+		      << "\tx "<< iy1 << " " << iy2 << " " << itau 
+		      << "\tip " << ip << "\tpdf " << H[ip] << "\tc " << sig[ip]/BINWIDTH
+		      << "\tr0 " << _alphas*sig[ip]*H[ip]/BINWIDTH 
+		      << "\tr "  << dsigma  << std::endl;
+	  } 
+#endif
 
           //if (debug) 
           // cout<<name<<" nloop= "<<nloop
@@ -922,6 +952,8 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
   
   deletepdftable();
   
+  //  std::cout << "dsigma " << dsigma << std::endl;
+
   // NB!!! the return value dsigma must be scaled by Escale*Escale which 
   // is done in grid::vconvolute. It would be better here, but is reduces 
   // the number of operations if in grid. 
@@ -1011,8 +1043,6 @@ double igrid::convolute_subproc(int subproc,
     double _alphas = 1;
     for ( int iorder=0 ; iorder<lo_order ; iorder++ ) _alphas *= alphas_tmp;
     double alphaplus1 = _alphas*alphas_tmp;
-
-    //    cout << "lo_order=" << lo_order << "\talpha^lo="<< _alphas << endl; 
 
     for ( int iy1=0 ; iy1<Ny1() ; iy1++ ) { 
            

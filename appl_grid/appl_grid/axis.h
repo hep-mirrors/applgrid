@@ -34,10 +34,14 @@ public:
   axis() : m_N(0), m_min(0), m_max(0) { }
 
   axis(int N, T mn, T mx) : m_N(N), m_min(mn), m_max(mx) { 
-    if ( m_N>0 )   m_delta  = (m_max-m_min)/(m_N-1);
+    if ( m_N>1 )   m_delta  = (m_max-m_min)/(m_N-1);
+    else           m_delta  = 0;
     if ( m_delta ) m_idelta = 1/m_delta;
+    else           m_idelta = 0;
     for ( int i=0 ; i<m_N ; i++ ) {
-      double x2 = ((m_N-1-i)*m_min + i*m_max)/(m_N-1);
+      double x2 = 0;
+      if ( m_N>1 ) x2 = ((m_N-1-i)*m_min + i*m_max)/(m_N-1);
+      else         x2 = m_min;
       m_v.push_back(x2);    
     }
   }

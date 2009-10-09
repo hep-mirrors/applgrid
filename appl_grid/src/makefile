@@ -103,6 +103,7 @@ LOBJFILES = $(OBJDIR)/fappl_grid.o      \
 	    $(OBJDIR)/appl_igrid.o      \
 	    $(OBJDIR)/appl_pdf.o        \
 	    $(OBJDIR)/nlojet_pdf.o      \
+	    $(OBJDIR)/nlojetpp_pdf.o    \
 	    $(OBJDIR)/jetrad_pdf.o      \
 	    $(OBJDIR)/mcfmz_pdf.o       \
 	    $(OBJDIR)/mcfmw_pdf.o       \
@@ -115,16 +116,23 @@ LOBJFILES = $(OBJDIR)/fappl_grid.o      \
 
 
 # HEADERS = APPLgrid.h APPLigrid.h
-HEADERS = $(INCDIR)/appl_grid.h  \
-  	  $(INCDIR)/appl_igrid.h \
-          $(INCDIR)/appl_pdf.h   \
-          $(INCDIR)/appl_timer.h \
-	  $(INCDIR)/mcfmw_pdf.h $(INCDIR)/mcfmz_pdf.h $(INCDIR)/nlojet_pdf.h $(INCDIR)/jetrad_pdf.h \
-	  $(INCDIR)/SparseMatrix3d.h $(INCDIR)/axis.h $(INCDIR)/sparse.h $(INCDIR)/Directory.h      \
+HEADERS = $(INCDIR)/appl_grid.h    \
+  	  $(INCDIR)/appl_igrid.h   \
+          $(INCDIR)/appl_pdf.h     \
+          $(INCDIR)/appl_timer.h   \
+	  $(INCDIR)/mcfmw_pdf.h    \
+	  $(INCDIR)/mcfmz_pdf.h    \
+	  $(INCDIR)/nlojet_pdf.h   \
+	  $(INCDIR)/nlojetpp_pdf.h \
+	  $(INCDIR)/jetrad_pdf.h   \
+	  $(INCDIR)/SparseMatrix3d.h \
+	  $(INCDIR)/axis.h           \
+	  $(INCDIR)/sparse.h       \
+	  $(INCDIR)/Directory.h    \
 	  $(INCDIR)/tsparse_base.h \
-	  $(INCDIR)/tsparse1d.h \
-	  $(INCDIR)/tsparse2d.h \
-	  $(INCDIR)/tsparse3d.h \
+	  $(INCDIR)/tsparse1d.h    \
+	  $(INCDIR)/tsparse2d.h    \
+	  $(INCDIR)/tsparse3d.h    \
 	  $(INCDIR)/hoppet_init.h 
 
 

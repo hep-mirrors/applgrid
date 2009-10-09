@@ -38,3 +38,9 @@ export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LHAPDF/lib
 export PATH=$PATH:/cern/pro/bin:$LHAPDF/bin:$BASEDIR/bin
 
+
+# LHDIR=/afs/cern.ch/sw/fortran/lahey/lf9562c
+# export LD_LIBRARY_PATH=$LHDIR/lib
+# export PATH=$LHDIR/bin:$PATH
+# export MANPATH=${MANPATH}:$LHDIR/manuals/man/lf95
+

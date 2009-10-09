@@ -15,9 +15,9 @@ CXXFLAGS += -O3 -fPIC -g
 # CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 
-HOPPETFLAG = $(shell hoppet.sh $(BASEDIR)/include/hoppet_1.h) -I$(BASEDIR)/include
+HOPPETFLAG = $(shell hoppet.sh $(BASEDIR)/include/hoppet_v1.h) -I$(BASEDIR)/include
 
-HOPPETLIB = $(shell hoppet.sh $(BASEDIR)/lib/libhoppet_1.a -L$(BASEDIR)/lib -lhoppet_1) 
+HOPPETLIB = $(shell hoppet.sh $(BASEDIR)/lib/libhoppet_v1.a -L$(BASEDIR)/lib -lhoppet_v1) 
 
 CXXFLAGS += $(HOPPETFLAG)
 

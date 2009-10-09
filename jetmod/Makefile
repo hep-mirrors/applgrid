@@ -17,6 +17,8 @@ CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 
 HOPPETFLAG = $(shell hoppet.sh $(BASEDIR)/include/hoppet_1.h) -I$(BASEDIR)/include
 
+HOPPETLIB = $(shell hoppet.sh $(BASEDIR)/lib/libhoppet_1.a -L$(BASEDIR)/lib -lhoppet_1) 
+
 CXXFLAGS += $(HOPPETFLAG)
 
 FFLAGS += -g 
@@ -57,7 +59,7 @@ FRTLLIB = $(shell gfortran.sh )
 F90LIB = $(FRTLLIB)
 #PDFCONVLIBS = -L$(INSTPATH)/pdf-conv-1.0/src -ldglap $(F90LIB)
 #PDFCONVLIBS = -L$(INSTALLBASE)/lib -ldglap $(F90LIB) $(LHAPDFLIBS)
-PDFCONVLIBS = -L$(INSTALLBASE)/lib -lhoppet_v1 $(F90LIB) $(LHAPDFLIBS)
+PDFCONVLIBS = $(HOPPETLIB) $(F90LIB) $(LHAPDFLIBS)
 
 
 # macros to setup contact interactions and reference histograms

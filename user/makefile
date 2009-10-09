@@ -33,7 +33,7 @@ FRTLLIB    = $(shell gfortran.sh )
 LD_FLAGS +=  -L$(LHAPDFDIR) -lLHAPDF
 
 
-PDFCONVLIBS = $(shell hoppet.sh -L$(INSTALLBASE)/lib/libhoppet_v1.a  -L$(INSTALLBASE)/lib -lhoppet_v1 ) $(F90LIB) $(LHAPDFLIBS)
+PDFCONVLIBS = $(shell hoppet.sh --lib  $(INSTALLBASE)/lib/libhoppet_v1.a  -L$(INSTALLBASE)/lib -lhoppet_v1 ) $(F90LIB) $(LHAPDFLIBS)
 
 # macros to setup contact interactions and reference histograms
 LHA = -DUSELHAPDF
@@ -42,9 +42,12 @@ LHA = -DUSELHAPDF
 LIBS += $(ROOTLIBS)  $(LHAPDFLIBS) $(APPLLIBS) $(FRTLLIB) $(PDFCONVLIBS)  
 
 install : all
-all : stand
+all : stand fnlo
 stand: stand.o InitMyPdf.o
-	$(CXX)  -o stand $(LDFLAGS) $(ALLMACRO)  stand.o  InitMyPdf.o $(LIBS) 
+	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO)  stand.o  InitMyPdf.o $(LIBS) 
+
+fnlo: fnmain.o InitMyPdf.o
+	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO)  stand.o  InitMyPdf.o $(LIBS) 
 
 
 .SUFFIXES : .cxx .o .f .c

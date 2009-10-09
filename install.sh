@@ -384,6 +384,11 @@ run_nlojet_module () {
 
 run_user () { 
     cd $BASEDIR/user
+
+    if [ "$1" = "clean" ]; then
+	make clean
+    fi
+
     make all
     if [ -e PDFsets ]; then 
 	ls -ld PDFsets
@@ -392,6 +397,7 @@ run_user () {
 	ls -ld PDFsets
     fi
     ./stand ../jetmod/output/weight_c.root
+    ./fnlo  fnl0004.tab
 }
 
 
@@ -406,4 +412,4 @@ if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi
 if [ "$NLO" = 1 ];      then    install_nlojet         $ARGS; fi
 if [ "$NLOMOD" = 1 ];   then    install_nlojet_module  $ARGS; fi
 if [ "$RNLOMOD" = 1 ];  then    run_nlojet_module;            fi 
-if [ "$USER" = 1 ];     then    run_user;            fi 
+if [ "$USER" = 1 ];     then    run_user           $ARGS;  fi 

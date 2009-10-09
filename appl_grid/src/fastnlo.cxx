@@ -15,7 +15,7 @@
 #include <fstream>
 #include <vector>
 #include <cmath>
-
+#include <sys/stat.h>
 
 
 std::ofstream sout( "/dev/null" );
@@ -36,10 +36,15 @@ fastnlo::fastnlo( const std::string& filename ) {
   
   std::cout << "fastnlo::fastnlo() reading fastnlo grid file " << filename << std::endl;
 
+  // can we open the fastnlo grid file
+  struct stat stfileinfo;
+  if ( stat(filename.c_str(),&stfileinfo) )   {
+    std::cerr << "fastnlo::fastnlo() cannot open fastnlo grid file " << filename << std::endl;
+    return;
+  }
+
   // read the fastnlo grid
-
   std::ifstream faststream( filename.c_str() );
-
 
   std::string dummy;
 

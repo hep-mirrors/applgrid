@@ -47,7 +47,7 @@ stand: stand.o InitMyPdf.o
 	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO)  stand.o  InitMyPdf.o $(LIBS) 
 
 fnlo: fnmain.o InitMyPdf.o
-	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO)  stand.o  InitMyPdf.o $(LIBS) 
+	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO)  fnmain.o  InitMyPdf.o $(LIBS) 
 
 
 .SUFFIXES : .cxx .o .f .c

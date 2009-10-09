@@ -9,7 +9,7 @@
 //   $Id: read.cxx, v0.0   Sun 27 Sep 2009 22:39:32 BST sutt $
 
 
-#include "fastnlo.h"
+#include "appl_grid/fastnlo.h"
 
 #include <iostream>
 #include <fstream>

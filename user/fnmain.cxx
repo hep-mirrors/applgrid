@@ -24,7 +24,10 @@ extern "C"
 
 int main(int argc, char** argv) { 
 
-  if ( argc<2 ) return -1;
+  if ( argc<2 ) { 
+    std::cerr << "usage: fnlo fastnlogrid.tab" << std::endl;
+    return -1;
+  }
 
   std::cout << "set up lhapdf..." << std::endl;
 

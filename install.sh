@@ -1,4 +1,4 @@
-#!/bin/sh -v
+#!/bin/sh
 
 ######################################################
 #  installation script - now greatly improved 

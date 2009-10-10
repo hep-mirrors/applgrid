@@ -6,7 +6,7 @@
 // 
 //   Copyright (C) 2007 M.Sutton (sutt@cern.ch)    
 //
-//   $Id: read.cxx, v0.0   Sun 27 Sep 2009 22:39:32 BST sutt $
+//   $Id: fastnlo.cxx, v0.0   Sun 27 Sep 2009 22:39:32 BST sutt $
 
 
 #include "appl_grid/fastnlo.h"

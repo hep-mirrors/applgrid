@@ -133,43 +133,6 @@ extern "C" void book_grid_()  // inital grid booking
   const double *obsBins[_Ngrids] = { eta, pt, pt };
 
 
-  bool write_ckm = false;
-
-#if 0
-  cout << "ckmsum: " << endl;
-  for ( int i=0 ; i<11 ; i++ )  cout << "\t" << setw(15) << setprecision(12) << ckm_.Vsum[i];
-  cout << "\n" << endl;
-    
-
-  cout << "ckmsum: " << endl;
-  for ( int i=0 ; i<11 ; i++ ) { 
-    for ( int j=0 ; j<11 ; j++ ) { 
-      cout << "\t" << setw(15) << setprecision(12) << ckm_.Vsq[i][j];
-    }
-    cout << endl;
-  }
-#endif
-
-  if ( write_ckm )   {
-    cout << "writing ckm matrices" << endl;
-    TFile ckmfile("ckm.root", "recreate");
-    
-    TMatrixT<double>* mat = new TMatrixT<double>(13,13);
-    
-    for (int f1 = 0; f1 <= 10; f1++) {
-      for (int f2 = 0; f2 <= 10; f2++) (*mat)(f2+1,f1+1) = ckm_.Vsq[f1][f2];
-    }
-    
-    TVectorT<double>* vec = new TVectorT<double>(13);
-    for (int f1 = 0; f1 <= 10; f1++)  {
-      (*vec)(f1+1) = ckm_.Vsum[f1];
-    }
-    
-    mat->Write("ckm2");
-    vec->Write("ckmsum");
-    ckmfile.Close();
-  }
-
   // NB don't know what the processes are - no documentation in
   // the mcfm code.
 
@@ -275,7 +238,8 @@ extern "C" void book_grid_()  // inital grid booking
 	xbins[i-1] = mygrid[igrid]->getReference()->GetBinLowEdge(i);
       }
       
-
+      Directory d(glabel+labels[igrid]);
+      d.push();
       //  write out at the end ??? 
       //      gDirectory->cd(mygrid[igrid]->getFileName());
       procReference[igrid] = new TH1D*[mygrid[igrid]->subProcesses()];
@@ -288,6 +252,7 @@ extern "C" void book_grid_()  // inital grid booking
 	  procReference[igrid][isub] = new TH1D(hname, htitle, mygrid[igrid]->Nobs(), xbins);
 	  //	  procReference[igrid][isub]->SetDirectory();
 	}
+      d.pop();
 
       //      gDirectory->cd("..");
   }

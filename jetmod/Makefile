@@ -9,17 +9,17 @@ INSTALLBASE = $(BASEDIR)
 NLODIR = $(INSTALLBASE)
 
 INSTPATH= `which nlojet++ | sed s:/bin/nlojet\+\+::`
-CXX = g++
+# CXX = g++
 F77 = gfortran
 CXXFLAGS += -O3 -fPIC -g 
 # CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 
-HOPPETFLAG = $(shell hoppet.sh $(INSTALLBASE)/include/hoppet_v1.h) -I$(INSTALLBASE)/include
+# HOPPETFLAG = $(shell hoppet.sh $(INSTALLBASE)/include/hoppet_v1.h) -I$(INSTALLBASE)/include
 
-HOPPETLIB = $(shell hoppet.sh --lib $(INSTALLBASE)/lib/libhoppet_v1.a -L$(INSTALLBASE)/lib -lhoppet_v1) 
+# HOPPETLIB = $(shell hoppet.sh --lib $(INSTALLBASE)/lib/libhoppet_v1.a -L$(INSTALLBASE)/lib -lhoppet_v1) 
 
-CXXFLAGS += $(HOPPETFLAG)
+CXXFLAGS += $(HOPPETINCS)
 
 FFLAGS += -g 
 
@@ -59,7 +59,7 @@ FRTLLIB = $(shell gfortran.sh )
 F90LIB = $(FRTLLIB)
 #PDFCONVLIBS = -L$(INSTPATH)/pdf-conv-1.0/src -ldglap $(F90LIB)
 #PDFCONVLIBS = -L$(INSTALLBASE)/lib -ldglap $(F90LIB) $(LHAPDFLIBS)
-PDFCONVLIBS = $(HOPPETLIB) $(F90LIB) $(LHAPDFLIBS)
+PDFCONVLIBS = $(HOPPETLIBS) $(F90LIB) $(LHAPDFLIBS)
 
 
 # macros to setup contact interactions and reference histograms

@@ -1,22 +1,15 @@
 #!/bin/sh
 
-# echo "hoppet.sh $1"
-# ls -l $1
-
-if [ "$1" == "" ]; then 
-  exit -1
+if [ -e "hoppet-config" ]; then
+   if [ "$1" = "--cxxflags" ]; then
+      hopper-config --cxxflags
+   elseif [ "$1" = "--libs" ]; then
+      hoppet-config --libs
+   elseif [ "$1" = "" ]; then
+      echo -DHOPPET
+   elseif
+      hoppet-config $1
+   fi
 fi
 
-if [ "$1" == "--lib" ]; then 
-  if [ "$4" == "" ]; then 
-      exit -1
-  fi
-  if [ -e $2 ]; then 
-      echo $3 $4  
-  fi
-fi
-
-if [ -e $1 ]; then 
-  echo "-DHOPPET"
-fi
 

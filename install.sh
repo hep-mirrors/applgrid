@@ -151,6 +151,9 @@ export FC=gfortran
 # export FFLAGS="$ARCH -O"
 export FFLAGS=$ARCH
 export LDFLAGS=$ARCH
+export HOPPETLIBS=
+export HOPPETINCS=
+export HOPPETFLAG=  
 
 
 
@@ -389,6 +392,8 @@ run_user () {
 	make clean
     fi
 
+    hoppet-config --prefix
+
     make all
     if [ -e PDFsets ]; then 
 	ls -ld PDFsets
@@ -406,6 +411,13 @@ run_user () {
 ###########################
 
 if [ "$PDF" = 1 ];      then install_pdf        $ARGS; fi
+
+if [ -e $BASEDIR/bin/hoppet-config ]; then 
+    export HOPPETLIBS=` $BASEDIR/bin/hoppet-config --libs `
+    export HOPPETINCS=` $BASEDIR/bin/hoppet-config --cxxflags ` 
+    export HOPPETFLAG="  -DHOPPET " 
+fi 
+
 if [ "$APPLGRID" = 1 ]; then install_appl_grid  $ARGS; fi
 if [ "$MCFM" = 1 ];     then install_mcfm       $ARGS; fi
 if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi        

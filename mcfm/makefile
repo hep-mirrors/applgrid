@@ -73,7 +73,7 @@ NTUPLES = NO
 
 # F77 = g77
 F77 = gfortran
-CXX = g++
+# CXX = g++
 RM  = rm
 
 GRIDINCS = -I$(GRIDPATH)/include
@@ -881,7 +881,7 @@ $(OBJDIR)/mypdfevolve.o: PDF/mypdfevolve.f
 F90LIB= -L`which lf95 | sed s:bin/lf95:lib:` -lfj9i6 -lfj9f6 -lfj9e6 -lfccx86_6a
 # PDFCONVLIBS = -L$(HOME)/nlo/mcfm-pavel/mcfm-v0/PDF/pdf-conv-1.0/src -ldglap -lgfortran -L/sw/lib -lg2c 
 # PDFCONVLIBS = -L$(DGLAPDIR) -ldglap -ldglap $(FRTLLIB)
-PDFCONVLIBS = -L$(INSTALLBASE)/lib -lhoppet_v1 $(FRTLLIB)
+PDFCONVLIBS = $(HOPPETLIBS) $(FRTLLIB)
 #$(F90LIB)
 
 

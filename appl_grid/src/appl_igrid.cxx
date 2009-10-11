@@ -244,7 +244,8 @@ igrid::igrid(TFile& f, const string& s) :
   m_reweight   = ((*setup)(13)!=0 ? true : false );
   m_symmetrise = ((*setup)(14)!=0 ? true : false );
   m_optimised  = ((*setup)(15)!=0 ? true : false );
-  m_DISgrid    = ((*setup)(16)!=0 ? true : false );
+  m_DISgrid    =  ( setup->GetNoElements()>15 && (*setup)[16]!=0 ) ;
+
 
   delete setup;
 

@@ -114,7 +114,6 @@ LOBJFILES = $(OBJDIR)/fappl_grid.o      \
 	    $(OBJDIR)/appl_timer.o      \
             $(OBJDIR)/SparseMatrix3d.o  \
             $(OBJDIR)/fastnlo.o         \
-	    $(OBJDIR)/fastnlo-dis.o     \
 	    $(OBJDIR)/hoppet_init.o      
 
 
@@ -139,7 +138,6 @@ HEADERS = $(INCDIR)/appl_grid.h    \
 	  $(INCDIR)/tsparse2d.h    \
 	  $(INCDIR)/tsparse3d.h    \
 	  $(INCDIR)/fastnlo.h      \
-	  $(INCDIR)/fastnlo-dis.h  \
 	  $(INCDIR)/hoppet_init.h 
 
 

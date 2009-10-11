@@ -198,7 +198,7 @@ install_pdf() {
     fi
     ./configure --prefix=$BASEDIR FC=$FC FFLAGS="$FFLAGS" LDFLAGS="$LDFLAGS"
 
-    mv benchmarking/benchmark.f90{,-save}
+#   mv benchmarking/benchmark.f90{,-save}
 
     make
 #   make check

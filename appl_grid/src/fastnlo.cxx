@@ -1,5 +1,5 @@
 //
-//   @file    fastbnlo.cxx         
+//   @file    fastnlo.cxx         
 //   
 //      Implementaion of the fastnlo - applgrid interface
 //                   
@@ -181,6 +181,10 @@ fastnlo::fastnlo( const std::string& filename ) {
   int Nxsum = 0;
   int Nsubproc = 0;
 
+  std::string pdfname; 
+  if ( ireaction==1 ) pdfname = "dis";
+  if ( ireaction==2 ) pdfname = "nlojet";
+  if ( ireaction==3 ) pdfname = "nlojetpp";
  
   if ( (ireaction==2) || (ireaction==3) ) { //  pp or ppbar
     Nxsum = (Nxtot*Nxtot+Nxtot)/2;
@@ -193,13 +197,49 @@ fastnlo::fastnlo( const std::string& filename ) {
     }
   }
 
+
+  //  appl::grid** m_grid = new appl::grid*[Nrapidity];
+  m_grid = std::vector<appl::grid*>(Nrapidity);
+
+  // need to implement other schemes if need be...
+  std::string transform;
+
+  static double (*fy)(double x) = NULL;
+  static double (*fx)(double x) = NULL;
+
+  out( "scheme: ", ixscheme ); 
+
+  switch ( ixscheme ) { 
+  case 1:  
+    // dis
+    transform = "f4";
+    fy = appl::igrid::_fy4;
+    fx = appl::igrid::_fx4;
+    break;
+  case 2: 
+    // pp and ppbar  
+    transform = "f3";
+    fy = appl::igrid::_fy3;
+    fx = appl::igrid::_fx3;
+    break;
+  default:
+    std::cerr << "fastnlo::fastnlo() transform not defined" << std::endl;
+    return;
+  }
+
+  out( "tranform: ", transform ); 
+
+
+  bool DISgrid = false;
+  if ( ireaction==1 )  DISgrid = true;
+ 
+
   out("Nxsum ", Nxsum );
   out("Nsubproc ", Nsubproc );
 
 
   out( "Nrapidity: ", Nrapidity );
   
-
   int Nbins = 0;
   for ( int i=0 ; i<Nrapidity ; i++ ) Nbins += Npt[i];
   
@@ -214,8 +254,12 @@ fastnlo::fastnlo( const std::string& filename ) {
       array[ibin] = std::vector<  std::vector<  std::vector<  std::vector<double> > > >(Nxsum);
 
       int ix = 0;
-      for ( int ix1=0 ; ix1<Nxtot ; ix1++ ) { 
-	for ( int ix2=0 ; ix2<=ix1 ; ix2++ ) { 
+      for ( int ix1=0 ; ix1<Nxtot ; ix1++ ) {
+
+	int ix2max = ix1;
+	if ( ireaction==1 ) ix2max=0;
+ 
+	for ( int ix2=0 ; ix2<=ix2max ; ix2++ ) { 
 	  
 	  // out( "Nsubproc: ", Nsubproc );
 
@@ -270,21 +314,7 @@ fastnlo::fastnlo( const std::string& filename ) {
   int iposition[3] = { 0, 1+icentral, 1+icentral+Nscalevar };
   ibin = 0;
   
-
-
-  //  appl::grid** m_grid = new appl::grid*[Nrapidity];
-  m_grid = std::vector<appl::grid*>(Nrapidity);
-
-  // need to implement other schemes if need be...
-  std::string transform;
-  if ( ixscheme==2 ) transform = "f3";
   
-
-  std::string pdfname; 
-  if ( ireaction==2 ) pdfname = "nlojet";
-  if ( ireaction==3 ) pdfname = "nlojetpp";
-
-
   for ( int irap=0 ; irap<Nrapidity ; irap++ ) { 
 
     //    std::cout << "rap " << irap << std::endl;
@@ -309,17 +339,17 @@ fastnlo::fastnlo( const std::string& filename ) {
       //      std::cout << "width " << ipt << "\t" << width << std::endl;
 
       // need to generalise this??
-      double hxlim = -std::sqrt( -std::log10( xlimit[irap][ipt] ) );
+      double hylim = -fy( xlimit[irap][ipt] );
       
-      double hxl = hxlim;
-      double hxu = hxlim/Nxtot;
-      double xl = std::pow(10, -hxl*hxl);
-      double xu = std::pow(10, -hxu*hxu);
+      double hyl = hylim;
+      double hyu = hylim/Nxtot;
+      double xl = fx(-hyl);
+      double xu = fx(-hyu);
       
-      //      std::cout << "xl " << xl << "\txu " << xu << std::endl; 
+      //      std::cout << "ipt " << ipt << "\txl " << xl << "\txu " << xu << std::endl; 
       
       // this has made the x values - only need to make the limits, 
-      // using transform f3
+      // using appropriate fx/fy transforms 
       
       for ( int iord=0 ; iord<Norder ; iord++ ) { 
 
@@ -328,12 +358,16 @@ fastnlo::fastnlo( const std::string& filename ) {
 	double Q2min = murval[irap][ipt][0];            Q2min *= Q2min;
 	double Q2max = murval[irap][ipt][Nscalebin-1];  Q2max *= Q2max;
 
-	//	std::cout << "Q2 " << Q2min << "\t" << Q2max << "\tNscale " << Nscalebin << std::endl;  
-
+#if 0
+	std::cout << "Q2 " << Q2min 
+		  << "\t"  << Q2max 
+		  << "\tNscale "  << Nscalebin 
+		  << "\tDISgrid " << DISgrid << std::endl;  
+#endif
 
 	appl::igrid* g = new appl::igrid( Nscalebin, Q2min, Q2max, 0, 
 					  Nxtot, xl, xu, 0, 
-					  transform, Nsubproc );
+					  transform, Nsubproc, DISgrid );
 	
 	g->symmetrise(true);
 	if ( ipdfwgt ) g->reweight(true);
@@ -354,11 +388,16 @@ fastnlo::fastnlo( const std::string& filename ) {
 	  int NQ  = g->weightgrid()[isub]->Nx();
 	  int Nx1 = g->weightgrid()[isub]->Ny();
 	  int Nx2 = g->weightgrid()[isub]->Nz();
-	  
-	  //	  std::cout << "ord " << iord << "\tipos " << iposition[iord] << std::endl; 
+	  if ( DISgrid ) Nx2 = 1;
+
+	  // std::cout << "ord " << iord << "\tipos " << iposition[iord] << std::endl; 
 	  
 	  for ( int ix1=0 ; ix1<Nxtot ; ix1++ ) { 
-	    for ( int ix2=0 ; ix2<=ix1 ; ix2++ ) { 
+
+	    int ix2max = ix1;
+	    if ( ireaction==1 ) ix2max=0;
+
+	    for ( int ix2=0 ; ix2<=ix2max ; ix2++ ) { 
 	      for ( int iQbin=0 ; iQbin<Nscalebin ; iQbin++ ) {       
 		// leading order
 		//		double d = array[ibin][ix][isub][iposition[iord]][iQbin];

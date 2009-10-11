@@ -78,14 +78,11 @@ igrid::igrid() :
 
 
 
-
-
-
 // standard constructor
 igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order, 
 	     int Nx,  double xmin,  double xmax,  int xorder, 
-	     string transform, int Nproc) :
-  m_Ny1(Nx),   m_Ny2(Nx),  m_yorder(xorder), 
+	     string transform, int Nproc, bool disflag ):
+  m_Ny1(Nx),   m_Ny2( disflag ? 1 : Nx ),  m_yorder(xorder), 
   m_Ntau(NQ2), m_tauorder(Q2order), 
   m_Nproc(Nproc), m_transform(transform), 
   m_symmetrise(false), 
@@ -93,7 +90,8 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_weight(NULL),
   m_fg1(NULL),     m_fg2(NULL),  
   m_fsplit1(NULL), m_fsplit2(NULL),
-  m_alphas(NULL)   
+  m_alphas(NULL),
+  m_DISgrid(disflag)   
 {
   //  cout << "igrid::igrid() transform=" << m_transform << endl;
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found");
@@ -101,11 +99,16 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   fx=m_fmap[m_transform].mfx;
   fy=m_fmap[m_transform].mfy;
   
-  double ymin = fy(xmax);
-  double ymax = fy(xmin);
+  double ymin1 = fy(xmax);
+  double ymax1 = fy(xmin);
 
-  m_y1min   = m_y2min = ymin;
-  m_y1max   = m_y2max = ymax;
+  m_y1min  = ymin1 ;
+  m_y1max  = ymax1 ;
+  m_y2min  = ymin1 ;
+  m_y2max  = ymax1 ;
+
+  if ( m_DISgrid ) m_y2min = m_y2max = 1;
+
   if ( m_Ny1>1 ) m_deltay1 = (m_y1max-m_y1min)/(m_Ny1-1);
   else           m_deltay1 = 0;
   
@@ -126,13 +129,14 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
     while ( m_Ny1-1<m_yorder ) m_yorder--;
   } 
 
-  if ( m_Ny2-1<m_yorder ) { 
-    cerr << "igrid() not enough nodes for this interpolation order Ny2=" << m_Ny2 
-	 << "\tyorder=" << m_yorder << endl;
- 
-    while ( m_Ny2-1<m_yorder ) m_yorder--;
-  } 
-
+  if ( !m_DISgrid ) { 
+    if ( m_Ny2-1<m_yorder ) { 
+      cerr << "igrid() not enough nodes for this interpolation order Ny2=" << m_Ny2 
+	   << "\tyorder=" << m_yorder << endl;
+      
+      while ( m_Ny2-1<m_yorder ) m_yorder--;
+    } 
+  }
   
   if ( m_Ntau-1<m_tauorder ) { 
     cerr << "igrid() not enough nodes for this interpolation order Ntau=" << m_Ntau 
@@ -240,6 +244,7 @@ igrid::igrid(TFile& f, const string& s) :
   m_reweight   = ((*setup)(13)!=0 ? true : false );
   m_symmetrise = ((*setup)(14)!=0 ? true : false );
   m_optimised  = ((*setup)(15)!=0 ? true : false );
+  m_DISgrid    = ((*setup)(16)!=0 ? true : false );
 
   delete setup;
 
@@ -394,7 +399,7 @@ void igrid::write(const string& name) {
   TFileString("Transform",m_transform).Write();
 
 
-  TVectorT<double>* setup=new TVectorT<double>(16); 
+  TVectorT<double>* setup=new TVectorT<double>(20); // a few spare
 
   (*setup)(0)  = m_Ny1;
   (*setup)(1)  = m_y1min;
@@ -415,9 +420,10 @@ void igrid::write(const string& name) {
 
   (*setup)(12) = m_Nproc;
  
-  (*setup)(13) = (   m_reweight ? 1 : 0 );
+  (*setup)(13) = ( m_reweight   ? 1 : 0 );
   (*setup)(14) = ( m_symmetrise ? 1 : 0 );
   (*setup)(15) = ( m_optimised  ? 1 : 0 );
+  (*setup)(16) = ( m_DISgrid    ? 1 : 0 );
 
   setup->Write("Parameters");
 
@@ -601,7 +607,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     // pdf table
     m_fg1[i] = new double*[n_y1];
     for ( int j=0 ; j<n_y1 ; j++ ) m_fg1[i][j] = new double[13];
-    if ( !isSymmetric() ) { 
+    if ( !isSymmetric() && !isDISgrid() ) { 
       m_fg2[i] = new double*[n_y2];
       for ( int j=0 ; j<n_y2 ; j++ ) m_fg2[i][j] = new double[13];   
     }    
@@ -610,7 +616,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     if ( nloop==1 && fscale_factor!=1 ) { 
       m_fsplit1[i] = new double*[n_y1];
       for ( int j=0 ; j<n_y1 ; j++ ) m_fsplit1[i][j] = new double[13];
-      if ( !isSymmetric() ) { 
+      if ( !isSymmetric() && !isDISgrid() ) { 
 	m_fsplit2[i] = new double*[n_y2];
 	for ( int j=0 ; j<n_y2 ; j++ ) m_fsplit2[i][j] = new double[13];   
       }
@@ -633,9 +639,9 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     m_alphas[itau] = alphas(rscale_factor*Q)*invtwopi;
 
     //    std::cout << itau << "\ttau " << tau 
-    //              << "\tQ2 " << Q2 << "\tQ" << Q 
-    //              << "\t" << m_alphas[itau] << std::endl; 
-    
+    //	      << "\tQ2 " << Q2 << "\tQ " << Q 
+    //	      << "\talphas " << m_alphas[itau] << std::endl; 
+
     int iymin1 = m_weight[0]->ymin();
     int iymax1 = m_weight[0]->ymax();
     
@@ -652,7 +658,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     // consider outside this range
     
     // y1 tables
-    for ( int iy=0 ; iy<n_y1 ; iy++ ) { 
+    for ( int iy=n_y1 ; iy-- ;  ) { 
       
       double y = gety1(iy);
       double x = fx(y);
@@ -674,12 +680,14 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       }
 
       pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
+      
 
       double invx = 1/x;
       //CTC>> division by x should be done  in splitting
       for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
-  
+
       if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= fun;
+
       
       // splitting function table
       if ( nloop==1 && fscale_factor!=1 ) { 
@@ -690,11 +698,11 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       }
     }
     
-    if ( !isSymmetric() ) {
+    if ( !isSymmetric() && !isDISgrid() ) {
  
       // y2 tables
       //    for ( int iy=iymin2 ; iy<=iymax2 ; iy++ ) { 
-      for ( int iy=0 ; iy<n_y2 ; iy++ ) { 
+      for ( int iy=n_y2 ; iy-- ;  ) { 
 	
 	double y = gety2(iy);
 	double x = fx(y);
@@ -772,7 +780,7 @@ void igrid::pdfinterp(double x, double Q2, double* f)
    
   double fun = weightfun(x); 
 
-  for ( int ip1=0 ; ip1<13 ; ip1++ ) f[ip1] /= fun;
+  if ( m_reweight ) for ( int ip1=0 ; ip1<13 ; ip1++ ) f[ip1] /= fun;
 
 }
 
@@ -855,7 +863,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
     //      for ( int iy2=0 ; iy2<Ny2() ; iy2++ ) { 
     for ( int iy1=Ny1() ; iy1-- ;  ) {            
       for ( int iy2=Ny2() ; iy2-- ;  ) { 
-	// test if this element is actually filled
+ 	// test if this element is actually filled
 	// if ( !m_weight[0]->trimmed(itau,iy1,iy2) ) continue; 
 	bool nonzero = false;
 	// basic convolution order component for either the born level
@@ -878,21 +886,22 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	  //	  for  ( int ipp=0 ; ipp<m_Nproc ; ipp++ ) H[ipp]=1;
   
 	  // do the convolution
+
           double xsigma=0.;
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
 	  dsigma+= _alphas*xsigma;
 
 #if 0
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
-	    xsigma=sig[ip]*H[ip];
+	    xsigma+=sig[ip]*H[ip];
 	    dsigma+= _alphas*xsigma;
 	    // dsigma+= xsigma;
 
-	    std::cout << "o " << nloop << "\ta " << _alphas 
-		      << "\tx "<< iy1 << " " << iy2 << " " << itau 
-		      << "\tip " << ip << "\tpdf " << H[ip] << "\tc " << sig[ip]/BINWIDTH
-		      << "\tr0 " << _alphas*sig[ip]*H[ip]/BINWIDTH 
-		      << "\tr "  << dsigma  << std::endl;
+	    //	    std::cout << "order " << nloop << "\talphas " << _alphas 
+	    //		      << "\tx "<< iy1 << " " << iy2 << " " << itau 
+	    //		      << "\tip " << ip << "\tpdf " << H[ip] << "\tc " << sig[ip]/BINWIDTH
+	    //		      << "\tr0 " << _alphas*sig[ip]*H[ip]/BINWIDTH 
+	    //		      << "\tr "  << dsigma/BINWIDTH  << std::endl;
 	  } 
 #endif
 

@@ -83,7 +83,7 @@ public:
 
   igrid(int NQ2,   double Q2min=10000.0, double Q2max=25000000.0,  int Q2order=5,  
 	int Nx=50, double xmin=1e-5,     double xmax=0.9,          int xorder=5, 
-	string transform="f", int Nproc=6);
+	string transform="f", int Nproc=6, bool disflag=false);
 
   igrid(const igrid& g);
 
@@ -157,6 +157,7 @@ public:
     fmap["f1"] = transform_vec( _fx1, _fy1 );
     fmap["f2"] = transform_vec( _fx2, _fy2 );
     fmap["f3"] = transform_vec( _fx3, _fy3 );
+    fmap["f4"] = transform_vec( _fx4, _fy4 );
     return fmap;
   }
 
@@ -205,6 +206,10 @@ public:
   
   static double _fy3(double x) { return sqrt(-log10(x)); }
   static double _fx3(double y) { return pow(10,-y*y); } 
+
+  // fastnlo dis transform
+  static double _fy4(double x) { return -log10(x); }
+  static double _fx4(double y) { return pow(10,-y); } 
 
 
   // pdf weight function
@@ -290,6 +295,9 @@ public:
 
   bool   isOptimised() const       { return m_optimised; }
   bool   setOptimised(bool t=true) { return m_optimised=t; } 
+
+  bool   isDISgrid() const       { return m_DISgrid; }
+  bool   seDISgrid(bool t=true)  { return m_DISgrid=t; } 
 
 
 
@@ -501,6 +509,10 @@ private:
 
   // alpha_s table
   double*   m_alphas;
+
+  // flag to emulate a 2d (Q2, x) grid of use the 
+  // full 3d (Q2, x1, x2) grid
+  bool m_DISgrid;
 
 };
 

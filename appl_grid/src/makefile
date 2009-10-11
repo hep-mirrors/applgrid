@@ -108,11 +108,13 @@ LOBJFILES = $(OBJDIR)/fappl_grid.o      \
 	    $(OBJDIR)/jetrad_pdf.o      \
 	    $(OBJDIR)/mcfmz_pdf.o       \
 	    $(OBJDIR)/mcfmw_pdf.o       \
+	    $(OBJDIR)/dis_pdf.o         \
 	    $(OBJDIR)/TFileString.o     \
 	    $(OBJDIR)/TFileStringDict.o \
 	    $(OBJDIR)/appl_timer.o      \
             $(OBJDIR)/SparseMatrix3d.o  \
             $(OBJDIR)/fastnlo.o         \
+	    $(OBJDIR)/fastnlo-dis.o     \
 	    $(OBJDIR)/hoppet_init.o      
 
 
@@ -127,6 +129,7 @@ HEADERS = $(INCDIR)/appl_grid.h    \
 	  $(INCDIR)/nlojet_pdf.h   \
 	  $(INCDIR)/nlojetpp_pdf.h \
 	  $(INCDIR)/jetrad_pdf.h   \
+	  $(INCDIR)/dis_pdf.h      \
 	  $(INCDIR)/SparseMatrix3d.h \
 	  $(INCDIR)/axis.h           \
 	  $(INCDIR)/sparse.h       \
@@ -136,6 +139,7 @@ HEADERS = $(INCDIR)/appl_grid.h    \
 	  $(INCDIR)/tsparse2d.h    \
 	  $(INCDIR)/tsparse3d.h    \
 	  $(INCDIR)/fastnlo.h      \
+	  $(INCDIR)/fastnlo-dis.h  \
 	  $(INCDIR)/hoppet_init.h 
 
 

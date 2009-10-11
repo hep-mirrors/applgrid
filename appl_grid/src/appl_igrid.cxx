@@ -666,9 +666,6 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       double fun = 1;
       if ( m_reweight ) fun = weightfun(x);
       
-      // pdf table 
-      //	evolvepdf_(x, Q, fg[itau][iy1]);
-     
       if ( scale_beams ) { 
 	x *= beam_scale;
 	if ( x>=1 ) { 
@@ -682,18 +679,13 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 
       pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
       
-
       double invx = 1/x;
-      //CTC>> division by x should be done  in splitting
       for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
-
       if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= fun;
-
       
       // splitting function table
       if ( nloop==1 && fscale_factor!=1 ) { 
 	splitting(x, fscale_factor*Q, m_fsplit1[itau][iy]);
-	//CTC>> division by x should be done  in splitting
 	for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= invx;
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= fun;
       }
@@ -710,10 +702,6 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 	double fun = 1;
 	if (m_reweight) fun = weightfun(x);
 	
-	//	evolvepdf_(x, Q, fg[itau][iy1]);
-	// pdfs 
-	//TC pdf(x,Q, m_fg2[itau][iy]);
-	
 	if ( scale_beams ) { 
 	  x *= beam_scale;	
 	  if ( x>=1 ) { 
@@ -725,10 +713,9 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 	  }
 	}
 	
-	pdf(x,  fscale_factor*Q, m_fg2[itau][iy]);
+	pdf(x, fscale_factor*Q, m_fg2[itau][iy]);
 	
 	double invx = 1/x;
-	//CTC>> division by x should be done  in splitting
 	for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= fun;      
 	

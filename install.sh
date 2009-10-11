@@ -197,8 +197,11 @@ install_pdf() {
 	make clean
     fi
     ./configure --prefix=$BASEDIR FC=$FC FFLAGS="$FFLAGS" LDFLAGS="$LDFLAGS"
+
+    mv benchmarking/benchmark.f90{,-save}
+
     make
-    make check
+#   make check
     make install
 
     # cd $BASEDIR/pdf-conv-1.0/src

@@ -867,7 +867,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	//	for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << sig[ip]; 
 	//	std::cout << std::endl;
 
-	if ( true || nonzero ) { 	
+	if ( nonzero ) { 	
 	  // build the generalised pdfs from the actual pdfs
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
 	

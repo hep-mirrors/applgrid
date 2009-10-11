@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 
   std::vector<TH1D*> hc(g.size());
   
-  std::string foutname = (std::string("appl-")+gridname+".root");
+  std::string foutname = "appl.root";
 
   TFile fout( foutname.c_str(),"recreate");
   for ( int i=0 ; i<g.size() ; i++ ) { 

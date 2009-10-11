@@ -20,16 +20,6 @@ extern "C"
 } 
 
 
-// wrapper to get the x*pdf from gavins evolution code.
-// in fact, don't actually need this wrapper any longer - we could
-// just pass the routine directly
-
-// void GetPdf(const double& x, const double& Q, double* xf) { 
-//   evolvepdf_( x, Q, xf);    
-//   return; 
-// }
-
-
 
 int main(int argc, char** argv) { 
 
@@ -58,8 +48,8 @@ int main(int argc, char** argv) {
   std::cout << "doing standalone convolution..." << std::endl; 
   std::vector<double>  xsec = g.vconvolute( evolvepdf_, alphaspdf_ ); 
 
-  // or get into a histogram
-  //  TH1D*               hxsec = g.convolute( GetPdf, alphaspdf_ ); 
+  //  or get into a histogram
+  //  TH1D* hxsec = g.convolute( evolvepdf_, alphaspdf_ ); 
   //  hxsec->SetName("xsec");
 
   return 0;

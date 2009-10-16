@@ -35,7 +35,8 @@ RMCFM=0
 NLO=1
 NLOMOD=1
 RNLOMOD=1
-
+FASTJET=1
+USERJ=1
 
 #   echo "setting everything"
 setall() { 
@@ -46,6 +47,8 @@ setall() {
     NLO=1
     NLOMOD=1
     RNLOMOD=1
+    FASTJET=1
+    USERJ=1
 }
 
 #   echo "unsetting everything"
@@ -57,6 +60,8 @@ unsetall() {
     NLO=0
     NLOMOD=0
     RNLOMOD=0
+    FASTJET=0
+    USERJ=0
 }
 
 # usage message
@@ -73,6 +78,7 @@ usage() {
     echo "  --runmcfm    run mcfm"
     echo "  --runmod     run nlojet module"
     echo "  --user       build and run simple user example"
+    echo "  --fastjet    build fastjet"
     echo "\nReport bugs to <sutt@cern.ch>" 
 #   exit
 }
@@ -93,7 +99,8 @@ for WORD in $ARGS ; do
        --nlo)      NLO=1;;
        --mod)      NLOMOD=1;;
        --runmod)   RNLOMOD=1;;
-       --user)     USER=1;;
+       --user)     USERJ=1;;
+       --fastjet)  FASTJET=1;;
        --help|-h)  usage;exit;;
    esac
 done
@@ -151,9 +158,14 @@ export FC=gfortran
 # export FFLAGS="$ARCH -O"
 export FFLAGS=$ARCH
 export LDFLAGS=$ARCH
+
 export HOPPETLIBS=
 export HOPPETINCS=
 export HOPPETFLAG=  
+
+export FASTJETLIBS=
+export FASTJETINCS=
+export FASTJETFLAG=  
 
 
 
@@ -197,9 +209,6 @@ install_pdf() {
 	make clean
     fi
     ./configure --prefix=$BASEDIR FC=$FC FFLAGS="$FFLAGS" LDFLAGS="$LDFLAGS"
-
-#   mv benchmarking/benchmark.f90{,-save}
-
     make
 #   make check
     make install
@@ -230,7 +239,6 @@ install_mcfm() {
 # RUN THE MCFM TEST EXECUTABLE
 ############################################
 run_mcfm() { 
-
 
     cd $BASEDIR/mcfm/run
     rm -f *.log
@@ -408,6 +416,29 @@ run_user () {
     ./fnlo  fnl0004.tab
 }
 
+install_fastjet () { 
+
+    cd $BASEDIR
+
+    if [ -e "$BASEDIR/fastjet-2.4.1" ]; then
+       echo "fastjet already installed"
+    else 
+      curl http://www.lpthe.jussieu.fr/~salam/fastjet/repo/fastjet-2.4.1.tar.gz > /tmp
+      tar -xzf /tmp/fastjet-2.4.1.tar.gz 
+
+      if [ -e "$BASEDIR/fastjet-2.4.1" ]; then 
+         cd $BASEDIR/fastjet-2.4.1
+         ./configure --prefix=$BASEDIR
+         if [ "$1" = "clean" ]; then
+ 	   make clean
+         fi
+         make install
+      fi
+
+    fi
+
+}
+
 
 ###########################
 # ACTUALLY RUN THE STAGES 
@@ -425,6 +456,14 @@ if [ "$APPLGRID" = 1 ]; then install_appl_grid  $ARGS; fi
 if [ "$MCFM" = 1 ];     then install_mcfm       $ARGS; fi
 if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi        
 if [ "$NLO" = 1 ];      then    install_nlojet         $ARGS; fi
+if [ "$FASTJET" = 1 ];  then    install_fastjet        $ARGS; fi
+
+if [ -e $BASEDIR/bin/fastjet-config ]; then 
+    export FASTJETLIBS=` $BASEDIR/bin/fastjet-config --libs `
+    export FASTJETINCS=` $BASEDIR/bin/fastjet-config --cxxflags ` 
+    export FASTJETFLAG="  -DFASTJET " 
+fi 
+
 if [ "$NLOMOD" = 1 ];   then    install_nlojet_module  $ARGS; fi
 if [ "$RNLOMOD" = 1 ];  then    run_nlojet_module;            fi 
-if [ "$USER" = 1 ];     then    run_user           $ARGS;  fi 
+if [ "$USERJ" = 1 ];    then    run_user           $ARGS;  fi 

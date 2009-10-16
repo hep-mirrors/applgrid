@@ -421,14 +421,15 @@ install_fastjet () {
 
     cd $BASEDIR
 
-    if [ -e "$BASEDIR/fastjet-2.4.1" ]; then
+    if [ -e "$BASEDIR/fastjet-*" ]; then
        echo "fastjet already installed"
     else 
-      curl http://www.lpthe.jussieu.fr/~salam/fastjet/repo/fastjet-2.4.1.tar.gz > /tmp
-      tar -xzf /tmp/fastjet-2.4.1.tar.gz 
+      FASTJETVER=`wget --quiet http://www.lpthe.jussieu.fr/~salam/fastjet/version.html -O - | grep '^[0-9]' -` 
+      curl http://www.lpthe.jussieu.fr/~salam/fastjet/repo/fastjet-$FASTJETVER.tar.gz > /tmp/fastjet-$FASTJETVER.tar.gz
+      tar -xzf /tmp/fastjet-$FASTJETVER.tar.gz 
 
-      if [ -e "$BASEDIR/fastjet-2.4.1" ]; then 
-         cd $BASEDIR/fastjet-2.4.1
+      if [ -e "$BASEDIR/fastjet-$FASTJETVER" ]; then 
+         cd $BASEDIR/fastjet-$FASTJETVER
          ./configure --prefix=$BASEDIR  FC=$FC CXXFLAGS="$CXXFLAGS" FFLAGS="$FFLAGS" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
          if [ "$1" = "clean" ]; then
  	   make clean

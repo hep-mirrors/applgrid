@@ -429,7 +429,7 @@ install_fastjet () {
 
       if [ -e "$BASEDIR/fastjet-2.4.1" ]; then 
          cd $BASEDIR/fastjet-2.4.1
-         ./configure --prefix=$BASEDIR
+         ./configure --prefix=$BASEDIR  FC=$FC CXXFLAGS="$CXXFLAGS" FFLAGS="$FFLAGS" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
          if [ "$1" = "clean" ]; then
  	   make clean
          fi

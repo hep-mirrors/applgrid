@@ -457,12 +457,24 @@ if [ "$APPLGRID" = 1 ]; then install_appl_grid  $ARGS; fi
 if [ "$MCFM" = 1 ];     then install_mcfm       $ARGS; fi
 if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi        
 if [ "$NLO" = 1 ];      then    install_nlojet         $ARGS; fi
-if [ "$FASTJET" = 1 ];  then    install_fastjet        $ARGS; fi
 
-if [ -e $BASEDIR/bin/fastjet-config ]; then 
-    export FASTJETLIBS=` $BASEDIR/bin/fastjet-config --libs `
-    export FASTJETINCS=` $BASEDIR/bin/fastjet-config --cxxflags ` 
-    export FASTJETFLAG="  -DFASTJET " 
+
+FASTJETFOUND=`which fastjet-config`
+
+if [ "$FASTJETFOUND" == "" ]; then  
+  if [ "$FASTJET" = 1 ];  then    install_fastjet        $ARGS; fi
+ 
+  if [ -e $BASEDIR/bin/fastjet-config ]; then 
+     export FASTJETLIBS=` $BASEDIR/bin/fastjet-config --libs `
+     export FASTJETINCS=` $BASEDIR/bin/fastjet-config --cxxflags ` 
+     export FASTJETFLAG="  -DFASTJET " 
+  fi
+else
+  if [ -e $BASEDIR/bin/fastjet-config ]; then 
+     export FASTJETLIBS=` fastjet-config --libs `
+     export FASTJETINCS=` fastjet-config --cxxflags ` 
+     export FASTJETFLAG="  -DFASTJET " 
+  fi
 fi 
 
 if [ "$NLOMOD" = 1 ];   then    install_nlojet_module  $ARGS; fi

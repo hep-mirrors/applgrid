@@ -65,6 +65,39 @@ int main(int argc, char** argv) {
     hc[i]->SetDirectory(&fout);
     hc[i]->Write();
 
+    std::cout << "central" << std::endl;
+    for ( int j=0 ; j<hc[i]->GetNbinsX() ; j++ ) { 
+      std::cout << "xsec " << j << "\t" << hc[i]->GetBinContent(j+1) << std::endl; 
+    } 
+
+    std::cout << "scale " << 0.5 << std::endl;
+    
+    std::string hsname = hname;
+    hsname += "-0.5";
+
+    hc[i] = g[i]->convolute( evolvepdf_, alphaspdf_, g[i]->nloops(), 0.5, 0.5 );
+    hc[i]->SetName(hsname.c_str());
+    hc[i]->SetDirectory(&fout);
+    hc[i]->Write();
+
+    for ( int j=0 ; j<hc[i]->GetNbinsX() ; j++ ) { 
+      std::cout << "xsec " << j << "\t" << hc[i]->GetBinContent(j+1) << std::endl; 
+    } 
+
+    std::cout << "scale " << 0.5 << std::endl;
+    
+    hsname = hname;
+    hsname += "-2.0";
+
+    hc[i] = g[i]->convolute( evolvepdf_, alphaspdf_, g[i]->nloops(), 2.0, 2.0 );
+    hc[i]->SetName(hsname.c_str());
+    hc[i]->SetDirectory(&fout);
+    hc[i]->Write();
+
+    for ( int j=0 ; j<hc[i]->GetNbinsX() ; j++ ) { 
+      std::cout << "xsec " << j << "\t" << hc[i]->GetBinContent(j+1) << std::endl; 
+    } 
+
   }
 
   std::cout << "writing file " << foutname << std::endl; 

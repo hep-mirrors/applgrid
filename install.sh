@@ -35,7 +35,7 @@ RMCFM=0
 NLO=1
 NLOMOD=1
 RNLOMOD=1
-FASTJET=1
+FASTJET=0
 USERJ=1
 
 #   echo "setting everything"

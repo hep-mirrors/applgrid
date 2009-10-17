@@ -17,8 +17,9 @@ CXXFLAGS += -I$(INSTALLBASE)/include
 
 ROOTINCS = -I$(shell root-config --incdir)
 APPLCXXFLAGS = -I$(INSTALLBASE)/include
+LHAPDFINCS  = $(shell lhapdf-config --prefix)/include
 
-CXXFLAGS += $(ROOTINCS) $(APPLCXXFLAGS)
+CXXFLAGS += $(ROOTINCS) $(APPLCXXFLAGS) $(LHAPDFINCS)
 
 
 

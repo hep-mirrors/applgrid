@@ -44,11 +44,11 @@ LIBS += $(ROOTLIBS)  $(LHAPDFLIBS) $(APPLLIBS) $(FRTLLIB) $(PDFCONVLIBS)
 
 install : all
 all : stand fnlo
-stand: stand.o InitMyPdf.o
-	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO)  stand.o  InitMyPdf.o $(LIBS) 
+stand: stand.o 
+	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) 
 
-fnlo: fnmain.o InitMyPdf.o
-	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO)  fnmain.o  InitMyPdf.o $(LIBS) 
+fnlo: fnmain.o 
+	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) 
 
 
 .SUFFIXES : .cxx .o .f .c

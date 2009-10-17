@@ -9,15 +9,9 @@
 
 
 // lhapdf routines
-extern "C" 
-{  
-  void initmypdf_(const char* name, const int& iset);
-  //  void initpdfset_( const char* );
-  //  void initpdf_( const int& );
-
-  void evolvepdf_(const double& , const double& , double* );
-  double alphaspdf_(const double& Q);
-} 
+#include "LHAPDF/LHAPDF.h"
+extern "C" void evolvepdf_(const double& , const double& , double* );
+extern "C" double alphaspdf_(const double& Q);
 
 
 
@@ -31,9 +25,9 @@ int main(int argc, char** argv) {
 
   std::cout << "set up lhapdf..." << std::endl;
 
-  const std::string _pdfname = "PDFsets/cteq61.LHgrid";  
+  const std::string _pdfname = "cteq61.LHgrid";  
   int iset = 0;
-  initmypdf_(_pdfname.c_str(), iset);
+  LHAPDF::initPDFSet( _pdfname, iset );
   
   // don't need to hard code, can use a runtime parameter...
   std::string gridname = argv[1];
@@ -64,7 +58,7 @@ int main(int argc, char** argv) {
     hc[i]->SetName(hname);
     hc[i]->SetDirectory(&fout);
     hc[i]->Write();
-
+    
   }
 
   std::cout << "writing file " << foutname << std::endl; 

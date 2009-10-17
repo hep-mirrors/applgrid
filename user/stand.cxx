@@ -9,15 +9,9 @@
 
 
 // lhapdf routines
-extern "C" 
-{  
-  void initmypdf_(const char* name, const int& iset);
-  //  void initpdfset_( const char* );
-  //  void initpdf_( const int& );
-
-  void evolvepdf_(const double& , const double& , double* );
-  double alphaspdf_(const double& Q);
-} 
+#include "LHAPDF/LHAPDF.h"
+extern "C" void evolvepdf_(const double& , const double& , double* ); 
+extern "C" double alphaspdf_(const double& Q);
 
 
 
@@ -35,12 +29,10 @@ int main(int argc, char** argv) {
 
   // initialise lhapdf
 
-  const string _pdfname = "PDFsets/cteq6mE.LHgrid";  
+  const string _pdfname = "cteq6mE.LHgrid";  
   int iset = 0;
 
-  // need a fortran wrapper to do the fortran string passing 
-  // properly
-  initmypdf_(_pdfname.c_str(), iset);
+  LHAPDF::initPDFSet( _pdfname, iset );
   // initpdfset_(_pdfname.c_str());
   // initpdf_( iset );
 

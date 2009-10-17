@@ -407,12 +407,7 @@ run_user () {
     hoppet-config --prefix
 
     make all
-    if [ -e PDFsets ]; then 
-	ls -ld PDFsets
-    else
-	ln -s `lhapdf-config --pdfsets-path` .
-	ls -ld PDFsets
-    fi
+
     ./stand ../jetmod/output/weight_c.root
     ./fnlo  fnl0004.tab
 }

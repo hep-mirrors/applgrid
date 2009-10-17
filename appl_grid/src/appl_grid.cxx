@@ -177,11 +177,12 @@ grid::grid(const vector<double> obs,
 
 grid::grid(const string& filename, const string& dirname)  :
   m_leading_order(0), m_order(0),
-  m_optimised(false), m_trimmed(false), m_transform(""), m_symmetrise(false)  {
+  m_optimised(false), m_trimmed(false), m_transform(""), m_symmetrise(false)  
+{
 
   struct stat stfileinfo;
   if ( stat(filename.c_str(),&stfileinfo) )   {
-    throw exception(std::cerr << "grid::grid() cannot open file " << filename ); 
+    throw exception(std::cerr << "grid::grid() cannot open file " << filename << std::endl ); 
   }
 
   std::cout << "grid() reading grid from file " << filename << std::endl;

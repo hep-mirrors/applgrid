@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include <iostream>
 #include <iomanip>
@@ -177,8 +178,13 @@ grid::grid(const vector<double> obs,
 grid::grid(const string& filename, const string& dirname)  :
   m_leading_order(0), m_order(0),
   m_optimised(false), m_trimmed(false), m_transform(""), m_symmetrise(false)  {
-  
-  cout << "grid() reading grid from file " << filename << endl;
+
+  struct stat stfileinfo;
+  if ( stat(filename.c_str(),&stfileinfo) )   {
+    throw exception(std::cerr << "grid::grid() cannot open file " << filename ); 
+  }
+
+  std::cout << "grid() reading grid from file " << filename << std::endl;
   
   TFile gridfile(filename.c_str());
   

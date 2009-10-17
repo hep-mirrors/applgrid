@@ -404,8 +404,6 @@ run_user () {
 	make clean
     fi
 
-    hoppet-config --prefix
-
     make all
 
     ./stand ../jetmod/output/weight_c.root

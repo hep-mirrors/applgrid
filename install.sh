@@ -206,6 +206,11 @@ install_appl_grid() {
 install_pdf() { 
 
     cd $BASEDIR/hoppet
+
+    if [ -e $BASEDIR/hoppet/benchmarking/benchmark.f90 ]; then 
+         rm $BASEDIR/hoppet/benchmarking/benchmark.f90 
+    fi
+
     if [ "$1" = "clean" ]; then
 	make clean
     fi

@@ -90,6 +90,11 @@ public:
     cout << endl;
   }
 
+
+  bool operator==(const axis& ax) { 
+    return ( m_N==ax.m_N && m_min==ax.m_min && m_max==ax.m_max );
+  }
+
 private:
   
   int m_N;

@@ -350,7 +350,12 @@ public:
   // should really check all the limits and *everything* is the same
   igrid& operator+=(const igrid& g) { 
     for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
-      if ( m_weight[ip] && g.m_weight[ip] ) (*m_weight[ip]) += (*g.m_weight[ip]);
+      if ( m_weight[ip] && g.m_weight[ip] ) { 
+	if ( (*m_weight[ip]) == (*g.m_weight[ip]) ) (*m_weight[ip]) += (*g.m_weight[ip]);
+	else { 
+	  throw exception("igrid::operator+=() grids do not match");
+	}
+      }
     }
     return *this;
   } 

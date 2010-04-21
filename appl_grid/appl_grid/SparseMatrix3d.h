@@ -99,7 +99,11 @@ public:
     cout << m_zaxis << "\n"; 
   }
 
-
+  bool operator==(const SparseMatrix3d& s) { 
+    return ( m_xaxis == s.m_xaxis &&  
+	     m_yaxis == s.m_yaxis &&
+	     m_zaxis == s.m_zaxis );
+  }
 
 private:
 

@@ -21,8 +21,17 @@ int main(int argc, char** argv) {
 
   std::cout << "reading grid" << std::endl; 
 
+  
+
   // get name of grid from user and create from grid file
   appl::grid g(argv[1]);
+
+  for ( int i=2 ; i<argc ; i++ ) {
+    //  std::cout << "adding grid " << argv[i] << std::endl; 
+    g += appl::grid(argv[i]);
+  }
+
+
   g.trim(); // trim away uneeded memory
 
   std::cout << "setting up lhapdf" << std::endl; 

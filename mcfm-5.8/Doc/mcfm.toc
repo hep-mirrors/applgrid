@@ -1,0 +1,61 @@
+\contentsline {section}{\numberline {1}Overview}{3}
+\contentsline {section}{\numberline {2}Installation}{5}
+\contentsline {section}{\numberline {3}Input parameters}{6}
+\contentsline {subsection}{\numberline {3.1}Parton distributions}{8}
+\contentsline {section}{\numberline {4}Runtime options}{11}
+\contentsline {section}{\numberline {5}Nuclear collisions}{26}
+\contentsline {section}{\numberline {6}Output}{26}
+\contentsline {subsection}{\numberline {6.1}Histograms}{27}
+\contentsline {subsection}{\numberline {6.2}Other output modes}{28}
+\contentsline {subsubsection}{\numberline {6.2.1}Simple n-tuple output}{29}
+\contentsline {subsubsection}{\numberline {6.2.2}n-tuples using FROOT}{29}
+\contentsline {subsubsection}{\numberline {6.2.3}Unweighted events}{30}
+\contentsline {section}{\numberline {7}Notes on specific processes}{30}
+\contentsline {subsection}{\numberline {7.1}$W$-boson production, processes 1,6}{30}
+\contentsline {subsection}{\numberline {7.2}$W+$\nobreakspace {}jet production, processes 11,16}{31}
+\contentsline {subsection}{\numberline {7.3}$W\gamma $ production, processes 12,17}{31}
+\contentsline {subsection}{\numberline {7.4}$W+c$ production, processes 13,18}{31}
+\contentsline {subsection}{\numberline {7.5}$W+c$ production ($m_c=0$), processes 14,19}{31}
+\contentsline {subsection}{\numberline {7.6}$W+b{\mathaccent "7016\relax b}$ production, processes 20,25}{32}
+\contentsline {subsection}{\numberline {7.7}$W+b{\mathaccent "7016\relax b}$ production ($m_b=0$), processes 21,26}{32}
+\contentsline {subsection}{\numberline {7.8}$W+2$\nobreakspace {}jets production, processes 22,27}{32}
+\contentsline {subsection}{\numberline {7.9}$W+3$\nobreakspace {}jets production, processes 23,28}{33}
+\contentsline {subsection}{\numberline {7.10}$W+b{\mathaccent "7016\relax b}+$\nobreakspace {}jet production ($m_b=0$), processes 24,29}{33}
+\contentsline {subsection}{\numberline {7.11}$Z$-boson production, processes 31--33}{33}
+\contentsline {subsection}{\numberline {7.12}$Z+$\nobreakspace {}jet production, processes 41--43}{33}
+\contentsline {subsection}{\numberline {7.13}$Z+2$\nobreakspace {}jets production, processes 44, 46}{33}
+\contentsline {subsection}{\numberline {7.14}$Z+3$\nobreakspace {}jets production, processes 45, 47}{34}
+\contentsline {subsection}{\numberline {7.15}$Z\gamma $ production, processes 48,49}{34}
+\contentsline {subsection}{\numberline {7.16}$Z+b{\mathaccent "7016\relax b}$ production, process 50}{34}
+\contentsline {subsection}{\numberline {7.17}$Z+b{\mathaccent "7016\relax b}$ production ($m_b=0$), processes 51--53}{35}
+\contentsline {subsection}{\numberline {7.18}$Z+b{\mathaccent "7016\relax b}+$\nobreakspace {}jet production ($m_b=0$), process 54}{35}
+\contentsline {subsection}{\numberline {7.19}$Z+c{\mathaccent "7016\relax c}$ production ($m_c=0$), process 56}{35}
+\contentsline {subsection}{\numberline {7.20}Di-boson production, processes 61--89}{35}
+\contentsline {subsubsection}{\numberline {7.20.1}$WW$ production, processes 61-64}{35}
+\contentsline {subsubsection}{\numberline {7.20.2}$WW$+jet production, process 66}{36}
+\contentsline {subsubsection}{\numberline {7.20.3}$WZ$ production, processes 71--73, 76--78}{36}
+\contentsline {subsubsection}{\numberline {7.20.4}$ZZ$ production, processes 81--84, 86--89}{36}
+\contentsline {subsubsection}{\numberline {7.20.5}$ZZ$+jet production, process 85}{37}
+\contentsline {subsubsection}{\numberline {7.20.6}Anomalous couplings}{37}
+\contentsline {subsection}{\numberline {7.21}$WH$ production, processes 91, 92, 96, 97}{38}
+\contentsline {subsection}{\numberline {7.22}$ZH$ production, processes 101--103, 106--108}{38}
+\contentsline {subsection}{\numberline {7.23}Higgs production, processes 111--116}{38}
+\contentsline {subsection}{\numberline {7.24}$H+b$ production, processes 141--143}{39}
+\contentsline {subsection}{\numberline {7.25}$t\mathaccent "7016\relax {t}$ production with decay, processes 151 and 152}{40}
+\contentsline {subsection}{\numberline {7.26}$t\mathaccent "7016\relax {t}$ production with decay and a gluon, process 156}{40}
+\contentsline {subsection}{\numberline {7.27}$Q\overline {Q}$ production, processes 157--159}{40}
+\contentsline {subsection}{\numberline {7.28}$t{\mathaccent "7016\relax t}+$\nobreakspace {}jet production, process 160}{40}
+\contentsline {subsection}{\numberline {7.29}Single top production, processes 161--177}{40}
+\contentsline {subsection}{\numberline {7.30}$Wt$ production, processes 180--187}{41}
+\contentsline {subsection}{\numberline {7.31}$Ht{\mathaccent "7016\relax t}$ production, processes 190 and 191}{42}
+\contentsline {subsection}{\numberline {7.32}$Zt{\mathaccent "7016\relax t}$ production, processes 196 and 197}{43}
+\contentsline {subsection}{\numberline {7.33}$H+$\nobreakspace {}jet production, processes 201--209}{43}
+\contentsline {subsection}{\numberline {7.34}Higgs production via WBF, processes 211--217}{44}
+\contentsline {subsection}{\numberline {7.35}$\tau ^+\tau ^-$ production, process 221}{44}
+\contentsline {subsection}{\numberline {7.36}$t$-channel single top with an explicit $b$-quark, processes 231, 236}{44}
+\contentsline {subsection}{\numberline {7.37}$Z+Q$ production, processes 261--267}{44}
+\contentsline {subsection}{\numberline {7.38}$H + 2$\nobreakspace {}jet production, processes 271--274}{45}
+\contentsline {subsection}{\numberline {7.39}$H + 3$\nobreakspace {}jet production, processes 275, 276}{46}
+\contentsline {subsection}{\numberline {7.40}$W+Q+$\nobreakspace {}jet production processes 311--326}{46}
+\contentsline {subsection}{\numberline {7.41}$W+c+$\nobreakspace {}jet production, processes 331, 336}{46}
+\contentsline {subsection}{\numberline {7.42}$Z+Q+$jet production, processes 341--357}{46}

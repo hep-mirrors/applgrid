@@ -31,6 +31,7 @@ ARGS=$*
 APPLGRID=1
 PDF=1
 MCFM=0
+MCFM58=0
 RMCFM=0
 NLO=1
 NLOMOD=1
@@ -56,6 +57,7 @@ unsetall() {
     APPLGRID=0
     PDF=0
     MCFM=0
+    MCFM58=0
     RMCFM=0
     NLO=0
     NLOMOD=0
@@ -73,6 +75,7 @@ usage() {
     echo "  --appl       install appl_grid"
     echo "  --pdf        install hoppet"
     echo "  --mcfm       install mcfm"
+    echo "  --mcfm58     install mcfm v5.8"
     echo "  --nlo        install nlojet"
     echo "  --mod        install nlojet module"
     echo "  --runmcfm    run mcfm"
@@ -96,6 +99,7 @@ for WORD in $ARGS ; do
        --appl)     APPLGRID=1;;
        --pdf)      PDF=1;;
        --mcfm)     MCFM=1;;
+       --mcfm58)   MCFM58=1;;
        --runmcfm)  RMCFM=1;;
        --nlo)      NLO=1;;
        --mod)      NLOMOD=1;;
@@ -125,8 +129,8 @@ else
    exit
 fi
 
-cd $BASEDIR
-
+cd   $BASEDIR
+echo $BASEDIR
 
 export PATH=$BASEDIR/bin:$PATH
 
@@ -237,6 +241,12 @@ install_pdf() {
 install_mcfm() { 
     cd $BASEDIR
     cd $BASEDIR/mcfm
+    make install    
+}
+
+install_mcfm58() { 
+    cd $BASEDIR
+    cd $BASEDIR/mcfm-5.8
     make install    
 }
 
@@ -454,8 +464,9 @@ fi
 
 if [ "$APPLGRID" = 1 ]; then install_appl_grid  $ARGS; fi
 if [ "$MCFM" = 1 ];     then install_mcfm       $ARGS; fi
+if [ "$MCFM58" = 1 ];   then install_mcfm58     $ARGS; fi
 if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi        
-if [ "$NLO" = 1 ];      then    install_nlojet         $ARGS; fi
+if [ "$NLO" = 1 ];      then install_nlojet         $ARGS; fi
 
 
 FASTJETFOUND=`which fastjet-config`

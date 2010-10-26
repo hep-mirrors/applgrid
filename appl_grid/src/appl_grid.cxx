@@ -77,7 +77,8 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
 	   string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false), 
-  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) {
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_documentation("") {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
   m_obs_bins->SetDirectory(0);
@@ -97,7 +98,8 @@ grid::grid(int Nobs, const double* obsbins,
 	   string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),
-  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) {
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_documentation("") {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
@@ -118,8 +120,9 @@ grid::grid(const vector<double> obs,
 	   string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),  
-  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) { 
-
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_documentation("") {
+ 
   if ( obs.size()==0 ) { 
     cerr << "grid::not enough bins in observable" << endl;
     exit(0);
@@ -147,7 +150,8 @@ grid::grid(const vector<double> obs,
 	   string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),  
-  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0) 
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_documentation("")  
 { 
 
   if ( obs.size()==0 ) { 
@@ -177,7 +181,8 @@ grid::grid(const vector<double> obs,
 
 grid::grid(const string& filename, const string& dirname)  :
   m_leading_order(0), m_order(0),
-  m_optimised(false), m_trimmed(false), m_transform(""), m_symmetrise(false)  
+  m_optimised(false), m_trimmed(false), m_transform(""), m_symmetrise(false),
+  m_documentation("") 
 {
 
   struct stat stfileinfo;
@@ -221,11 +226,15 @@ grid::grid(const string& filename, const string& dirname)  :
 
   string _version = _tags[2];
 
+  if ( _tags.size()>3 ) m_documentation = _tags[3];
+
   // check it has the correct version
   if ( _version != m_version ) { 
     throw exception(cerr << "incorrect version " << _version << " expected " << m_version ); 
   }
 
+  std::cout << "appl::grid version " << m_version << "\t" << m_documentation << std::endl; 
+  
   //  cout << "Tags=" << _tags << endl;
 
   m_genpdf = appl_pdf::getpdf(m_genpdfname);
@@ -297,7 +306,9 @@ grid::grid(const grid& g) :
   m_obs_bins(new TH1D(*g.m_obs_bins)), 
   m_leading_order(g.m_leading_order), m_order(g.m_order), 
   m_run(g.m_run), m_optimised(g.m_optimised), m_trimmed(g.m_trimmed), m_symmetrise(g.m_symmetrise),
-  m_cmsScale(g.m_cmsScale) {
+  m_cmsScale(g.m_cmsScale),
+  m_documentation("") 
+{
   
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     m_grids[iorder] = new igrid*[Nobs()];
@@ -537,6 +548,7 @@ void grid::Write(const string& filename, const string& dirname) {
   _tags.add(m_transform);
   _tags.add(m_genpdfname);
   _tags.add(m_version);
+  if ( m_documentation!="" ) _tags.add(m_documentation);
   _tags.Write();
 
   //  TH1D* _transform = new TH1D("Transform", m_transform.c_str(), 1, 0, 1);  

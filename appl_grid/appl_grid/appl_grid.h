@@ -368,6 +368,11 @@ public:
   // grid operator*(const double& d) const { return grid(*this)*=d; }
   // grid operator+(const grid& g)   const { return grid(*this)+=g; }
   
+  void SetDocumentation(const std::string& s) { m_documentation = s; }
+
+  std::string  GetDocumentation() const { return m_documentation; }
+  std::string& GetDocumentation()       { return m_documentation; }
+
 private:
 
   // internal common construct for the different types of constructor
@@ -417,6 +422,8 @@ private:
   static hoppet_init* hoppet;
 #endif
 
+  std::string m_documentation;
+  
 };
 
 

@@ -233,7 +233,7 @@ grid::grid(const string& filename, const string& dirname)  :
     throw exception(cerr << "incorrect version " << _version << " expected " << m_version ); 
   }
 
-  std::cout << "appl::grid version " << m_version << "\t" << m_documentation << std::endl; 
+  std::cout << "appl::grid " << m_version << "\t" << m_documentation << std::endl; 
   
   //  cout << "Tags=" << _tags << endl;
 

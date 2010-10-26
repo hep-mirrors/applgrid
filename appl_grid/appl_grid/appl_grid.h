@@ -368,7 +368,8 @@ public:
   // grid operator*(const double& d) const { return grid(*this)*=d; }
   // grid operator+(const grid& g)   const { return grid(*this)+=g; }
   
-  void SetDocumentation(const std::string& s) { m_documentation = s; }
+  void SetDocumentation(const std::string& s) { m_documentation  = s; }
+  void AddDocumentation(const std::string& s) { m_documentation += s; }
 
   std::string  GetDocumentation() const { return m_documentation; }
   std::string& GetDocumentation()       { return m_documentation; }

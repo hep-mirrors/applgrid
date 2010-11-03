@@ -928,9 +928,9 @@ void grid::redefine(int iobs, int iorder,
 
 
 
-void grid::SetRange(double lower, double upper) { 
+void grid::setRange(double lower, double upper) { 
   
-  std::cout << "grid::SetRange() " << Name() << lower << " " << upper << std::endl; 
+  std::cout << "grid::SetRange() " << lower << " " << upper << std::endl; 
 
   std::vector<bool>   used;
   std::vector<double> limits;

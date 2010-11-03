@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <vector>
 #include <cmath>
 #include <sys/stat.h>
@@ -32,7 +33,7 @@ void out( const std::string& s, A& a ) { sout << s << ":\t " << a << std::endl; 
 
 
 
-fastnlo::fastnlo( const std::string& filename ) {
+fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
   
   std::cout << "fastnlo::fastnlo() reading fastnlo grid file " << filename << std::endl;
 
@@ -61,12 +62,12 @@ fastnlo::fastnlo( const std::string& filename ) {
   double    Ecms=0;        faststream >> Ecms;        out( "Ecms", Ecms );
   
   double ixsecunits = 0;  faststream >> ixsecunits;   out( "ixsecunits", ixsecunits );
-  std::string label;      faststream >> label;        out( "label", label );
+  std::string label[5];   
 
-  faststream >> dummy;  
-  faststream >> dummy;
-  faststream >> dummy;
-  faststream >> dummy; 
+  for ( int i=0 ; i<5 ; i++ ) { faststream >> label[i]; out( "label", label[i] ); } 
+
+  std::string docstring;
+  for ( int i=0 ; i<5 ; i++ ) if ( label[i]!="-" ) docstring += label[i] + " ";
 
   long long iproc;       faststream >> iproc;    out( "iproc", iproc );
   long long ialgo;       faststream >> ialgo;    out( "ialgo", ialgo );
@@ -325,11 +326,17 @@ fastnlo::fastnlo( const std::string& filename ) {
       ptlims.push_back(ptbin[irap][ipt]);
     }
 
-    
+    std::stringstream ss;
+    ss << " - bin " << irap;
+    std::string _docstring = docstring + ss.str(); 
+       
     m_grid[irap] = new appl::grid( ptlims, pdfname, Npow[0], Npow.back()-Npow[0], transform );
     m_grid[irap]->symmetrise(true);
     m_grid[irap]->setCMSScale(Ecms);
+    m_grid[irap]->setDocumentation(_docstring);
     
+    std::cout << "reading fastnlo grid: " << _docstring << std::endl; 
+
     for ( int ipt=0 ; ipt<Npt[irap] ; ipt++ ) {
       
       // need this width, since the grid is already divided by it, 

@@ -353,8 +353,8 @@ public:
   }
 
   // get the cross sections
-  double& CrossSection()      { return m_total; } 
-  double& CrossSectionError() { return m_totalerror; } 
+  double& crossSection()      { return m_total; } 
+  double& crossSectionError() { return m_totalerror; } 
   
   //  double Lambda() const { return m_Lambda2; }
 
@@ -368,13 +368,13 @@ public:
   // grid operator*(const double& d) const { return grid(*this)*=d; }
   // grid operator+(const grid& g)   const { return grid(*this)+=g; }
   
-  void SetDocumentation(const std::string& s) { m_documentation  = s; }
-  void AddDocumentation(const std::string& s) { m_documentation += s; }
+  void setDocumentation(const std::string& s) { m_documentation  = s; }
+  void addDocumentation(const std::string& s) { m_documentation += s; }
 
-  std::string  GetDocumentation() const { return m_documentation; }
-  std::string& GetDocumentation()       { return m_documentation; }
+  std::string  getDocumentation() const { return m_documentation; }
+  std::string& getDocumentation()       { return m_documentation; }
 
-  void SetRange(double lower, double upper);
+  void setRange(double lower, double upper);
 
 private:
 

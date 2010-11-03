@@ -2,7 +2,7 @@
 //
 //   @file    fastnlo.h        
 //
-//                   
+//            native fastnlo interface for appl_grid                    
 // 
 //   Copyright (C) 2007 M.Sutton (sutt@cern.ch)    
 //
@@ -28,13 +28,19 @@ public:
   fastnlo(const std::string& filename ); 
   
   virtual ~fastnlo() { 
-    for ( int i=m_grid.size() ; i-- ; ) { delete m_grid[i]; m_grid[i]=NULL; } 
+    if ( m_manage_grids ) { 
+      for ( int i=m_grid.size() ; i-- ; ) { delete m_grid[i]; m_grid[i]=NULL; } 
+    }
   } 
 
   std::vector<appl::grid*> grids() { return m_grid; }
   
+  void manageGrids(bool b=true) { m_manage_grids=b; }  
+
 private:
   
+  bool m_manage_grids;
+
   std::vector<appl::grid*> m_grid;
   
 };

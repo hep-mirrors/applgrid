@@ -44,7 +44,8 @@ LHA = -DUSELHAPDF
 LIBS += $(ROOTLIBS)  $(LHAPDFLIBS) $(APPLLIBS) $(FRTLLIB) $(PDFCONVLIBS)  
 
 install : all
-all : stand fnlo
+all : stand fnlo 
+
 stand: stand.o 
 	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) 
 

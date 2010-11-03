@@ -928,6 +928,75 @@ void grid::redefine(int iobs, int iorder,
 
 
 
+void grid::SetRange(double lower, double upper) { 
+  
+  std::cout << "grid::SetRange() " << Name() << lower << " " << upper << std::endl; 
+
+  std::vector<bool>   used;
+  std::vector<double> limits;
+  std::vector<double> contents;
+  std::vector<double> errors;
+
+  /// get the occupied bins
+  int Nbins = 0;
+  double last = 0;
+  for ( int i=1 ; i<=m_obs_bins->GetNbinsX() ; i++ ) { 
+    double bin =  m_obs_bins->GetBinCenter(i);
+    if ( bin>lower && bin<upper ) { 
+      limits.push_back( m_obs_bins->GetBinLowEdge(i) );
+      contents.push_back( m_obs_bins->GetBinContent(i) );
+      errors.push_back( m_obs_bins->GetBinError(i) );
+
+      last = m_obs_bins->GetBinLowEdge(i+1);
+      used.push_back(true);
+    }
+    else { 
+      used.push_back(false);
+    }
+  }
+  
+  /// copy the range of the reference histogram
+  if ( limits.size()>0 ) limits.push_back( last );
+  else { 
+    throw grid::exception( std::cerr << "new range does not include any bins"  ); 
+  }
+
+  /// save bins somewhere so can overwrite them 
+  TH1D* h = m_obs_bins;
+  
+  m_obs_bins = new TH1D( h->GetTitle(), h->GetName(), limits.size()-1, &(limits[0]) );
+  
+  for ( int i=0 ; i<m_obs_bins->GetNbinsX() ; i++ ) { 
+    m_obs_bins->SetBinContent( i+1, contents[i] );
+    m_obs_bins->SetBinError( i+1, errors[i] );
+  }
+
+  /// copy the igrids for the observable bins in the range 
+
+  igrid** grids[3];
+
+  /// save old grids
+  for ( int iorder=0 ; iorder<m_order ; iorder++ ) grids[iorder] = m_grids[iorder];
+  
+  int Nobs = m_obs_bins->GetNbinsX();
+
+  for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
+    m_grids[iorder] = new igrid*[Nobs];
+    int iobs = 0;
+    for ( int igrid=0 ; igrid<h->GetNbinsX() ; igrid++ ) {
+      if ( used[igrid] ) m_grids[iorder][iobs++] = grids[iorder][igrid];
+      else               delete grids[iorder][igrid];                           
+    }
+  }
+
+  delete h;
+
+}
+
+
+
+
+
 
 
 ostream& operator<<(ostream& s, const appl::grid& g) {

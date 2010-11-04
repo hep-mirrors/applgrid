@@ -409,6 +409,7 @@ grid& grid::operator=(const grid& g) {
     m_grids[iorder] = new igrid*[Nobs()];
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
   }
+  return *this;
 } 
   
 

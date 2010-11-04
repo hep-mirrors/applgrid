@@ -70,6 +70,8 @@ public:
     m_idelta = ax.m_idelta;
     
     m_v = ax.m_v;
+
+    return *this;
   }
   
   const vector<T>& v() const { return m_v; }  

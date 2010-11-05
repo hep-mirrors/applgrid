@@ -15,9 +15,9 @@ CXXFLAGS += -O3 -fPIC -g
 # CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 
-# HOPPETFLAG = $(shell hoppet.sh $(INSTALLBASE)/include/hoppet_v1.h) -I$(INSTALLBASE)/include
 
-# HOPPETLIB = $(shell hoppet.sh --lib $(INSTALLBASE)/lib/libhoppet_v1.a -L$(INSTALLBASE)/lib -lhoppet_v1) 
+HOPPETINCS =  $(shell hoppet-config --cxxflags)
+HOPPETLIBS =  $(shell hoppet-config --libs)
 
 CXXFLAGS += $(HOPPETINCS)
 
@@ -25,7 +25,7 @@ FFLAGS += -g
 
 # F2CFLAG = -lg2c
 #  -L/usr/lib/gcc/i386-redhat-linux5E/4.1.2/ -lgfortran
-
+ROOTARCH = $(findstring -m64, $(ROOTINCS) )
 
 
 # ROOT	
@@ -34,31 +34,35 @@ FFLAGS += -g
 ROOTINCS = -I$(shell root-config --incdir)
 ROOTLIBS = $(shell root-config --libs)
 
-CXXFLAGS += $(ROOTINCS)
+CXXFLAGS += $(ROOTARCH) $(ROOTINCS)
 
 #LHAPDF
 LHAPDFDIR = $(shell lhapdf-config --prefix)/lib
 LHAPDFLIBS = -L$(LHAPDFDIR) -lLHAPDF
 
-APPLCXXFLAGS = -I$(INSTALLBASE)/include
-APPLLIBS     = -L$(INSTALLBASE)/lib -lAPPLgrid
+APPLCXXFLAGS = $(shell applgrid-config --cxxflags)
+APPLLIBS     = $(shell applgrid-config --ldcflags)
 
 CXXFLAGS += $(APPLCXXFLAGS)
 
-LD_FLAGS += -L$(LHAPDFDIR) -lLHAPDF
-LD_FLAGS += $(APPLLIBS)
+LD_FLAGS +=  $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
+LD_FLAGS +=  $(APPLLIBS)
 
+LDFLAGS += $(ROOTARCH)
 #
 #F90 libraries
 #
 # F90LIB= -L`which lf95 | sed s:bin/lf95:lib:` -lfj9i6 -lfj9f6 -lfj9e6 -lfccx86_6a
-FRTLLIB = $(shell gfortran.sh )
+FRTLIB   = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
+FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
+# FRTLLIB = $(shell gfortran.sh )
 # FRTLLIB = -L/usr/local/gfortran/lib/x86_64  -lgfortran
 #FRTLLIB = -lg2c -lgfortran
 # FRTLLIB = -lgfortran
 F90LIB = $(FRTLLIB)
 #PDFCONVLIBS = -L$(INSTPATH)/pdf-conv-1.0/src -ldglap $(F90LIB)
 #PDFCONVLIBS = -L$(INSTALLBASE)/lib -ldglap $(F90LIB) $(LHAPDFLIBS)
+
 PDFCONVLIBS = $(HOPPETLIBS) $(F90LIB) $(LHAPDFLIBS)
 
 

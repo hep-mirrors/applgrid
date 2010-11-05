@@ -44,7 +44,7 @@ available_tags=" CXX F77"
 
 # ### BEGIN LIBTOOL CONFIG
 
-# Libtool was configured on host dyn006210.shef.ac.uk:
+# Libtool was configured on host badger.local:
 
 # Shell to use when invoking shell scripts.
 SHELL="/bin/sh"
@@ -263,10 +263,10 @@ finish_cmds=""
 finish_eval=""
 
 # Take the output of nm and produce a listing of raw symbols and C names.
-global_symbol_pipe=""
+global_symbol_pipe="sed -n -e 's/^.*[ 	]\\([BCDEGRST][BCDEGRST]*\\)[ 	][ 	]*_\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 _\\2 \\2/p'"
 
 # Transform the output of nm in a proper C declaration
-global_symbol_to_cdecl=""
+global_symbol_to_cdecl="sed -n -e 's/^. .* \\(.*\\)\$/extern int \\1;/p'"
 
 # Transform the output of nm in a C name address pair
 global_symbol_to_c_name_address="sed -n -e 's/^: \\([^ ]*\\) \$/  {\\\"\\1\\\", (lt_ptr) 0},/p' -e 's/^[BCDEGRST] \\([^ ]*\\) \\([^ ]*\\)\$/  {\"\\2\", (lt_ptr) \\&\\2},/p'"
@@ -6775,7 +6775,7 @@ build_old_libs=`case $build_libtool_libs in yes) $echo no;; *) $echo yes;; esac`
 # End:
 # ### BEGIN LIBTOOL TAG CONFIG: CXX
 
-# Libtool was configured on host dyn006210.shef.ac.uk:
+# Libtool was configured on host badger.local:
 
 # Shell to use when invoking shell scripts.
 SHELL="/bin/sh"
@@ -6994,10 +6994,10 @@ finish_cmds=""
 finish_eval=""
 
 # Take the output of nm and produce a listing of raw symbols and C names.
-global_symbol_pipe=""
+global_symbol_pipe="sed -n -e 's/^.*[ 	]\\([BCDEGRST][BCDEGRST]*\\)[ 	][ 	]*_\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 _\\2 \\2/p'"
 
 # Transform the output of nm in a proper C declaration
-global_symbol_to_cdecl=""
+global_symbol_to_cdecl="sed -n -e 's/^. .* \\(.*\\)\$/extern int \\1;/p'"
 
 # Transform the output of nm in a C name address pair
 global_symbol_to_c_name_address="sed -n -e 's/^: \\([^ ]*\\) \$/  {\\\"\\1\\\", (lt_ptr) 0},/p' -e 's/^[BCDEGRST] \\([^ ]*\\) \\([^ ]*\\)\$/  {\"\\2\", (lt_ptr) \\&\\2},/p'"
@@ -7080,7 +7080,7 @@ include_expsyms=""
 
 # ### BEGIN LIBTOOL TAG CONFIG: F77
 
-# Libtool was configured on host dyn006210.shef.ac.uk:
+# Libtool was configured on host badger.local:
 
 # Shell to use when invoking shell scripts.
 SHELL="/bin/sh"
@@ -7299,10 +7299,10 @@ finish_cmds=""
 finish_eval=""
 
 # Take the output of nm and produce a listing of raw symbols and C names.
-global_symbol_pipe=""
+global_symbol_pipe="sed -n -e 's/^.*[ 	]\\([BCDEGRST][BCDEGRST]*\\)[ 	][ 	]*_\\([_A-Za-z][_A-Za-z0-9]*\\)\$/\\1 _\\2 \\2/p'"
 
 # Transform the output of nm in a proper C declaration
-global_symbol_to_cdecl=""
+global_symbol_to_cdecl="sed -n -e 's/^. .* \\(.*\\)\$/extern int \\1;/p'"
 
 # Transform the output of nm in a C name address pair
 global_symbol_to_c_name_address="sed -n -e 's/^: \\([^ ]*\\) \$/  {\\\"\\1\\\", (lt_ptr) 0},/p' -e 's/^[BCDEGRST] \\([^ ]*\\) \\([^ ]*\\)\$/  {\"\\2\", (lt_ptr) \\&\\2},/p'"

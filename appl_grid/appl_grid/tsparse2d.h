@@ -45,6 +45,16 @@ using std::log10;
 template<class T> 
 class tsparse2d : public tsparse_base {
 
+#if 0
+public:
+
+  class exception { 
+  public:
+    exception(const string& s) { cerr << s << endl; }; 
+    exception(ostream& s) { cerr << s << endl; }; 
+  };
+#endif
+
 public:
 
   tsparse2d(int nx, int ny) : tsparse_base(nx), m_Ny(ny), m_v(NULL) {  
@@ -137,7 +147,9 @@ public:
   T& operator()(int i, int j) {
     //  range_check(i);
     grow(i);
-    if ( m_v[i-m_lx] ) return (*m_v[i-m_lx])(j);
+    //    if ( m_v[i-m_lx] ) 
+    return (*m_v[i-m_lx])(j);
+    //    else throw exception( std::cerr << "no element with index " << i << ", " << j << std::endl );               
   } 
 
 
@@ -146,12 +158,12 @@ public:
 
   bool trimmed(int i, int j) const { 
     if ( i<m_lx || i>m_ux ) return false;
-    else                    return m_v[i-m_lx]->trimmed(j);
+    return m_v[i-m_lx]->trimmed(j);
   } 
 
   tsparse1d<T>* trimmed(int i) const { 
     if ( i<m_lx || i>m_ux ) return NULL;
-    else                    return m_v[i-m_lx];
+    return m_v[i-m_lx];
   } 
 
 

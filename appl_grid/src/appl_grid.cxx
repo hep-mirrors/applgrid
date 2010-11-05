@@ -129,7 +129,7 @@ grid::grid(const vector<double> obs,
   } 
   
   double* obsbins = new double[obs.size()];  
-  for ( int i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
+  for ( unsigned i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
   int Nobs = obs.size()-1;
 
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
@@ -160,7 +160,7 @@ grid::grid(const vector<double> obs,
   } 
   
   double* obsbins = new double[obs.size()];  
-  for ( int i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
+  for ( unsigned i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
   int Nobs = obs.size()-1;
 
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
@@ -180,8 +180,9 @@ grid::grid(const vector<double> obs,
 
 
 grid::grid(const string& filename, const string& dirname)  :
-  m_leading_order(0), m_order(0),
-  m_optimised(false), m_trimmed(false), m_transform(""), m_symmetrise(false),
+  m_leading_order(0),  m_order(0),
+  m_optimised(false),  m_trimmed(false), 
+  m_symmetrise(false), m_transform(""), 
   m_documentation("") 
 {
 
@@ -305,7 +306,9 @@ grid::grid(const string& filename, const string& dirname)  :
 grid::grid(const grid& g) : 
   m_obs_bins(new TH1D(*g.m_obs_bins)), 
   m_leading_order(g.m_leading_order), m_order(g.m_order), 
-  m_run(g.m_run), m_optimised(g.m_optimised), m_trimmed(g.m_trimmed), m_symmetrise(g.m_symmetrise),
+  m_run(g.m_run), m_optimised(g.m_optimised), m_trimmed(g.m_trimmed), 
+  m_symmetrise(g.m_symmetrise),
+  m_transform(g.m_transform),
   m_cmsScale(g.m_cmsScale),
   m_documentation("") 
 {
@@ -515,7 +518,7 @@ void grid::print() const {
 }
 
 void grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
-void grid::pdfinterp(double x, double Q2, double* f) {  }
+// void grid::pdfinterp(double x, double Q2, double* f) {  }
 
 
 // dump to file
@@ -527,7 +530,8 @@ void grid::Write(const string& filename, const string& dirname) {
     fclose(f);
     _filename += "-save";
     string cmd = "mv " + filename + " " + _filename;
-    int i = system(cmd.c_str());
+    //    int i = 
+    system(cmd.c_str());
   } 
 
   //  cout << "grid::Write() writing to file " << _filename << endl;
@@ -629,7 +633,7 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
   if ( fscale_factor!=1 ) {
     if ( hoppet == NULL ) hoppet = new hoppet_init();
     bool newpdf = hoppet->compareCache(pdf);
-    //   if ( newpdf ) hoppet->fillCache( pdf );
+    if ( newpdf ) hoppet->fillCache( pdf );
   }
 #endif
 
@@ -831,7 +835,7 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
     
     std::vector<double> dvec = vconvolute( pdf, alphas, nloops, rscale_factor, fscale_factor, Escale );
     
-    for ( int i=0 ; i<dvec.size() ; i++ ) { 
+    for ( unsigned i=0 ; i<dvec.size() ; i++ ) { 
       h->SetBinContent( i+1, dvec[i] );
       h->SetBinError( i+1, 0 );
     }
@@ -855,7 +859,7 @@ TH1D* grid::convolute_subproc(int subproc,
     
     std::vector<double> dvec = vconvolute_subproc( subproc, pdf, alphas, nloops, rscale_factor, Escale );
     
-    for ( int i=0 ; i<dvec.size() ; i++ ) { 
+    for ( unsigned i=0 ; i<dvec.size() ; i++ ) { 
       h->SetBinContent( i+1, dvec[i] );
       h->SetBinError( i+1, 0 );
     }
@@ -939,7 +943,7 @@ void grid::setRange(double lower, double upper) {
   std::vector<double> errors;
 
   /// get the occupied bins
-  int Nbins = 0;
+  //  int Nbins = 0;
   double last = 0;
   for ( int i=1 ; i<=m_obs_bins->GetNbinsX() ; i++ ) { 
     double bin =  m_obs_bins->GetBinCenter(i);

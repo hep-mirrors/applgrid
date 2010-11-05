@@ -22,21 +22,23 @@ VPATH		= $(DIRS)
 
 # GRIDPATH        = $(HOME)/nlo/appl_grid
 # GRIDPATH     = $(HOME)
-# DGLAPDIR     = $(HOME)
 
-GRIDPATH     = $(BASEDIR)
-DGLAPDIR     = $(BASEDIR)
+HOPPETLIBS   = $(shell hoppet-config --libs) 
+GRIDPATH     = $(shell applgrid-config --prefix) 
 
-ROOTINCS         = $(shell root-config --cflags) 
-ROOTLIBS         = $(shell root-config --glibs) 
+ROOTINCS = $(shell root-config --cflags) 
+ROOTLIBS = $(shell root-config --glibs) 
+ROOTARCH = $(findstring -m64, $(ROOTINCS) )
+
 # OUTPUT_OPTION   = -o $(MCFMHOME)/obj/$@
 
 
-LIBFLAGS=
+LIBFLAGS= 
+LDFLAGS += $(ROOTARCH)
 
 # CERNLIB libraries for PDFLIB: -lpdflib804 -lmathlib -lpacklib 
 
-LIBGRID   = -L$(GRIDPATH)/lib -lAPPLgrid 
+LIBGRID   = $(shell applgrid-config --ldcflags) 
 LIBFLAGS += -L$(LIBDIR) $(ROOTLIBS) $(LIBGRID) 
 # -L$(HOME)/lib -lgtttimer
 
@@ -51,13 +53,8 @@ LIBFLAGS += -L$(LIBDIR) $(ROOTLIBS) $(LIBGRID)
 # FRTLLIB = -lgfortran
 # FRTLLIB = -lg2c -lgfortran
 # FRTLLIB = -L/usr/local/gfortran/lib/x86_64  -lgfortran
-FRTLLIB = $(shell gfortran.sh)
-#FRTLLIB = -L $(shell gfortran -print-file-name=) 
-#FRTLLIB = -L /usr/lib/gcc/i486-linux-gnu/4.3.3 -lgfortran
-# FRTLLIB = /usr/lib/gcc/i486-linux-gnu/4.3.3/libgfortran.a
-# FRTLLIB = -L/usr/local/gfortran/lib -lgfortran
-# FRTLLIB = $(shell gfortran $(ARCH) -print-file-name=libgfortran.a )
-# FRTLLIB = -L/usr/local/gfortran/lib/x86_64 -lgfortran
+FRTLIB   = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
+FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
 
 # Set this to NATIVE/PDFLIB/LHAPDF
 #   NATIVE -- internal routines
@@ -76,10 +73,11 @@ F77 = gfortran
 # CXX = g++
 RM  = rm
 
-GRIDINCS = -I$(GRIDPATH)/include
+GRIDINCS = $(shell applgrid-config --cxxflags) 
 
-FFLAGS 	 += -fno-automatic -fno-f2c -O3 -g -I$(INCPATH)
-CXXFLAGS += -fPIC -O3 -g $(ROOTINCS) $(GRIDINCS) -I$(GRIDPATH)/include
+
+FFLAGS 	 +=  $(ROOTARCH) -fno-automatic -fno-f2c -O3 -g -I$(INCPATH)
+CXXFLAGS += -fPIC -O3 -g $(ROOTINCS) $(GRIDINCS)
 
 
 DIRS	=	$(MCFMHOME):\
@@ -876,14 +874,7 @@ $(OBJDIR)/mypdfevolve.o: PDF/mypdfevolve.f
 	$(F77) $(FFLAGS) -c PDF/mypdfevolve.f -o $(OBJDIR)/mypdfevolve.o
 
 
-
-
-F90LIB= -L`which lf95 | sed s:bin/lf95:lib:` -lfj9i6 -lfj9f6 -lfj9e6 -lfccx86_6a
-# PDFCONVLIBS = -L$(HOME)/nlo/mcfm-pavel/mcfm-v0/PDF/pdf-conv-1.0/src -ldglap -lgfortran -L/sw/lib -lg2c 
-# PDFCONVLIBS = -L$(DGLAPDIR) -ldglap -ldglap $(FRTLLIB)
 PDFCONVLIBS = $(HOPPETLIBS) $(FRTLLIB)
-#$(F90LIB)
-
 
 
 STANDOBJECTS = $(OBJDIR)/standalone.o  \

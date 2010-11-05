@@ -29,10 +29,11 @@ o) move standalone to separate directory, e.g. usercode
 //    compiled, if an attempt to call it is made, prints an error
 //    and returns
 
- long-term: 
+long-term: 
 o)   table for subprocesses to be included in XXX__pdf.h
 
-o) fast nlo interfact for most important grid tables as example
+COMPLETED
+// o) fast nlo interface for most important grid tables as example
 
 
 Paper:

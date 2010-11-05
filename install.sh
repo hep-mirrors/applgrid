@@ -192,11 +192,13 @@ export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$DYLD_LIBRARY_
 ############################
 install_appl_grid() { 
 
-    cd $BASEDIR/appl_grid/src
+    cd $BASEDIR/appl_grid
 
-    if [ "$1" = "clean" ]; then
-	make clean
-    fi
+    ./configure --prefix=$BASEDIR
+
+    #    if [ "$1" = "clean" ]; then
+    #	   make clean
+    #    fi
 
     make install
 

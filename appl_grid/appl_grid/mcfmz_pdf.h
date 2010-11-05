@@ -43,7 +43,7 @@ public:
 inline  void mcfmz_pdf::evaluate(const double* fA, const double* fB, double* H) 
 {
 
-  const int nQuark = 6;
+  //  const int nQuark = 6;
   const int iQuark = 5; 
   
   // offset psd ptrs so can use [-6..6] indexing rather than [nQuark+..] indexing

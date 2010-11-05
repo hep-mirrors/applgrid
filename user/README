@@ -1,0 +1,43 @@
+
+Examples
+--------
+
+Some example code. Prerequisites are the root is installed, as is 
+the applgrid coe. 
+
+The hoppet library should be installed if arbitrary renormalisation 
+and factorisation scale variation is required.
+
+To build the executables simply type
+
+  make
+
+The example executables are  
+
+i)   stand.cxx (builds executable stand)
+
+   is an example of how you might read in some grids and perform 
+   the convolution using lhapdf
+
+ii)  fnmain.cxx (builds executable fnlo)
+
+   is an example of how you might read in a fastnlo grid using the 
+   fastnlo interface
+
+iii) fmain.cxx fstand.f (builds executable fstand)
+
+   is an example of how you might use the fortran interface to read
+   in native applgrid grids and also fastnlo grids using fortran.
+
+Since the applgrid code is written in c++, in order to mix fortran 
+and c++ and not be restricted to only the io of one of the 
+languages, it is necessary to link with both the c++ and fotran
+run time libraries.
+
+It is chosen to do that by linking as a c++ program and linking 
+against the fortran rtl by hand, hence the implementation of 
+main() in fmain.cxx
+
+
+
+

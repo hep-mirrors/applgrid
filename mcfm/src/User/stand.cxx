@@ -8,6 +8,11 @@
 
 // #include "appl_grid/appl_pdf.h"
 
+
+#include "LHAPDF/LHAPDF.h"
+extern "C" void evolvepdf_(const double& , const double& , double* ); 
+extern "C" double alphaspdf_(const double& Q);
+
 #include "appl_grid/appl_timer.h"
 #include "hoppet_v1.h"
 
@@ -132,6 +137,9 @@ int main(int argc, char** argv) {
   int Npdf = 0;
   // setup gavins code
   initmypdf_(_pdfname.c_str(), Npdf);
+
+  // const string _pdfname = "cteq6mE.LHgrid";  
+  // LHAPDF::initPDFSet( _pdfname, Npdf );
 
   bool first = true;
 

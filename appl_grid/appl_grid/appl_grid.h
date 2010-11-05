@@ -135,7 +135,7 @@ public:
   void setuppdf(void (*pdf)(const double& , const double&, double* ) );
 
   // get the interpolated pdf's
-  void pdfinterp(double x1, double Q2, double* f);
+  //  void pdfinterp(double x1, double Q2, double* f);
 
 
   // perform the convolution to a specified number of loops

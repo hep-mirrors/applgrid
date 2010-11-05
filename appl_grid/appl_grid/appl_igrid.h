@@ -316,7 +316,7 @@ public:
 		double beam_scale=1 );
 
   // get the interpolated pdf's
-  void pdfinterp(double x1, double Q2, double* f);
+  //  void pdfinterp(double x1, double Q2, double* f);
 
   double convolute(void   (*pdf)(const double& , const double&, double* ), 
 		   appl_pdf* genpdf, 

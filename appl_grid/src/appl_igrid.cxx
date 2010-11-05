@@ -60,12 +60,13 @@ map<const string, igrid::transform_vec> igrid::m_fmap = igrid::init_fmap();
 
 
 igrid::igrid() : 
+  fy(NULL),   fx(NULL), 
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),
   m_yorder(0),   
-  m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0), m_tauorder(0), 
+  m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0),   m_tauorder(0), 
   m_Nproc(0),
-  m_transform(""), fx(NULL), fy(NULL),  
+  m_transform(""), 
   m_symmetrise(false),
   m_optimised(false),
   m_weight(NULL),
@@ -155,15 +156,16 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
 
 // copy constructor
 igrid::igrid(const igrid& g) : 
+  fy(g.fy),  fx(g.fx), 
   m_Ny1(g.m_Ny1),     
-  m_Ny2(g.m_Ny2),     
   m_y1min(g.m_y1min),     m_y1max(g.m_y1max),     m_deltay1(g.m_deltay1),   
+  m_Ny2(g.m_Ny2),     
   m_y2min(g.m_y2min),     m_y2max(g.m_y2max),     m_deltay2(g.m_deltay2),   
   m_yorder(g.m_yorder),   
   m_Ntau(g.m_Ntau), 
   m_taumin(g.m_taumin), m_taumax(g.m_taumax), m_deltatau(g.m_deltatau), m_tauorder(g.m_tauorder), 
   m_Nproc(g.m_Nproc),
-  m_transform(g.m_transform), fx(g.fx), fy(g.fy),  
+  m_transform(g.m_transform), 
   m_symmetrise(g.m_symmetrise),
   m_optimised(g.m_optimised),
   m_weight(NULL),
@@ -178,13 +180,14 @@ igrid::igrid(const igrid& g) :
 
 
 // read from a file 
-igrid::igrid(TFile& f, const string& s) : 
+igrid::igrid(TFile& f, const string& s) :
+  fy(NULL),   fx(NULL),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),   
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),   
   m_yorder(0),   
   m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0), m_tauorder(0), 
   m_Nproc(0),
-  m_transform(""),  fx(NULL), fy(NULL),
+  m_transform(""), 
   m_symmetrise(false),
   m_optimised(false),
   m_weight(NULL), 
@@ -257,8 +260,8 @@ igrid::igrid(TFile& f, const string& s) :
 
   m_deltatau = (m_taumax-m_taumin)/(m_Ntau-1);
   
-  int rawsize=0;
-  int trimsize=0;
+  //  int rawsize=0;
+  //  int trimsize=0;
 
   m_weight = new SparseMatrix3d*[m_Nproc];
 
@@ -437,14 +440,14 @@ void igrid::write(const string& name) {
     //    sprintf(hname,"%s[%d]", name.c_str(), ip);
     sprintf(hname,"weight[%d]", ip);
 
-    int oldsize = m_weight[ip]->size();
+    //    int oldsize = m_weight[ip]->size();
 
     igridsize += m_weight[ip]->size();
  
     // trim it so that it's quicker to copy into the TH3D
     m_weight[ip]->trim();
 
-    int newsize = m_weight[ip]->size();
+    //    int newsize = m_weight[ip]->size();
     
     //    cout << "iproc=" << ip 
     //	 << "\tgrid size(untrimmed)=" << oldsize
@@ -643,6 +646,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     //	      << "\tQ2 " << Q2 << "\tQ " << Q 
     //	      << "\talphas " << m_alphas[itau] << std::endl; 
 
+#if 0
     int iymin1 = m_weight[0]->ymin();
     int iymax1 = m_weight[0]->ymax();
     
@@ -654,6 +658,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
       int iymin2 = m_weight[0]->zmin();
       int iymax2 = m_weight[0]->zmax();
     }  
+#endif
 
     // grid not filled for iy<iymin || iy>iymax so no need to 
     // consider outside this range
@@ -735,7 +740,7 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 
 
 
-
+#if 0
 void igrid::pdfinterp(double x, double Q2, double* f)
 {
   int k1=fk1(x);
@@ -744,7 +749,7 @@ void igrid::pdfinterp(double x, double Q2, double* f)
   double u_y1  = ( fy(x)-gety1(k1) )/deltay1();
   double u_tau = ( ftau(Q2)-gettau(k3))/deltatau();
 
-  double rint = 0.;
+  //  double rint = 0.;
 
   for ( int i=0 ; i<13 ; i++ ) f[i]=0.;
 
@@ -752,11 +757,11 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 
   for( int i3=0 ; i3<=m_tauorder ; i3++ ) { // interpolation loop in Q2
    
-    double fI3 = fI(i3, m_tauorder, u_tau);
+    //    double fI3 = fI(i3, m_tauorder, u_tau);
 
     for( int i1=0 ; i1<=m_yorder ; i1++ ) { // interpolation loop in x1
       
-      double fI1 = fI(i1, m_yorder, u_y1); 
+      //      double fI1 = fI(i1, m_yorder, u_y1); 
 
       fI_factor=fI(i1, m_yorder, u_y1) * fI(i3, m_tauorder, u_tau);
                     
@@ -771,7 +776,7 @@ void igrid::pdfinterp(double x, double Q2, double* f)
   if ( m_reweight ) for ( int ip1=0 ; ip1<13 ; ip1++ ) f[ip1] /= fun;
 
 }
-
+#endif
 
 // takes pdf as the pdf lib wrapper for the pdf set for the convolution.
 // takes genpdf as a function to form the generalised parton distribution.
@@ -857,7 +862,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	// basic convolution order component for either the born level
 	// or the convolution of the nlo grid with the pdf 
 	for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
-	  if ( sig[ip] = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) ) nonzero = true;
+	  if ( (sig[ip] = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2)) ) nonzero = true;
 	}
 	
 	//	for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << sig[ip]; 
@@ -1048,13 +1053,13 @@ double igrid::convolute_subproc(int subproc,
 	// test if this element is actually filled
 	// if ( !m_weight[0]->trimmed(itau,iy1,iy2) ) continue; 
 	
-	bool nonzero = false;
+	//	bool nonzero = false;
 
 	// basic convolution order component for either the born level
 	// or the convolution of the nlo grid with the pdf 
 	//for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
      
-	if ( sig = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) )  { 
+	if ( ( sig = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) ) )  { 
 	  //	  cout << "alpha=" << _alphas << endl; 
 
 	  // build the generalised pdfs from the actual pdfs
@@ -1137,11 +1142,11 @@ void igrid::optimise(int NQ2, int Nx1, int Nx2) {
   int _tausetmin = Ntau(); 
   int _tausetmax = -1; 
   
-  double oldy1min = m_y1min;
-  double oldy1max = m_y1max;
+  //  double oldy1min = m_y1min;
+  //  double oldy1max = m_y1max;
   
-  double oldy2min = m_y2min;
-  double oldy2max = m_y2max;
+  //  double oldy2min = m_y2min;
+  //  double oldy2max = m_y2max;
 
   // go through all the subprocess to get the limits
   // FIXME: this is actually redundant, at the moment, it assumes all the subprocesses 
@@ -1218,8 +1223,8 @@ void igrid::optimise(int NQ2, int Nx1, int Nx2) {
 
     
     // y1 optimisation
-    double oldy1min = m_y1min;
-    double oldy1max = m_y1max;
+    //    double oldy1min = m_y1min;
+    //    double oldy1max = m_y1max;
    
 
     if ( isOptimised() ) { 
@@ -1246,8 +1251,8 @@ void igrid::optimise(int NQ2, int Nx1, int Nx2) {
     
     
     // y2 optimisation
-    double oldy2min = m_y2min;
-    double oldy2max = m_y2max;
+    //   double oldy2min = m_y2min;
+    //   double oldy2max = m_y2max;
     
     if ( isOptimised() ) { 
       // add a bit on each side
@@ -1274,8 +1279,8 @@ void igrid::optimise(int NQ2, int Nx1, int Nx2) {
     
     
     // tau optimisation
-    double oldtaumin = m_taumin;
-    double oldtaumax = m_taumax;
+    //   double oldtaumin = m_taumin;
+    //   double oldtaumax = m_taumax;
     
     // add a bit on each side
     if ( isOptimised() ) { 
@@ -1354,6 +1359,8 @@ igrid& igrid::operator=(const igrid& g) {
     // create new
     m_weight[ip] = new SparseMatrix3d(*g.m_weight[ip]);
   }
+
+  return *this;
 }
 
 

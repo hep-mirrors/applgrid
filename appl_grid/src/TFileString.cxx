@@ -18,7 +18,7 @@ ClassImp(TFileString)
 
 ostream& operator<<(ostream& s, const TFileString& fs) { 
   s << fs.name() << ":";
-  for ( int i=0 ; i<fs.size() ; i++ ) s << "\t" << fs[i];
+  for ( unsigned i=0 ; i<fs.size() ; i++ ) s << "\t" << fs[i];
   return s;
 }
 

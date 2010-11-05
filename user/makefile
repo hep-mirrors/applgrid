@@ -1,67 +1,80 @@
-#Set the Install path as the current directory
-# need more standardised directory structure and setup
-# GPS alternative for when one has a standard nlojet (v4) installation
 
-
-INSTALLBASE = $(BASEDIR)
-
-# CXX = g++
+CXX = g++
 F77 = gfortran
 
 FFLAGS += -g 
 
+
 CXXFLAGS +=  -O3 -fPIC -g 
-CXXFLAGS += -I$(INSTALLBASE)/include
 
-
-
-ROOTINCS = -I$(shell root-config --incdir)
-APPLCXXFLAGS = -I$(INSTALLBASE)/include
-LHAPDFINCS  = $(shell lhapdf-config --prefix)/include
-
-CXXFLAGS += $(ROOTINCS) $(APPLCXXFLAGS) $(LHAPDFINCS)
-
+# root
+ROOTINCS = $(shell root-config --cflags) 
+ROOTLIBS = $(shell root-config --glibs) 
+ROOTARCH = $(findstring -m64, $(ROOTINCS) )
 
 
 #LHAPDF
-ROOTLIBS   = $(shell root-config --libs)
+LHAPDFINCS = -I$(shell lhapdf-config --prefix)/include
 LHAPDFDIR  = $(shell lhapdf-config --prefix)/lib
 LHAPDFLIBS = -L$(LHAPDFDIR) -lLHAPDF
-APPLLIBS   = -L$(INSTALLBASE)/lib -lAPPLgrid
-FRTLLIB    = $(shell gfortran.sh )
 
-LD_FLAGS +=  -L$(LHAPDFDIR) -lLHAPDF
+# applgrid
+APPLCXXFLAGS = $(shell applgrid-config --cxxflags)
+APPLCLIBS    = $(shell applgrid-config --ldcflags)
+APPLLIBS    = $(shell applgrid-config --ldflags)
+
+# hoppet
+HOPPETLIBS =  $(shell hoppet-config --libs)
+
+FRTLIB   = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
+FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
+
+LD_FLAGS += $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
+
+CXXFLAGS += $(ROOTARCH) $(ROOTINCS) $(APPLCXXFLAGS) $(LHAPDFINCS)
+LDFLAGS  += $(ROOTARCH)
+FFLAGS   += $(ROOTARCH)
 
 
-# PDFCONVLIBS = $(shell hoppet.sh --lib  $(INSTALLBASE)/lib/libhoppet_v1.a  -L$(INSTALLBASE)/lib -lhoppet_v1 ) $(F90LIB) $(LHAPDFLIBS)
-# PDFCONVLIBS = $(shell hoppet.sh --lib  $(HOPPETLIBS) $(F90LIB) $(LHAPDFLIBS)
-PDFCONVLIBS = $(HOPPETLIBS) $(F90LIB) $(LHAPDFLIBS)
+FRTLLIB = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
+FRTLIB  = -L$(subst /libgfortran.a, ,$(FRTLLIB) ) -lgfortran
+
+LD_FLAGS += $(ROOTARCH) $(LHAPDFLIBS) $(APPLLIBS) $(HOPPETLIBS) $(FRTLIB)
+
+
+PDFCONVLIBS = $(HOPPETLIBS) $(LHAPDFLIBS)
 
 # macros to setup contact interactions and reference histograms
 LHA = -DUSELHAPDF
 
 
-LIBS += $(ROOTLIBS)  $(LHAPDFLIBS) $(APPLLIBS) $(FRTLLIB) $(PDFCONVLIBS)  
+LIBS += $(ROOTLIBS)  $(LHAPDFLIBS) $(FRTLIB)  $(FRTLIB) $(PDFCONVLIBS)  
 
 install : all
-all : stand fnlo 
+all : stand fnlo fstand
 
 stand: stand.o 
-	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) 
+	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) $(APPLCLIBS) 
+
+
+fstand: fstand.o fmain.o
+	@ echo $(LIBS)
+	$(CXX)  -o $@ fstand.o fmain.o  $(LDFLAGS) $(ALLMACRO)  $(LIBS) $(APPLLIBS) 
+
 
 fnlo: fnmain.o 
-	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) 
+	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) $(APPLCLIBS) 
 
 
 .SUFFIXES : .cxx .o .f .c
 
 .f.o :
-	$(F77) $(FFLAGS) -c $<
+	$(F77) $(FFLAGS) $(CXXFLAGS) -c $<
 
 .cxx.o:	 
-	$(CXX) -c $< $(CXXFLAGS) $(ALLMACRO) -I$(INSTALLBASE)/include -I$(INSTALLBASE)/include/lhpdf $(APPLCXXFLAGS)
+	$(CXX) -c $< $(CXXFLAGS) $(ALLMACRO)  $(APPLCXXFLAGS)
 
 
 
 clean:
-	rm -rf ./.libs ./.obj *.lo *.o *.la stand
+	rm -rf ./.libs ./.obj *.lo *.o *.la stand fnlo fstand *~

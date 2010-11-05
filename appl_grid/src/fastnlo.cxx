@@ -392,7 +392,7 @@ fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
 	  
 	  int ix=0;
 	  
-	  int NQ  = g->weightgrid()[isub]->Nx();
+	  //	  int NQ  = g->weightgrid()[isub]->Nx();
 	  int Nx1 = g->weightgrid()[isub]->Ny();
 	  int Nx2 = g->weightgrid()[isub]->Nz();
 	  if ( DISgrid ) Nx2 = 1;

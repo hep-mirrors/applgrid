@@ -27,7 +27,7 @@
 #define APPL_TIMER_SINCE -1
 
 #ifdef __cplusplus
-namespace appl { 
+// namespace appl { 
 extern "C" {
 #endif
 
@@ -39,7 +39,7 @@ double         appl_timer_stop(struct timeval );
 
 #ifdef __cplusplus
 }
-};
+// };
 #endif
 
 #endif /* __APPL_TIMER */

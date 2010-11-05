@@ -179,7 +179,7 @@ void convolute_(int& id, const int& nloops, double* data) {
     //   std::cout << "convolute_() nloops=" << nloops << "\tid " << id << std::endl; 
     appl::grid*    g = gitr->second;
     vector<double> v = g->vconvolute(fnpdf_, fnalphas_, nloops);
-    for ( int i=0 ; i<v.size() ; i++ ) { 
+    for ( unsigned i=0 ; i<v.size() ; i++ ) { 
       data[i] = v[i];      
       //      cout << "convolute_() data[" << i << "]=" << data[i] << endl; 
     }
@@ -232,7 +232,7 @@ void readfastnlogrids_( int* ids, const char* s ) {
 
   //  std::cout << "hooray!" << std::endl;
   
-  for ( int i=0 ; i<grids.size() ; i++ ) { 
+  for ( unsigned i=0 ; i<grids.size() ; i++ ) { 
     int id = idcounter++;
     std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
     if ( gitr==_grid.end() )  { 

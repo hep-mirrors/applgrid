@@ -200,6 +200,7 @@ install_appl_grid() {
     #	   make clean
     #    fi
 
+    make 
     make install
 
 }

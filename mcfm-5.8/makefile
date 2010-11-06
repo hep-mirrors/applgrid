@@ -21,8 +21,10 @@ OUTPUT_OPTION	= -o $(MCFMHOME)/obj/$@
 #   LHAPDF -- Les Houches library
 PDFROUTINES = LHAPDF
 
-APPLINCS = -I$(BASEDIR)/include
-APPLLIB  = -L$(BASEDIR)/lib -l APPLgrid
+APPLINCS = $(shell applgrid-config --cxxflags)
+APPLLIB  = $(shell applgrid-config --ldcflags)
+
+	
 
 # Set this to NO/YES/FROOT
 #   NO  -- no n-tuple output or unweighting is possible

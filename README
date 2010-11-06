@@ -1,4 +1,22 @@
-Directory containing the APPLgrid code, including nlojet and mcfm.
+The APPLgrid project
+====================
+
+Introduction
+------------
+
+This contains the complete development installation of the 
+APPLgrid project allowing the user to also generation grids
+using custom versions of mcfm and nlojet++ which are included.
+
+
+If simply performing the fast convolution is required, only 
+the appl_grid directory is required, the hoppet installation 
+if arbitrary scale changes during the fast convolution is 
+required.
+
+Because the whole installation contains several distinct 
+packages these is the install.sh script, which can guide the 
+installation. 
 
 To compile it, adapt setup.sh and install.sh to your local 
 installation. To run the code it is enought to execute the 

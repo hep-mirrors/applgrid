@@ -26,6 +26,17 @@
 
 ARGS=$*
 
+
+###############################################
+#  setup everything
+###############################################
+
+if [ "$BASEDIR" = "" ]; then 
+  export BASEDIR=$PWD
+fi
+export INSTALLBASE=$BASEDIR
+
+
 # control flags
 
 APPLGRID=1
@@ -70,21 +81,34 @@ unsetall() {
 usage() { 
     echo "usage: install.sh [OPTIONS]\n"
     echo "  --help| -h   this help"
-    echo "  --all|-a     do everything"
-    echo "  --none|-n    don't do anything"
-    echo "  --appl       install appl_grid"
-    echo "  --pdf        install hoppet"
-    echo "  --mcfm       install mcfm"
-    echo "  --mcfm58     install mcfm v5.8"
-    echo "  --nlo        install nlojet"
-    echo "  --mod        install nlojet module"
-    echo "  --runmcfm    run mcfm"
-    echo "  --runmod     run nlojet module"
-    echo "  --user       build and run simple user example"
-    echo "  --fastjet    build fastjet"
+    echo 
+    echo "  --all|-a        do everything"
+    echo "  --none|-n       don't do anything"
+    echo "  --appl          install appl_grid"
+    echo "  --pdf|--hoppet  install hoppet"
+    echo "  --mcfm          install mcfm"
+    echo "  --mcfm58        install mcfm v5.8"
+    echo "  --nlo           install nlojet"
+    echo "  --mod           install nlojet module"
+    echo
+    echo "  --runmcfm       run mcfm"
+    echo "  --runmod        run nlojet module"
+    echo 
+    echo "  --user          build and run simple user example"
+    echo "  --fastjet       build fastjet"
+    echo
+    echo "  --prefix=<directory>  set the installation directory"
+    echo 
     echo "\nReport bugs to <sutt@cern.ch>" 
 #   exit
 }
+
+
+# set the installation diectory if required
+prefix() {
+    export INSTALLBASE=`echo $PREFIX | sed "s#--prefix=##"`
+#   echo installing in $INSTALLBASE
+} 
 
 
 
@@ -92,12 +116,13 @@ usage() {
 # parse arguments and set control flags 
 ###############################################
 
+
 for WORD in $ARGS ; do
    case $WORD in
        --all|-a)   setall;;  
        --none|-n)  unsetall;;
        --appl)     APPLGRID=1;;
-       --pdf)      PDF=1;;
+       --pdf|--hoppet)      PDF=1;;
        --mcfm)     MCFM=1;;
        --mcfm58)   MCFM58=1;;
        --runmcfm)  RMCFM=1;;
@@ -106,28 +131,22 @@ for WORD in $ARGS ; do
        --runmod)   RNLOMOD=1;;
        --user)     USERJ=1;;
        --fastjet)  FASTJET=1;;
+       --prefix=*) PREFIX=$WORD;prefix;;
        --help|-h)  usage;exit;;
+       *)          usage;exit;;
    esac
 done
 
 
 
-###############################################
-#  setup everything
-###############################################
-
-if [ "$BASEDIR" = "" ]; then 
-  export BASEDIR=$PWD
-fi
-export INSTALLBASE=$BASEDIR
-
 echo "base directory " $BASEDIR 
-if [ -e $BASEDIR ]; then 
-   echo "installing in $BASEDIR"
+if [ -e $INSTALLBASE ]; then 
+   echo "installing in $INSTALLBASE"
 else
-   echo "$BASEDIR does not exists" 
+   echo "$INSTALLBASE does not exist" 
    exit
 fi
+
 
 cd   $BASEDIR
 echo $BASEDIR
@@ -194,7 +213,7 @@ install_appl_grid() {
 
     cd $BASEDIR/appl_grid
 
-    ./configure --prefix=$BASEDIR
+    ./configure --prefix=$INSTALLBASE
 
     #    if [ "$1" = "clean" ]; then
     #	   make clean
@@ -223,7 +242,7 @@ install_pdf() {
     if [ "$1" = "clean" ]; then
 	make clean
     fi
-    ./configure --prefix=$BASEDIR FC=$FC FFLAGS=" -fPIC $FFLAGS" LDFLAGS="$LDFLAGS"
+    ./configure --prefix=$INSTALLBASE FC=$FC FFLAGS=" -fPIC $FFLAGS" LDFLAGS="$LDFLAGS"
     make
 #   make check
     make install
@@ -310,7 +329,7 @@ install_nlojet() {
 	fi
 	
 	cd bld-pdf
-	../lhpdf-1.0.0/configure --prefix=$BASEDIR
+	../lhpdf-1.0.0/configure --prefix=$INSTALLBASE
 	
 	make        
 	make install 
@@ -334,7 +353,7 @@ install_nlojet() {
 	cd   bld-nlo
 	
 	echo "nlojet"
-	../nlojet++-4.0.1/configure --prefix=$BASEDIR 
+	../nlojet++-4.0.1/configure --prefix=$INSTALLBASE 
 	
 	if [ "$1" = "clean" ]; then
 	    make clean
@@ -447,7 +466,7 @@ install_fastjet () {
 
       if [ -e "$BASEDIR/fastjet-$FASTJETVER" ]; then 
          cd $BASEDIR/fastjet-$FASTJETVER
-         ./configure --prefix=$BASEDIR  FC=$FC CXXFLAGS="$CXXFLAGS" FFLAGS="$FFLAGS" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
+         ./configure --prefix=$INSTALLBASE  FC=$FC CXXFLAGS="$CXXFLAGS" FFLAGS="$FFLAGS" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS"
          if [ "$1" = "clean" ]; then
  	   make clean
          fi

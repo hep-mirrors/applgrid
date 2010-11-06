@@ -40,15 +40,16 @@ FFLAGS += -g $(ROOTARCH)
 CXXFLAGS += $(ROOTARCH) $(ROOTINCS)
 
 #LHAPDF
-LHAPDFDIR = $(shell lhapdf-config --prefix)/lib
-LHAPDFLIBS = -L$(LHAPDFDIR) -lLHAPDF
+LHAPDFDIR = $(shell lhapdf-config --prefix)
+LHAPDFINCS = -I$(LHAPDFDIR)/include
+LHAPDFLIBS = -L$(LHAPDFDIR)/lib -lLHAPDF
 
 APPLCXXFLAGS = $(shell applgrid-config --cxxflags)
 APPLLIBS     = $(shell applgrid-config --ldcflags)
 
-CXXFLAGS += $(APPLCXXFLAGS)
+CXXFLAGS += $(APPLCXXFLAGS) $(LHAPDFINCS)
 
-LD_FLAGS += $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
+LD_FLAGS += $(ROOTARCH) -L$(LHAPDFDIR)/lib -lLHAPDF
 LD_FLAGS += $(APPLLIBS)
 
 LDFLAGS += $(ROOTARCH) 
@@ -77,10 +78,7 @@ REF = -DREN_REFERENCE
 ALLMACRO  = $(LHA) $(REF)
 ALLMACRO1 = $(LHA),$(REF)
 
-#ALL_LIBS = -L$(INSTALLBASE)/lib,-L$(INSTALLBASE)/lib,-lAPPLgrid,-L$(LHAPDFDIR),-lLHAPDF,-L`root-config --libdir`,-lCore,-lCint,-lHist,-lGraf,-lGraf3d,-lGpad,-lTree,-lRint,-lPostscript,-lMatrix,-lPhysics,-lGui,-lRIO,-pthread,-lm,-ldl,-rdynamic
-ALL_LIBS = -L$(INSTALLBASE)/lib,-L$(INSTALLBASE)/lib,-lAPPLgrid,-L$(LHAPDFDIR),-lLHAPDF,`root-config --libs | sed 's/ /,/g'`
-#-L`root-config --libdir`,-lCore,-lCint,-lHist,-lGraf,-lGraf3d,-lGpad,-lTree,-lRint,-lPostscript,-lMatrix,-lPhysics,-lGui,-lRIO,-pthread,-lm,-ldl,-rdynamic
-
+ALL_LIBS = -L$(INSTALLBASE)/lib,-L$(INSTALLBASE)/lib,-lAPPLgrid,-L$(LHAPDFDIR)/lib,-lLHAPDF,`root-config --libs | sed 's/ /,/g'`
 
 
 

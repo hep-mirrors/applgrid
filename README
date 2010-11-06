@@ -43,7 +43,10 @@ utility of it's own..
 
 Please ensure that this is placed in your path also. 
 
-All this can be ensured by specifying --prefix=<installation_base>
+All this can be ensured by specifying the usual 
+
+  --prefix=<installation_base>
+
 either to install.sh, or directly to the 
 
  ./configure  
@@ -51,7 +54,10 @@ either to install.sh, or directly to the
 script calls if building individually. 
 
 In addition, please ensure that your LD_LIBRARY_PATH is set to include
-the installation directory for all the dynamic libraries.
+the installation directory for all the dynamic libraries, and that 
+if hoppet is installed independently it is installed with compile
+option -fPIC for position independent code so it can be linked against 
+dynamic library code. 
 
 By default include files, libraries and the config utilities mentioned
 above are installed in the include, lib and bin directories from the 

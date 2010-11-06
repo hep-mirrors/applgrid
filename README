@@ -14,16 +14,48 @@ the appl_grid directory is required, the hoppet installation
 if arbitrary scale changes during the fast convolution is 
 required.
 
+Structure
+---------
+
 Because the whole installation contains several distinct 
-packages these is the install.sh script, which can guide the 
-installation. 
+packages these is the 
 
-To compile it, adapt setup.sh and install.sh to your local 
-installation. To run the code it is enought to execute the 
-setup.sh. 
+ install.sh 
 
-include files and libraries are installed in the include and lib
-directories from the installation directory.
+script, which can guide the installation, although the packages
+can also be installed independently, although *please* ensure 
+that your path contains instances of the 
+
+ root-config
+ lhapdf-config
+
+package config utilities. In addition, if you have hoppet already 
+installed, please ensure that 
+
+ hoppet-config
+
+is in your path.
+
+In addition, the APPLgrid convolution code generates a config 
+utility of it's own..
+
+ applgrid-config
+
+Please ensure that this is placed in your path also. 
+
+All this can be ensured by specifying --prefix=<installation_base>
+either to install.sh, or directly to the 
+
+ ./configure  
+ 
+script calls if building individually. 
+
+In addition, please ensure that your LD_LIBRARY_PATH is set to include
+the installation directory for all the dynamic libraries.
+
+By default include files, libraries and the config utilities mentioned
+above are installed in the include, lib and bin directories from the 
+installation directory.
 
 The nlojet executable is installed in the bin directory below the 
 installation directory. 

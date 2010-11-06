@@ -13,7 +13,6 @@ INSTPATH= `which nlojet++ | sed s:/bin/nlojet\+\+::`
 # CXX = g++
 F77 = gfortran
 CXXFLAGS += -O3 -fPIC -g 
-# CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 CXXFLAGS += -I$(INSTALLBASE)/include/nlo++ -I$(INSTALLBASE)/include
 
 
@@ -23,15 +22,10 @@ HOPPETLIBS =  $(shell hoppet-config --libs)
 CXXFLAGS += $(HOPPETINCS)
 
 
-
 # ROOT	
-# ROOTINCS = -I$(shell root-config --incdir)
 
 ROOTINCS = -I$(shell root-config --incdir)
 ROOTLIBS = $(shell root-config --libs)
-
-# F2CFLAG = -lg2c
-#  -L/usr/lib/gcc/i386-redhat-linux5E/4.1.2/ -lgfortran
 ROOTCFLAGS = $(shell root-config --cflags)
 ROOTARCH = $(findstring -m64, $(ROOTCFLAGS) )
 
@@ -40,14 +34,16 @@ FFLAGS += -g $(ROOTARCH)
 
 CXXFLAGS += $(ROOTARCH) $(ROOTINCS)
 
-#LHAPDF
+# LHAPDF
 LHAPDFDIR = $(shell lhapdf-config --prefix)
 LHAPDFINCS = -I$(LHAPDFDIR)/include
 LHAPDFLIBS = -L$(LHAPDFDIR)/lib -lLHAPDF
 
+# applgrid
 APPLCXXFLAGS = $(shell applgrid-config --cxxflags)
 APPLLIBS     = $(shell applgrid-config --ldcflags)
 
+# fastjet
 FASTJETINCS = $(shell fastjet-config --cxxflags)
 FASTJETLIBS = $(shell fastjet-config --libs)
 FASTJETFORNLO = -L$(shell fastjet-config --prefix)/lib,-lfastjet
@@ -59,17 +55,15 @@ LD_FLAGS += $(ROOTARCH) -L$(LHAPDFDIR)/lib -lLHAPDF
 LD_FLAGS += $(APPLLIBS)
 
 LDFLAGS += $(ROOTARCH) 
-#
+
+
 #F90 libraries
-#
+# F2CFLAG = -lg2c
+#  -L/usr/lib/gcc/i386-redhat-linux5E/4.1.2/ -lgfortran
 # F90LIB= -L`which lf95 | sed s:bin/lf95:lib:` -lfj9i6 -lfj9f6 -lfj9e6 -lfccx86_6a
 FRTLIB   = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
 FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
-# FRTLLIB = 
 # FRTLLIB = $(shell gfortran.sh )
-# FRTLLIB = -L/usr/local/gfortran/lib/x86_64  -lgfortran
-# FRTLLIB = -lg2c -lgfortran
-# FRTLLIB = -lgfortran
 F90LIB = $(FRTLLIB)
 #PDFCONVLIBS = -L$(INSTPATH)/pdf-conv-1.0/src -ldglap $(F90LIB)
 #PDFCONVLIBS = -L$(INSTALLBASE)/lib -ldglap $(F90LIB) $(LHAPDFLIBS)
@@ -92,9 +86,11 @@ NLOCXXFLAGS = -Wx,$(ROOTARCH),$(ALLMACRO1),-O3,-Wall,$(ROOTARCH),$(ROOTINCS),$(F
 NLOFFLAGS   = -Wf,$(ROOTARCH),-O3,-Wall,$(FASTJETINCS)
 NLOLIBFLAGS = -Wl,$(ROOTARCH),-lpthread,$(ALL_LIBS),-L$(INSTALLBASE)/lib,-lAPPLgrid,nlogrid.lo,fjClustering.lo
 
-
-
 NLOINC = -I$(INSTALLBASE)/include/nlo++ 
+
+NLOLIBTOOLFLAGS = -Wc,$(ROOTARCH),$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/nlo++,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS)
+
+
 
 install : all
 all : fillgrid standalone
@@ -117,25 +113,10 @@ fillgrid: LHAPDF.h nlogrid.o nlogrid.lo fjClustering.o fjClustering.lo
 	$(F77) $(FFLAGS) -c $<
 
 .cpp.o:	 
-	@ echo hmmm $(ROOTARCH)
 	$(CXX) -c $< $(CXXFLAGS) $(ALLMACRO) -I$(INSTALLBASE)/include -I$(INSTALLBASE)/include/lhpdf $(APPLCXXFLAGS)
 
-
-
-# obsolete single compilation rules 
-
-# nlogrid.o: nlogrid.cxx
-# 	$(CXX) $(ALLMACRO) -g -c $(CXXFLAGS) nlogrid.cxx $(ROOTINCS) $(NLOINC) $(APPLCXXFLAGS) 
-
-# standalone.o:	standalone.cxx 
-#	$(CXX) -c $(CXXFLAGS) $(ALLMACRO) standalone.cxx -I$(INSTALLBASE)/include -I$(INSTALLBASE)/include/lhpdf $(APPLCXXFLAGS)
-
-NLOLIBTOOLFLAGS = -Wc,$(ROOTARCH),$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/nlo++,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS)
-
 .cpp.lo:  
-#	$(INSTPATH)/libexec/nlo++/libtool-nlojet++ --mode=compile $(CXX) $(ALLMACRO) -c nlogrid.cxx $(NLOLIBTOOLFLAGS)
 	$(INSTALLBASE)/libexec/nlo++/libtool-nlojet++ --mode=compile $(CXX) $(ALLMACRO) $(CXXFLAGS) -c $< $(NLOLIBTOOLFLAGS)
-
 
 
 clean:

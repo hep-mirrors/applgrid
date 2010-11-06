@@ -39,8 +39,8 @@ FFLAGS   += $(ROOTARCH)
 FRTLLIB = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
 FRTLIB  = -L$(subst /libgfortran.a, ,$(FRTLLIB) ) -lgfortran
 
-LD_FLAGS += -u _hoppetstart_ $(ROOTARCH) $(LHAPDFLIBS) $(APPLLIBS) $(HOPPETLIBS) $(FRTLIB) 
-LDFLAGS  += -u _hoppetstart_ 
+LD_FLAGS +=  $(ROOTARCH) $(LHAPDFLIBS) $(APPLLIBS) $(HOPPETLIBS) $(FRTLIB) 
+LDFLAGS  +=  
 
 PDFCONVLIBS = $(HOPPETLIBS) $(LHAPDFLIBS)
 

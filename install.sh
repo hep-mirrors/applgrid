@@ -203,6 +203,8 @@ install_appl_grid() {
     make 
     make install
 
+    hash -r
+
 }
 
 
@@ -225,6 +227,8 @@ install_pdf() {
     make
 #   make check
     make install
+
+    hash -r
 
     # cd $BASEDIR/pdf-conv-1.0/src
     # 
@@ -341,6 +345,8 @@ install_nlojet() {
 	
     fi
     
+    hash -r
+
     echo $PATH
     echo "which create-nlojet-user"
 

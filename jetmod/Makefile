@@ -47,10 +47,10 @@ APPLLIBS     = $(shell applgrid-config --ldcflags)
 
 CXXFLAGS += $(APPLCXXFLAGS)
 
-LD_FLAGS += -u _hoppetstart_ $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
+LD_FLAGS += $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
 LD_FLAGS += $(APPLLIBS)
 
-LDFLAGS += $(ROOTARCH) -u _hoppetstart_ 
+LDFLAGS += $(ROOTARCH) 
 #
 #F90 libraries
 #

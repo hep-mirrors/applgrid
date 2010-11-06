@@ -225,6 +225,7 @@ ROOTGLIBS = $(shell root-config --nonew --glibs)
 LHAPDFDIR = $(shell lhapdf-config --prefix)
 HOPPETDIR = $(shell hoppet-config --prefix)
 HOPPETCFLAGS = $(shell hoppet-config --cxxflags)
+HOPPETLIBS = $(shell hoppet-config --libs)
 ROOTARCH = $(findstring -m64, $(ROOTCFLAGS) )
 
 # GSLLIBS=$(shell gsl-config --libs)
@@ -234,7 +235,7 @@ AM_CXXFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I../appl_grid $(ROOTCFLAGS) -I$(LHAP
 AM_CFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I../appl_grid $(ROOTCFLAGS) -I$(LHAPDFDIR)/include $(HOPPETCFLAGS) 
 #INCLUDES=-I$(LHAPDFDIR)/include
 # AM_LDFLAGS= -O -L$(LHAPDFDIR)/lib -lLHAPDF  $(ROOTLIBS) $(GSLLIBS) $(FCLIBS)
-AM_LDFLAGS = $(ROOTARCH) -O -L$(LHAPDFDIR)/lib -lLHAPDF  $(ROOTLIBS) $(FCLIBS)
+AM_LDFLAGS = $(ROOTARCH) -O -L$(LHAPDFDIR)/lib -lLHAPDF  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS)
 # program_LDFLAGS= $(AM_LDFLAGS) 
 AM_FCFLAGS = -c
 AM_FCLIBS = -lg2c

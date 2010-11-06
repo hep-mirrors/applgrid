@@ -453,14 +453,14 @@ run_user () {
 
     echo "\nrunning executables..."
 
-    if [ -e output/weight_c.root ]; then 
+    if [ -e ../jetmod/output/weight_c.root ]; then 
       ./stand ../jetmod/output/weight_c.root
     else
        echo "weight file not found (../jetmod/output/weight_c.root)"
        echo "have you already run nlojet++ ?"
     fi
        
-    if [ -e output/weight_c.root ]; then 
+    if [ -e fnl0004.tab ]; then 
       ./fnlo  fnl0004.tab
     else 
       echo "fastnlo grid file (fnl0004.tab) missing" 	

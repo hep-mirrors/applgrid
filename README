@@ -14,8 +14,8 @@ the appl_grid directory is required, the hoppet installation
 if arbitrary scale changes during the fast convolution is 
 required.
 
-Structure
----------
+Installation prerequisites
+--------------------------
 
 Because the whole installation contains several distinct 
 packages these is the 
@@ -59,6 +59,9 @@ if hoppet is installed independently it is installed with compile
 option -fPIC for position independent code so it can be linked against 
 dynamic library code. 
 
+Installation
+------------
+
 By default include files, libraries and the config utilities mentioned
 above are installed in the include, lib and bin directories from the 
 installation directory.
@@ -95,21 +98,11 @@ A: Install and run the code
    the argument --none being used to switch off everything before 
    enabling the appl_grid compilation.
 
-   Additional arguments are used to control the compilation itself
-   eg
 
-    install.sh clean
+Additional details (not checked) which may be of help... 
 
-   will clean the installation before reinstalling
-
-    install.sh clean --none --appl
-
-   will do a fresh install of the appl_grid code
-
-More detail:
-
-1) run the setup.sh or setup.csh script (Only if you need to, should shouldn't)
-2) run the install.sh script. (./install.sh clean to clean the directory before make ) 
+1) run the setup.sh or setup.csh script (Only if you need to, shouldn't any longer)
+2) run the install.sh script. 
 3) compile the fillgrid.cxx
 
    cd $BASEDIR/jetmod
@@ -153,7 +146,7 @@ B) Software organisation:
 
    jetmod: nlojet examples to make weight tables and validating them  
 
-   lhpdf-1.0.0: The LHAPDF library  
+   lhpdf-1.0.0: The LHAPDF library interface for nlojet 
 
    mcfm:  The source library of the mcfm program                  
 
@@ -174,12 +167,9 @@ C) appl_grid software:
       sparse.h            tsparse_base.h
       SparseMatrix3d.cxx SparseMatrix3d.h
 
-    e) root file to store the CKM coefficients
-       ckm.root        
-
-    f) pdf class, stores the combinations of the variuos pdf 
-       elements to the more generalised subprocesses, ie 7 
-       for the pp combinations, rather than the 13x13 
+   e) pdf class, stores the combinations of the variuos pdf 
+      elements to the more generalised subprocesses, ie 7 
+      for the pp combinations, rather than the 13x13 
 
        base class: 
        appl_pdf.cxx and appl_pdf.h
@@ -196,27 +186,20 @@ C) appl_grid software:
        nlojet_pdf.cxx nlojet_pdf.h             
        jetrad_pdf.cxx  jetrad_pdf.h    
 
-    g) helper functions to test CPU performance
-       time-save0.cxx
-       appl_timer.c    
+   g) helper functions to test CPU performance
+       appl_timer.cxx    
        appl_timer.h    
 
+   j) helper function: TObject string vector class for writing string vectors
+       TFileString.cxx
+       TFileString.h
 
-    h) basic standalone code example
-       cross.cxx       
-       kcrss.cxx        
+      The following dictionary files are generated automatically
+       TFileStringDict.h
+       TFileStringDict.cxx 
 
-    i) Not needed
-       main.cxx        
-       main-old.cxx 
-       main-save.cxx   
+Additional documentation (not checked)
 
-    j) helper function: TObject string vector class for writing string vectors
-       TFileString.cxx TFileStringDict.h
-       TFileStringDict.cxx TFileString.h
-
-
-ad C a) 
         1) appl_grid.cxx  and appl_grid.h  (explained below)
            user interface for the grid software
 
@@ -280,5 +263,3 @@ ad C a)
                     int NQ2, double Q2min, double Q2max, 
                     int Nx,  double  xmin, double  xmax )
        
-
-     b) appl_igrid.cxx and appl_igrid.h (explained below)

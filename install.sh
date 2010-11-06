@@ -148,7 +148,6 @@ fi
 
 
 cd   $BASEDIR
-echo $BASEDIR
 
 export PATH=$INSTALLBASE/bin:$PATH
 
@@ -199,8 +198,8 @@ export LHAPDFLIB=`lhapdf-config --prefix`/lib
 
 export PATH=$ROOTSYS/bin:$PATH
 export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$LD_LIBRARY_PATH
-export DYLD_LIBRARY_PATH=$BASEDIR/lib:$BASEDIR/libexec:$LHAPDFLIB:$DYLD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$INSTALLBASE/lib:$INSTALLBASE/libexec:$LHAPDFLIB:$LD_LIBRARY_PATH
+export DYLD_LIBRARY_PATH=$INSTALLBASE/lib:$INSTALLBASE/libexec:$LHAPDFLIB:$DYLD_LIBRARY_PATH
 
 
 
@@ -502,9 +501,9 @@ hash -r
 
 if [ "$PDF" = 1 ];      then install_pdf        $ARGS; fi
 
-if [ -e $BASEDIR/bin/hoppet-config ]; then 
-    export HOPPETLIBS=` $BASEDIR/bin/hoppet-config --libs `
-    export HOPPETINCS=` $BASEDIR/bin/hoppet-config --cxxflags ` 
+if [ -e $INSTALLBASE/bin/hoppet-config ]; then 
+    export HOPPETLIBS=` $INSTALLBASE/bin/hoppet-config --libs `
+    export HOPPETINCS=` $INSTALLBASE/bin/hoppet-config --cxxflags ` 
     export HOPPETFLAG="  -DHOPPET " 
 fi 
 
@@ -520,13 +519,13 @@ FASTJETFOUND=`which fastjet-config`
 if [ "$FASTJETFOUND" == "" ]; then  
   if [ "$FASTJET" = 1 ];  then    install_fastjet        $ARGS; fi
  
-  if [ -e $BASEDIR/bin/fastjet-config ]; then 
-     export FASTJETLIBS=` $BASEDIR/bin/fastjet-config --libs `
-     export FASTJETINCS=` $BASEDIR/bin/fastjet-config --cxxflags ` 
+  if [ -e $INSTALLBASE/bin/fastjet-config ]; then 
+     export FASTJETLIBS=` $INSTALLBASE/bin/fastjet-config --libs `
+     export FASTJETINCS=` $INSTALLBASE/bin/fastjet-config --cxxflags ` 
      export FASTJETFLAG="  -DFASTJET " 
   fi
 else
-  if [ -e $BASEDIR/bin/fastjet-config ]; then 
+  if [ -e $INSTALLBASE/bin/fastjet-config ]; then 
      export FASTJETLIBS=` fastjet-config --libs `
      export FASTJETINCS=` fastjet-config --cxxflags ` 
      export FASTJETFLAG="  -DFASTJET " 

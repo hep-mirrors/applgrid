@@ -604,7 +604,7 @@ s,@ac_ct_F77@,|#_!!_#|g77,g
 s,@LIBTOOL@,|#_!!_#|$(SHELL) $(top_builddir)/libtool,g
 s,@ROOTPATH@,|#_!!_#|/cern/root/bin/root,g
 s,@LHAPDFPATH@,|#_!!_#|/usr/local/bin/lhapdf-config,g
-s,@HOPPETPATH@,|#_!!_#|/tmp/test/trunk/bin/hoppet-config,g
+s,@HOPPETPATH@,|#_!!_#|/tmp/b/bin/hoppet-config,g
 s,@LIBOBJS@,|#_!!_#|,g
 s,@LTLIBOBJS@,|#_!!_#|,g
 :end

@@ -21,11 +21,6 @@ HOPPETLIBS =  $(shell hoppet-config --libs)
 
 CXXFLAGS += $(HOPPETINCS)
 
-FFLAGS += -g 
-
-# F2CFLAG = -lg2c
-#  -L/usr/lib/gcc/i386-redhat-linux5E/4.1.2/ -lgfortran
-ROOTARCH = $(findstring -m64, $(ROOTINCS) )
 
 
 # ROOT	
@@ -33,6 +28,13 @@ ROOTARCH = $(findstring -m64, $(ROOTINCS) )
 
 ROOTINCS = -I$(shell root-config --incdir)
 ROOTLIBS = $(shell root-config --libs)
+
+# F2CFLAG = -lg2c
+#  -L/usr/lib/gcc/i386-redhat-linux5E/4.1.2/ -lgfortran
+ROOTARCH = $(findstring -m64, $(ROOTINCS) )
+
+FFLAGS += -g $(ROOTARCH)
+
 
 CXXFLAGS += $(ROOTARCH) $(ROOTINCS)
 
@@ -45,19 +47,20 @@ APPLLIBS     = $(shell applgrid-config --ldcflags)
 
 CXXFLAGS += $(APPLCXXFLAGS)
 
-LD_FLAGS +=  $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
-LD_FLAGS +=  $(APPLLIBS)
+LD_FLAGS += -u _hoppetstart_ $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
+LD_FLAGS += $(APPLLIBS)
 
-LDFLAGS += $(ROOTARCH)
+LDFLAGS += $(ROOTARCH) -u _hoppetstart_ 
 #
 #F90 libraries
 #
 # F90LIB= -L`which lf95 | sed s:bin/lf95:lib:` -lfj9i6 -lfj9f6 -lfj9e6 -lfccx86_6a
 FRTLIB   = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
 FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
+# FRTLLIB = 
 # FRTLLIB = $(shell gfortran.sh )
 # FRTLLIB = -L/usr/local/gfortran/lib/x86_64  -lgfortran
-#FRTLLIB = -lg2c -lgfortran
+# FRTLLIB = -lg2c -lgfortran
 # FRTLLIB = -lgfortran
 F90LIB = $(FRTLLIB)
 #PDFCONVLIBS = -L$(INSTPATH)/pdf-conv-1.0/src -ldglap $(F90LIB)
@@ -95,6 +98,8 @@ standalone: standalone.o  InitMyPdf.o mypdfevolve.o
 	$(CXX) -o standalone $(LDFLAGS) $(ALLMACRO)  standalone.o InitMyPdf.o mypdfevolve.o    $(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
 
 stand: stand.o  InitMyPdf.o mypdfevolve.o
+	@ echo FRTLIB $(FRTLIB) $(FRTLLIB)
+	@ echo ROOTARCH $(ROOTARCH)
 	$(CXX) -o stand $(LDFLAGS) $(ALLMACRO)  stand.o InitMyPdf.o mypdfevolve.o    $(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
 
 

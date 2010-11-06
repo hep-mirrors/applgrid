@@ -9,6 +9,7 @@
 
 // #include "appl_grid/appl_pdf.h"
 
+#include "LHAPDF/LHAPDF.h"
 #include "appl_grid/appl_timer.h"
 // #include "hoppet_v1.h"
 
@@ -24,7 +25,7 @@ extern "C"
   //void dglapeval_(const double& _x, const double& _Q, double* f);
   //void dglapevalsplit_(const double& _x, const double& _Q, const int&, const int&, double* f);
   void evolvepdf_(const double& , const double& , double* );
-  void initmypdf_(const char* name, const int& set);
+  //  void initmypdf_(const char* name, const int& set);
   
   double alphaspdf_(const double& Q);
 } 
@@ -207,10 +208,11 @@ int main(int argc, char** argv) {
   
   // setup lhapdf etc
   // const string _pdfname = "lhapdf/PDFsets/cteq6mE.LHgrid";  
-  const string _pdfname = "PDFsets/cteq6mE.LHgrid";  
+  //  const string _pdfname = "PDFsets/cteq6mE.LHgrid";  
+  const string _pdfname = "cteq6mE.LHgrid";  
   int Npdf = 0;
   // setup gavins code
-  initmypdf_(_pdfname.c_str(), Npdf);
+  LHAPDF::initPDFSet(_pdfname.c_str(), Npdf);
 
 
   bool first = true;

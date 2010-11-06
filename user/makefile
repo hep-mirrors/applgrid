@@ -21,7 +21,7 @@ LHAPDFLIBS = -L$(LHAPDFDIR) -lLHAPDF
 # applgrid
 APPLCXXFLAGS = $(shell applgrid-config --cxxflags)
 APPLCLIBS    = $(shell applgrid-config --ldcflags)
-APPLLIBS    = $(shell applgrid-config --ldflags)
+APPLLIBS     = $(shell applgrid-config --ldflags)
 
 # hoppet
 HOPPETLIBS =  $(shell hoppet-config --libs)
@@ -31,7 +31,7 @@ FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran
 
 LD_FLAGS += $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
 
-CXXFLAGS += $(ROOTARCH) $(ROOTINCS) $(APPLCXXFLAGS) $(LHAPDFINCS)
+CXXFLAGS += $(ROOTARCH) $(ROOTINCS) $(APPLCXXFLAGS) $(LHAPDFINCS) 
 LDFLAGS  += $(ROOTARCH)
 FFLAGS   += $(ROOTARCH)
 
@@ -39,8 +39,8 @@ FFLAGS   += $(ROOTARCH)
 FRTLLIB = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
 FRTLIB  = -L$(subst /libgfortran.a, ,$(FRTLLIB) ) -lgfortran
 
-LD_FLAGS += $(ROOTARCH) $(LHAPDFLIBS) $(APPLLIBS) $(HOPPETLIBS) $(FRTLIB)
-
+LD_FLAGS += -u _hoppetstart_ $(ROOTARCH) $(LHAPDFLIBS) $(APPLLIBS) $(HOPPETLIBS) $(FRTLIB) 
+LDFLAGS  += -u _hoppetstart_ 
 
 PDFCONVLIBS = $(HOPPETLIBS) $(LHAPDFLIBS)
 
@@ -54,7 +54,7 @@ install : all
 all : stand fnlo fstand
 
 stand: stand.o 
-	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) $(APPLCLIBS) 
+	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $< $(APPLCLIBS)  $(LIBS) 
 
 
 fstand: fstand.o fmain.o

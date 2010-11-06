@@ -6,6 +6,7 @@
 #include "appl_grid/appl_grid.h"
 
 #include "TH1D.h"
+#include "TFile.h"
 
 
 // lhapdf routines
@@ -26,10 +27,10 @@ int main(int argc, char** argv) {
   // get name of grid from user and create from grid file
   appl::grid g(argv[1]);
 
-  for ( int i=2 ; i<argc ; i++ ) {
-    //  std::cout << "adding grid " << argv[i] << std::endl; 
-    g += appl::grid(argv[i]);
-  }
+  //  for ( int i=2 ; i<argc ; i++ ) {
+  //  //  std::cout << "adding grid " << argv[i] << std::endl; 
+  //  g += appl::grid(argv[i]);
+  // }
 
 
   g.trim(); // trim away uneeded memory
@@ -49,6 +50,11 @@ int main(int argc, char** argv) {
   std::cout << "doing standalone convolution..." << std::endl; 
   std::vector<double>  xsec = g.vconvolute( evolvepdf_, alphaspdf_ ); 
 
+  TFile fout("fout.root","recreate");
+  TH1D* hxsec = g.convolute( evolvepdf_, alphaspdf_ ); 
+  fout.Write();
+  fout.Close();
+  
   //  or get into a histogram
   //  TH1D* hxsec = g.convolute( evolvepdf_, alphaspdf_ ); 
   //  hxsec->SetName("xsec");

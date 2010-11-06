@@ -138,7 +138,6 @@ for WORD in $ARGS ; do
 done
 
 
-
 echo "base directory " $BASEDIR 
 if [ -e $INSTALLBASE ]; then 
    echo "installing in $INSTALLBASE"
@@ -453,9 +452,11 @@ run_user () {
 
     make all
 
+    echo "\nrunning executables..."
+
     if [ -e output/weight_c.root ]; then 
       ./stand ../jetmod/output/weight_c.root
-    echo
+    else
        echo "weight file not found (../jetmod/output/weight_c.root)"
        echo "have you already run nlojet++ ?"
     fi
@@ -496,6 +497,8 @@ install_fastjet () {
 ###########################
 # ACTUALLY RUN THE STAGES 
 ###########################
+
+hash -r
 
 if [ "$PDF" = 1 ];      then install_pdf        $ARGS; fi
 

@@ -33,8 +33,9 @@ FFLAGS += -g
 # ROOT	
 # ROOTINCS = -I$(shell root-config --incdir)
 
-ROOTINCS = -I$(shell root-config --incdir)
+ROOTINCS = -I$(shell root-config --cflags)
 ROOTLIBS = $(shell root-config --libs)
+ROOTARCH = $(findstring -m64, $(ROOTINCS) )
 
 CXXFLAGS += $(ROOTINCS)
 
@@ -49,10 +50,12 @@ LHAPDFLIBS = -L$(LHAPDFDIR) -lLHAPDF
 APPLCXXFLAGS = -I$(INSTALLBASE)/include
 APPLLIBS     = -L$(INSTALLBASE)/lib -lAPPLgrid
 
-CXXFLAGS += $(APPLCXXFLAGS)
+CXXFLAGS += $(APPLCXXFLAGS) 
 
 LD_FLAGS += -L$(LHAPDFDIR) -lLHAPDF
-LD_FLAGS += $(APPLLIBS)
+LD_FLAGS += $(APPLLIBS) $(ROOTARCH)
+LDFLAGS  += $(ROOTARCH)
+
 
 #
 #F90 libraries
@@ -83,9 +86,9 @@ ALL_LIBS = -L$(INSTALLBASE)/lib,-L$(INSTALLBASE)/lib,-lAPPLgrid,$(FASTJETLIBS),-
 
 
 
-NLOCXXFLAGS = -Wx,$(ARCH),$(ALLMACRO1),-O3,-Wall,$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS),$(FASTJETINCS)
-NLOFFLAGS   = -Wf,$(ARCH),-O3,-Wall
-NLOLIBFLAGS = -Wl,$(ARCH),-lpthread,$(ALL_LIBS),-L$(INSTALLBASE)/lib,-lAPPLgrid,nlogrid.lo,fjClustering.lo
+NLOCXXFLAGS = -Wx,$(ROOTARCH),$(ALLMACRO1),-O3,-Wall,$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS),$(FASTJETINCS)
+NLOFFLAGS   = -Wf,$(ROOTARCH),-O3,-Wall
+NLOLIBFLAGS = -Wl,$(ROOTARCH),-lpthread,$(ALL_LIBS),-L$(INSTALLBASE)/lib,-lAPPLgrid,nlogrid.lo,fjClustering.lo
 
 
 NLOINC = -I$(INSTALLBASE)/include/nlo++ 
@@ -119,7 +122,7 @@ fillgrid: LHAPDF.h nlogrid.o nlogrid.lo fjClustering.o fjClustering.lo
 
 
 
-NLOLIBTOOLFLAGS = -Wc,$(ARCH),$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/nlo++,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS)
+NLOLIBTOOLFLAGS = -Wc,$(ROOTARCH),$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/nlo++,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS)
 
 nlogrid.lo: nlogrid.cpp 
 	$(INSTALLBASE)/libexec/nlo++/libtool-nlojet++ --mode=compile $(CXX) $(ALLMACRO) $(CXXFLAGS) -c nlogrid.cpp $(NLOLIBTOOLFLAGS)

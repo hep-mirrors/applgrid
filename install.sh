@@ -151,7 +151,7 @@ fi
 cd   $BASEDIR
 echo $BASEDIR
 
-export PATH=$BASEDIR/bin:$PATH
+export PATH=$INSTALLBASE/bin:$PATH
 
 ROOTFOUND=`which root-config`
 
@@ -333,8 +333,10 @@ install_nlojet() {
 	
 	make        
 	make install 
-	
+
     fi
+
+    hash -r
 
 
 ######################
@@ -399,6 +401,8 @@ install_nlojet_module() {
     
     make install
     
+    hash -r
+
     echo PATH is: $PATH
     echo LD_LIBRARY_PATH: $LD_LIBRARY_PATH
     
@@ -449,8 +453,19 @@ run_user () {
 
     make all
 
-    ./stand ../jetmod/output/weight_c.root
-    ./fnlo  fnl0004.tab
+    if [ -e output/weight_c.root ]; then 
+      ./stand ../jetmod/output/weight_c.root
+    echo
+       echo "weight file not found (../jetmod/output/weight_c.root)"
+       echo "have you already run nlojet++ ?"
+    fi
+       
+    if [ -e output/weight_c.root ]; then 
+      ./fnlo  fnl0004.tab
+    else 
+      echo "fastnlo grid file (fnl0004.tab) missing" 	
+    fi
+
 }
 
 install_fastjet () { 

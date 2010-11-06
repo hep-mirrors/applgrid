@@ -14,9 +14,8 @@
 
 #include <iostream>
 #include <vector>
-#ifdef HOPPET
-#include "hoppet_v1.h"
-#endif
+
+
 
 class hoppet_init {
 

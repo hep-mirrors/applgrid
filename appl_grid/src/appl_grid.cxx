@@ -32,23 +32,33 @@ using std::fabs;
 #include "appl_grid/TFileString.h"
 using appl::grid;
 
+
+
 #include "TFile.h"
 #include "TObjString.h"
 #include "TVectorT.h"
 
 
 
+/// this is a compatability flag for persistent versions 
+/// of the grid
+/// NB: ONLY change this if the persistent class
+///     changes in a non-backwards compatible way.
 
 const string grid::m_version = "version-1.0";
 
+/// check if we have hoppet included 
+#include "amconfig.h"
 
+#include "appl_grid/hoppet_init.h"
 
+#ifdef HAVE_HOPPET
 
-#ifdef HOPPET
+#include "hoppet_v1.h"
 
 // include hoppet splitting function code
 
-hoppet_init* grid::hoppet = NULL;
+static hoppet_init* hoppet = NULL;
 
 void Splitting(const double& x, const double& Q, double* xf) {
   static const int nLoops    = 1;
@@ -378,7 +388,7 @@ grid::~grid() {
   if(m_obs_bins) delete m_obs_bins;
   m_obs_bins=NULL;
 
-#ifdef HOPPET
+#ifdef HAVE_HOPPET
   if ( hoppet ) delete hoppet; 
   hoppet=NULL; 
 #endif
@@ -627,7 +637,7 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
   //  TH1D* h = new TH1D(*m_obs_bins);
   //  h->SetName("xsec");
 
-#ifdef HOPPET
+#ifdef HAVE_HOPPET
   // check if we need to use the splitting function, and if so see if we 
   // need to initialise it again, and do so if required
   if ( fscale_factor!=1 ) {
@@ -731,7 +741,7 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
   double invNruns = 1;
   if ( run() ) invNruns /= double(run());
 
-#ifdef HOPPET
+#ifdef HAVE_HOPPET
   //  factorisation scale variation is disabled for the subprocess
   //  convolution
   //  // check if we need to use the splitting function, and if so see if we 

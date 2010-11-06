@@ -223,7 +223,7 @@ install_pdf() {
     if [ "$1" = "clean" ]; then
 	make clean
     fi
-    ./configure --prefix=$BASEDIR FC=$FC FFLAGS="$FFLAGS" LDFLAGS="$LDFLAGS"
+    ./configure --prefix=$BASEDIR FC=$FC FFLAGS=" -fPIC $FFLAGS" LDFLAGS="$LDFLAGS"
     make
 #   make check
     make install

@@ -1,7 +1,13 @@
 /* amconfig.in.  Generated from configure.ac by autoheader.  */
 
+/* Define 1 if hoppet is installed */
+#undef HAVE_CERNROOT
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* Define 1 if hoppet is installed */
+#undef HAVE_HOPPET
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H

@@ -44,11 +44,6 @@ using std::string;
 using appl::igrid;
 
 
-#ifdef HOPPET
-#include "hoppet_v1.h"
-#include "appl_grid/hoppet_init.h"
-#endif
-
 #include "TH1D.h"
 
 
@@ -420,10 +415,6 @@ private:
   static const string m_version;
 
   double m_cmsScale;
-
-#ifdef HOPPET
-  static hoppet_init* hoppet;
-#endif
 
   std::string m_documentation;
   

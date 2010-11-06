@@ -29,20 +29,34 @@ AC_FUNC_UTIME_NULL
 #    FC="$F77"
 #  fi
 #fi
+
+AH_TEMPLATE([HAVE_CERNROOT],[Define 1 if the cern root package is installed])
 AC_PATH_PROG(ROOTPATH,root,no)
 if test "$ROOTPATH" = "no"; then
+    AC_MSG_WARN([****************************************************])
+    AC_MSG_WARN([])
     AC_MSG_WARN([root was not found - needed for applgrid storage])
+    AC_MSG_WARN([])
+    AC_MSG_WARN([****************************************************])
+else
+    AC_DEFINE_UNQUOTED(HAVE_CERNROOT,1,[Define 1 if hoppet is installed]) 
 fi
 
-# lhapdf isn't technically needed but leav it in anyhow
-AC_PATH_PROG(LHAPDFPATH,lhapdf-config,no)
+# lhapdf isn't technically needed 
+# AH_TEMPLATE([HAVE_LHAPDF],[Define 1 if lhapdf is installed])
+# AC_PATH_PROG(LHAPDFPATH,lhapdf-config,no)
 
+AH_TEMPLATE([HAVE_HOPPET],[Define 1 if the hoppet library is installed])
 AC_PATH_PROG(HOPPETPATH,hoppet-config,no)
 if test "$HOPPETPATH" = "no"; then
-    AC_MSG_WARN([HOPPET was not found - needed for arbitrary applgrid scale evolution])
+    AC_MSG_WARN([********************************************************************])
+    AC_MSG_WARN([])
+    AC_MSG_WARN([   HOPPET was not found - you will not be able to arbirarily])
+    AC_MSG_WARN([   change the factorisation scale in the convolution])
+    AC_MSG_WARN([])
+    AC_MSG_WARN([********************************************************************])
 else 
-    CPPFLAGS+=" -DHOPPET "
-    CXXFLAGS+=" -DHOPPET "
+    AC_DEFINE_UNQUOTED(HAVE_HOPPET,1,[Define 1 if hoppet is installed]) 
 fi
 
 

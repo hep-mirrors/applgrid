@@ -14,6 +14,11 @@
 #include <vector>
 #include <cmath>
 
+#include "amconfig.h"
+#ifdef HAVE_HOPPET
+#include "hoppet_v1.h"
+#endif
+
 
 hoppet_init::hoppet_init() {
 
@@ -25,7 +30,7 @@ hoppet_init::hoppet_init() {
   // 0.1 should provide at least 10^{-3} accuracy
   // the number of loops to initialise (max=3!)  
 
-#ifdef HOPPET
+#ifdef HAVE_HOPPET
   hoppetstart_( dy, nloop );
 #else
   std::cerr << " hoppet_init::hoppet_init() called but hoppet not included" << std::endl;
@@ -80,7 +85,7 @@ bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double
 
   // is the cahche empty?
   if ( m_cache.size()==0 ) {
-#     ifdef HOPPET 
+#     ifdef HAVE_HOPPET 
       hoppetassign_( pdf );
 #     endif
       fillCache( pdf );
@@ -120,7 +125,7 @@ bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double
   // cache (and hence the pdf) has changed, so replace the old cached 
   // values with the new and reinitialise hoppet with this new pdf 
   if ( changed ) { 
-#   ifdef HOPPET 
+#   ifdef HAVE_HOPPET 
     hoppetassign_( pdf );
 #   endif
     m_cache = ccache;

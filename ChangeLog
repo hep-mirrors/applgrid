@@ -1,3 +1,8 @@
+2010-11-07  Gavin Salam  <salam@lpthe.jussieu.fr>
+
+	* appl_grid/src/hoppet_init.cxx: 
+	  added include <cstdlib>, for exit to be available on g++ 4.4
+
 2009-08-16 sutt -at- cern.ch
 	* first attempt at ChangeLog file
 	

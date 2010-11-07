@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <cstdlib>
 
 #include "amconfig.h"
 #ifdef HAVE_HOPPET
@@ -136,4 +137,3 @@ bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double
   return changed;
   
 }
-

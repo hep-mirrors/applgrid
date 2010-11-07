@@ -55,7 +55,8 @@ extern "C" void redefine_(int& id,
 extern "C" int getnbins_(int& id);
 
 /// do the convolution!! hooray!!
-extern "C" void convolute_(int& id, const int& nloops, double* data);
+extern "C" void convolute_(int& id, double* data);
+extern "C" void convoluteorder_(int& id, int& nloops, double* data);
 
 /// print a grid
 extern "C" void printgrid_(int& id);
@@ -173,7 +174,21 @@ int getnbins_(int& id) {
 
 
 
-void convolute_(int& id, const int& nloops, double* data) { 
+void convolute_(int& id, double* data) { 
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    //   std::cout << "convolute_() nloops=" << nloops << "\tid " << id << std::endl; 
+    appl::grid*    g = gitr->second;
+    vector<double> v = g->vconvolute(fnpdf_, fnalphas_);
+    for ( unsigned i=0 ; i<v.size() ; i++ ) { 
+      data[i] = v[i];      
+      //      cout << "convolute_() data[" << i << "]=" << data[i] << endl; 
+    }
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
+void convoluteorder_(int& id, int& nloops, double* data) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     //   std::cout << "convolute_() nloops=" << nloops << "\tid " << id << std::endl; 

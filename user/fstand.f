@@ -35,15 +35,12 @@ C---  to differentiate them somehow                  ---
       
       
       integer Nbins 
-      integer nloops
       integer inewgrids(100)
       integer n
       integer getnbins
 
 C---  lhapdf set       
       integer iset
-
-      nloops = 1
 
 C---  first set up the your pdfs however you like -----
 
@@ -55,7 +52,7 @@ C---  first set up the your pdfs however you like -----
 C--- next simply read in the grids ----
 
 C---  read a fastnlo grid -------------
-C---  NB: pass in a vector of integers which returns the 
+C---  NB: pass in a vector of integers to be be filled with the 
 C---  ids of the grids which have been read in 
       call readfastnlogrids(igrids, "fnl0004.tab"//char(0))
 
@@ -64,7 +61,8 @@ C---  ids of the grids which have been read in
       write(6,*) n, " grids in ", "fnl0004.tab" 
 
 C---  read native applgrid grids -------------
-C---  NB: pass in an integer which returns the id of the grid
+C---  NB: pass in an integer which will be filled with the id 
+C---  of the grid read in 
       call readgrid(igrid, "atlas-incljets04-eta1.root"//char(0))
       call readgrid(igrid, "atlas-incljets04-eta2.root"//char(0))
       call readgrid(igrid, "atlas-incljets04-eta3.root"//char(0))
@@ -84,12 +82,14 @@ C---  now do the convolutions ---
 C---     how many bins in this cross section ---
          Nbins = getnbins(igrids(igrid))
 
-         write(6,*) "grid ", igrids(igrid), Nbins, nloops
+         write(6,*) "grid ", igrids(igrid), Nbins
+
+C        call printgriddoc(igrids(igrid))
 
 C---     convolute this crid ---
 C---     NB: here we have dummy, nonsensical pdf and alphas
 C---         routines, so the actual values are not important 
-         call convolute(igrids(igrid), nloops, xsec)
+         call convolute(igrids(igrid), xsec)
          
 C---     print out the results ---
          do idata=1, Nbins

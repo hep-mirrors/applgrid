@@ -56,7 +56,7 @@ AM_FCLIBS= -lg2c
 AM_SOFLAGS= -shared
 CINT= rootcint
 clean-local:
-	rm *.o *.lo *Dict*
+	rm -rf *.o *.lo *Dict*
 %.o : %.cxx 
 	@ echo ROOTARCH $(ROOTARCH) 
 	$(CXX) $(AM_CXXFLAGS) -c $<

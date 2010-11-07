@@ -64,7 +64,8 @@ extern "C" void printgrid_(int& id);
 /// print all grids
 extern "C" void printgrids_();
 
-
+/// print the grid documentation
+extern "C" void printgriddoc_(int& id);
 
 /// create grids from fastnlo
 extern "C" void readfastnlogrids_(  int* ids, const char* s );
@@ -129,6 +130,15 @@ void printgrids_() {
   }
 }
 
+  
+void printgriddoc_(int& id) { 
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    std::cout << "grid id " << id << "\n" << gitr->second->getDocumentation() << std::endl;
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
 
 void releasegrid_(int& id) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
@@ -177,13 +187,9 @@ int getnbins_(int& id) {
 void convolute_(int& id, double* data) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
-    //   std::cout << "convolute_() nloops=" << nloops << "\tid " << id << std::endl; 
     appl::grid*    g = gitr->second;
     vector<double> v = g->vconvolute(fnpdf_, fnalphas_);
-    for ( unsigned i=0 ; i<v.size() ; i++ ) { 
-      data[i] = v[i];      
-      //      cout << "convolute_() data[" << i << "]=" << data[i] << endl; 
-    }
+    for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
   }
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
@@ -191,13 +197,9 @@ void convolute_(int& id, double* data) {
 void convoluteorder_(int& id, int& nloops, double* data) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
-    //   std::cout << "convolute_() nloops=" << nloops << "\tid " << id << std::endl; 
     appl::grid*    g = gitr->second;
     vector<double> v = g->vconvolute(fnpdf_, fnalphas_, nloops);
-    for ( unsigned i=0 ; i<v.size() ; i++ ) { 
-      data[i] = v[i];      
-      //      cout << "convolute_() data[" << i << "]=" << data[i] << endl; 
-    }
+    for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
   }
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }

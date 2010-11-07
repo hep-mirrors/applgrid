@@ -2,16 +2,13 @@
 CXX = g++
 F77 = gfortran
 
-FFLAGS += -g 
-
-
-CXXFLAGS +=  -O3 -fPIC -g 
+FFLAGS   += -O3 -fPIC 
+CXXFLAGS += -O3 -fPIC 
 
 # root
 ROOTINCS = $(shell root-config --cflags) 
 ROOTLIBS = $(shell root-config --glibs) 
 ROOTARCH = $(findstring -m64, $(ROOTINCS) )
-
 
 #LHAPDF
 LHAPDFINCS = -I$(shell lhapdf-config --prefix)/include
@@ -21,58 +18,46 @@ LHAPDFLIBS = -L$(LHAPDFDIR) -lLHAPDF
 # applgrid
 APPLCXXFLAGS = $(shell applgrid-config --cxxflags)
 APPLCLIBS    = $(shell applgrid-config --ldcflags)
-APPLLIBS     = $(shell applgrid-config --ldflags)
+APPLFLIBS    = $(shell applgrid-config --ldflags)
 
 # hoppet
 HOPPETLIBS =  $(shell hoppet-config --libs)
 
-FRTLIB   = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
-FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
-
-LD_FLAGS += $(ROOTARCH) -L$(LHAPDFDIR) -lLHAPDF
-
-CXXFLAGS += $(ROOTARCH) $(ROOTINCS) $(APPLCXXFLAGS) $(LHAPDFINCS) 
-LDFLAGS  += $(ROOTARCH)
-FFLAGS   += $(ROOTARCH)
-
+# get the fotran runtime library for linking fortran 
 
 FRTLLIB = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
 FRTLIB  = -L$(subst /libgfortran.a, ,$(FRTLLIB) ) -lgfortran
 
-LD_FLAGS +=  $(ROOTARCH) $(LHAPDFLIBS) $(APPLLIBS) $(HOPPETLIBS) $(FRTLIB) 
-LDFLAGS  +=  
+# now set up the compile and link flags and libs
+CXXFLAGS += $(ROOTARCH) $(ROOTINCS) $(APPLCXXFLAGS) $(LHAPDFINCS) 
+LDFLAGS  += $(ROOTARCH)
+FFLAGS   += $(ROOTARCH)
 
-PDFCONVLIBS = $(HOPPETLIBS) $(LHAPDFLIBS)
-
-# macros to setup contact interactions and reference histograms
-LHA = -DUSELHAPDF
-
-
-LIBS += $(ROOTLIBS)  $(LHAPDFLIBS) $(FRTLIB)  $(FRTLIB) $(PDFCONVLIBS)  
+CLIBS += $(ROOTLIBS) $(LHAPDFLIBS) $(HOPPETLIBS) $(APPLCLIBS)
+FLIBS += $(ROOTLIBS) $(LHAPDFLIBS) $(HOPPETLIBS) $(APPLFLIBS) $(FRTLIB)
 
 install : all
 all : stand fnlo fstand
 
-stand: stand.o 
-	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $< $(APPLCLIBS)  $(LIBS) 
+stand: stand.o
+	$(CXX) $(LDFLAGS) -o $@ $< $(CLIBS) 
 
 
 fstand: fstand.o fmain.o
-	@ echo $(LIBS)
-	$(CXX)  -o $@ fstand.o fmain.o  $(LDFLAGS) $(ALLMACRO)  $(LIBS) $(APPLLIBS) 
+	$(CXX) $(LDFLAGS) -o $@ fstand.o fmain.o $(FLIBS) 
 
 
 fnlo: fnmain.o 
-	$(CXX)  -o $@ $(LDFLAGS) $(ALLMACRO) $<  $(LIBS) $(APPLCLIBS) 
+	$(CXX) $(LDFLAGS) -o $@  $<  $(CLIBS) 
 
 
 .SUFFIXES : .cxx .o .f .c
 
 .f.o :
-	$(F77) $(FFLAGS) $(CXXFLAGS) -c $<
+	$(F77) $(FFLAGS)   -c $<
 
 .cxx.o:	 
-	$(CXX) -c $< $(CXXFLAGS) $(ALLMACRO)  $(APPLCXXFLAGS)
+	$(CXX) $(CXXFLAGS) -c $< 
 
 
 

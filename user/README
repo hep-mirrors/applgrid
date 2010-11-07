@@ -38,6 +38,17 @@ It is chosen to do that by linking as a c++ program and linking
 against the fortran rtl by hand, hence the implementation of 
 main() in fmain.cxx
 
+Execution
+---------
 
+In order to run, there needs to be some data to run on, the makefile
+includes some targets to fetch some fastnlo data and the data for 
+the atlas inclusive jet cross section using 
+
+make getdata
+
+following this you can run the example executables. 
+
+ 
 
 

@@ -17,14 +17,15 @@ extern "C" double alphaspdf_(const double& Q);
 
 int main(int argc, char** argv) { 
 
-  if ( argc<2 ) return -1;
+  // use a default atlas inclusive grid
+  std::string gridname = "atlas-incljets04-eta1.root";
 
-  std::cout << "reading grid" << std::endl; 
+  if ( argc>1 ) gridname = argv[1];
 
-  
+  std::cout << "reading grid " << gridname << std::endl; 
 
   // get name of grid from user and create from grid file
-  appl::grid g(argv[1]);
+  appl::grid g(gridname);
 
   g.trim(); // trim away uneeded memory
 
@@ -40,9 +41,11 @@ int main(int argc, char** argv) {
   // initpdf_( iset );
 
   // do the convolution into a vector
-  std::cout << "doing standalone convolution..." << std::endl; 
+  std::cout << "doing standalone convolution" << std::endl; 
+  std::cout << g.getDocumentation() << std::endl; 
   std::vector<double>  xsec = g.vconvolute( evolvepdf_, alphaspdf_ ); 
 
+  // print results
   for ( int i=0 ; i<xsec.size() ; i++ ) { 
     std::cout << "xsec(" << i << ")=" << xsec[i] << std::endl;
   }

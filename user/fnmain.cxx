@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
 
   std::cout << "set up lhapdf..." << std::endl;
 
-  const std::string _pdfname = "cteq61.LHgrid";  
+  const std::string _pdfname = "cteq6mE.LHgrid";  
   int iset = 0;
   LHAPDF::initPDFSet( _pdfname, iset );
   
@@ -54,11 +54,18 @@ int main(int argc, char** argv) {
     char hname[64];
     sprintf(hname, "hist%02d", i);
 
+    std::cout << g[i]->getDocumentation() << std::endl;
+
     hc[i] = g[i]->convolute( evolvepdf_, alphaspdf_ );
     hc[i]->SetName(hname);
     hc[i]->SetDirectory(&fout);
     hc[i]->Write();
     
+    std::cout << g[i]->getDocumentation() << std::endl;
+    for ( int j=1 ; j<=hc[i]->GetNbinsX() ; j++ ) { 
+      std::cout << "xsec(" << j-1 << ")=" << hc[i]->GetBinContent(j) << std::endl;
+    }
+
   }
 
   std::cout << "writing file " << foutname << std::endl; 

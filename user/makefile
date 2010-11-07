@@ -60,6 +60,18 @@ fnlo: fnmain.o
 	$(CXX) $(CXXFLAGS) -c $< 
 
 
+#########################################################
+#  just type make getdata and it will download all 
+#  the required data for these examples
+#########################################################
+
+getdata : getfnlodata getappldata
+
+getfnlodata: 
+	curl http://projects.hepforge.org/fastnlo/code/src/fnl0004.tab.gz | gunzip > fnl0004.tab
+
+getappldata: 
+	curl http://www.hepforge.org/archive/applgrid/atlas-incljets-arXiv1009.5908v2.tgz | tar -xzf - 
 
 clean:
 	rm -rf ./.libs ./.obj *.lo *.o *.la stand fnlo fstand *~

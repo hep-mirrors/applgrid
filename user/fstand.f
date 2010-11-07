@@ -66,7 +66,6 @@ C---  ids of the grids which have been read in
 C---  read native applgrid grids -------------
 C---  NB: pass in an integer which returns the id of the grid
       call readgrid(igrid, "atlas-incljets04-eta1.root"//char(0))
-
       call readgrid(igrid, "atlas-incljets04-eta2.root"//char(0))
       call readgrid(igrid, "atlas-incljets04-eta3.root"//char(0))
       call readgrid(igrid, "atlas-incljets04-eta4.root"//char(0))
@@ -77,7 +76,6 @@ C---  find out how many grids have been setup ----
       call gridids( igrids ) 
 
       write(6,*) n, "grids in total"
-
 
 C---  now do the convolutions ---
 

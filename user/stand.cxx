@@ -26,12 +26,6 @@ int main(int argc, char** argv) {
   // get name of grid from user and create from grid file
   appl::grid g(argv[1]);
 
-  for ( int i=2 ; i<argc ; i++ ) {
-    //  std::cout << "adding grid " << argv[i] << std::endl; 
-    g += appl::grid(argv[i]);
-  }
-
-
   g.trim(); // trim away uneeded memory
 
   std::cout << "setting up lhapdf" << std::endl; 
@@ -48,6 +42,10 @@ int main(int argc, char** argv) {
   // do the convolution into a vector
   std::cout << "doing standalone convolution..." << std::endl; 
   std::vector<double>  xsec = g.vconvolute( evolvepdf_, alphaspdf_ ); 
+
+  for ( int i=0 ; i<xsec.size() ; i++ ) { 
+    std::cout << "xsec(" << i << ")=" << xsec[i] << std::endl;
+  }
 
   //  or get into a histogram
   //  TH1D* hxsec = g.convolute( evolvepdf_, alphaspdf_ ); 

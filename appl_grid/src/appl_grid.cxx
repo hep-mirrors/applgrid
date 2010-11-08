@@ -621,7 +621,7 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
 				     double Escale )
 { 
   
-  struct timeval _ctimer = appl_timer_start();
+  //  struct timeval _ctimer = appl_timer_start();
   
   double Escale2 = 1;
  
@@ -715,9 +715,8 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
     //    cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << endl;
   }  // iobs   
 
-  double _ctime = appl_timer_stop(_ctimer);
-
-  cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << endl;
+  //  double _ctime = appl_timer_stop(_ctimer);
+  //  cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << endl;
 
   return hvec;
 }
@@ -732,7 +731,7 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
 					     double  rscale_factor, double Escale )
 { 
   
-  struct timeval _ctimer = appl_timer_start();
+  //  struct timeval _ctimer = appl_timer_start();
 
   double Escale2 = 1;
  
@@ -824,9 +823,8 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
     //	       << "\tdsigma=" << dsigma << endl;
   }  // iobs   
 
-  double _ctime = appl_timer_stop(_ctimer);
-
-  cout << "grid::convolute_subproc(" << subproc << ") " << label << " convolution time=" << _ctime << " ms" << endl;
+  //  double _ctime = appl_timer_stop(_ctimer);
+  //  cout << "grid::convolute_subproc(" << subproc << ") " << label << " convolution time=" << _ctime << " ms" << endl;
 
   return hvec;
 }

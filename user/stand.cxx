@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-// #include <stdio.h>
 
 #include "appl_grid/appl_grid.h"
 

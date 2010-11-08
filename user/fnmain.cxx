@@ -1,18 +1,18 @@
 
 
-#include "appl_grid/fastnlo.h"
-#include "TFile.h"
-#include "TH1D.h"
-
 #include <iostream>
 #include <stdio.h>
+
+#include "appl_grid/fastnlo.h"
+
+#include "TFile.h"
+#include "TH1D.h"
 
 
 // lhapdf routines
 #include "LHAPDF/LHAPDF.h"
 extern "C" void evolvepdf_(const double& , const double& , double* );
 extern "C" double alphaspdf_(const double& Q);
-
 
 
 
@@ -40,11 +40,13 @@ int main(int argc, char** argv) {
 
   std::vector<appl::grid*> g = f.grids(); 
 
-  std::vector<TH1D*> hc(g.size());
-  
-  std::string foutname = "appl.root";
+  //  g.push_back( new appl::grid("atlas-incljets04-eta1.root") );
 
+  /// histograms and file for seeing the results
+  std::vector<TH1D*> hc(g.size());
+  std::string foutname = "appl.root";
   TFile fout( foutname.c_str(),"recreate");
+
   for ( int i=0 ; i<g.size() ; i++ ) { 
 
     // trim the grids (not actually needed, done in 
@@ -54,14 +56,16 @@ int main(int argc, char** argv) {
     char hname[64];
     sprintf(hname, "hist%02d", i);
 
-    std::cout << g[i]->getDocumentation() << std::endl;
+    /// optionally print out the grid documentation  
+    std::cout << "\n" << g[i]->getDocumentation() << std::endl;
 
+    /// perform the convolution
     hc[i] = g[i]->convolute( evolvepdf_, alphaspdf_ );
     hc[i]->SetName(hname);
     hc[i]->SetDirectory(&fout);
     hc[i]->Write();
     
-    std::cout << g[i]->getDocumentation() << std::endl;
+    /// print out the results
     for ( int j=1 ; j<=hc[i]->GetNbinsX() ; j++ ) { 
       std::cout << "xsec(" << j-1 << ")=" << hc[i]->GetBinContent(j) << std::endl;
     }
@@ -73,3 +77,4 @@ int main(int argc, char** argv) {
   
   return 0;
 }
+

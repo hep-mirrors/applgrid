@@ -301,7 +301,7 @@ public:
 
 
 
-  static bool reweight(bool t=true)    { return m_reweight=t; }
+  bool reweight(bool t=true)    { return m_reweight=t; }
 
 
   // setup the pdf grid for calculating the pdf using 
@@ -495,7 +495,10 @@ private:
   static map<const string, transform_vec> m_fmap;
 
   static double m_transvar;    // transform function parameter
-  static bool   m_reweight;    // reweight the pdf?
+
+  /// *don't* make m_reweight static!!! otherwise we can't mix 
+  ///  reweighted and non-reweighted grids!!! 
+  bool   m_reweight;    // reweight the pdf?
   
   bool   m_symmetrise;   // symmetrise the grid or not 
   bool   m_optimised;    // optimised?

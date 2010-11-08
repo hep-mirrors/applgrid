@@ -71,8 +71,8 @@ extern "C" void printgriddoc_(int& id);
 extern "C" void readfastnlogrids_(  int* ids, const char* s );
 
 
-int idcounter = 0;
-std::map<int,appl::grid*> _grid;
+static int idcounter = 0;
+static std::map<int,appl::grid*> _grid;
 
 
 /// grid map management
@@ -108,7 +108,9 @@ void bookgrid_(int& id, const int& Nobs, const double* binlims)
 void readgrid_(int& id, const char* s) {
   id = idcounter++;
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
-  if ( gitr==_grid.end() )  _grid.insert(  std::map<int,appl::grid*>::value_type( id, new appl::grid(s) ) );
+  if ( gitr==_grid.end() ) { 
+    _grid.insert(  std::map<int,appl::grid*>::value_type( id, new appl::grid(s) ) );
+  }
   else throw appl::grid::exception( std::cerr << "grid with id " << id << " already exists" << std::endl );  
 }
 

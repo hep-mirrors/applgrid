@@ -46,7 +46,7 @@ void Splitting(const double& x, const double& Q, double* f);
 
 
 // pdf reweighting
-bool   igrid::m_reweight   = false;
+// bool   igrid::m_reweight   = false;
 // bool   igrid::m_symmetrise = false;
 
 // variable tranformation parameters
@@ -67,6 +67,7 @@ igrid::igrid() :
   m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0),   m_tauorder(0), 
   m_Nproc(0),
   m_transform(""), 
+  m_reweight(false),
   m_symmetrise(false),
   m_optimised(false),
   m_weight(NULL),
@@ -85,7 +86,9 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
 	     string transform, int Nproc, bool disflag ):
   m_Ny1(Nx),   m_Ny2( disflag ? 1 : Nx ),  m_yorder(xorder), 
   m_Ntau(NQ2), m_tauorder(Q2order), 
-  m_Nproc(Nproc), m_transform(transform), 
+  m_Nproc(Nproc), 
+  m_transform(transform), 
+  m_reweight(false),
   m_symmetrise(false), 
   m_optimised(false),
   m_weight(NULL),
@@ -95,7 +98,7 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_DISgrid(disflag)   
 {
   //  cout << "igrid::igrid() transform=" << m_transform << endl;
-  if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found");
+  if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
 
   fx=m_fmap[m_transform].mfx;
   fy=m_fmap[m_transform].mfy;
@@ -166,6 +169,7 @@ igrid::igrid(const igrid& g) :
   m_taumin(g.m_taumin), m_taumax(g.m_taumax), m_deltatau(g.m_deltatau), m_tauorder(g.m_tauorder), 
   m_Nproc(g.m_Nproc),
   m_transform(g.m_transform), 
+  m_reweight(g.m_reweight),
   m_symmetrise(g.m_symmetrise),
   m_optimised(g.m_optimised),
   m_weight(NULL),
@@ -188,6 +192,7 @@ igrid::igrid(TFile& f, const string& s) :
   m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0), m_tauorder(0), 
   m_Nproc(0),
   m_transform(""), 
+  m_reweight(false),
   m_symmetrise(false),
   m_optimised(false),
   m_weight(NULL), 
@@ -211,7 +216,7 @@ igrid::igrid(TFile& f, const string& s) :
   TFileString _tag = *(TFileString*)f.Get((s+"/Transform").c_str());
   m_transform = _tag[0];
 
-  if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found");
+  if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
 
   fx = (*m_fmap.find(m_transform)).second.mfx;
   fy = (*m_fmap.find(m_transform)).second.mfy;
@@ -1006,7 +1011,7 @@ double igrid::convolute_subproc(int subproc,
   int ip = 0;
 
   if ( subproc>=0 && subproc<genpdf->Nproc() )   ip = subproc;
-  else throw exception("convolute_subproc() subprocess index out of range");
+  else throw exception("convolute_subproc() subprocess index out of range\n");
 
 
   if ( !m_weight[ip]->trimmed() )  {

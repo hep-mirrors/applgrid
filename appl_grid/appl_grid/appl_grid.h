@@ -288,6 +288,8 @@ public:
   bool symmetrise(bool t=true) { return m_symmetrise=t; } 
   bool isSymmetric()     const { return m_symmetrise; } 
 
+  bool reweight(bool t=false); 
+
   // access to internal grids if need be
   const igrid* weightgrid(int iorder, int iobs) const { return m_grids[iorder][iobs]; }
   

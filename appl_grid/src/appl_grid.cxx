@@ -530,6 +530,15 @@ void grid::print() const {
 void grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
 // void grid::pdfinterp(double x, double Q2, double* f) {  }
 
+// set the rewight flag of the internal grids
+bool grid::reweight(bool t) { 
+  for( int iorder=0 ; iorder<m_order ; iorder++ ) {
+    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {     
+      m_grids[iorder][iobs]->reweight(t);       
+    }
+  }
+  return t;
+}
 
 // dump to file
 void grid::Write(const string& filename, const string& dirname) {

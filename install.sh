@@ -149,7 +149,7 @@ fi
 
 cd   $BASEDIR
 
-export PATH=$INSTALLBASE/bin:$PATH
+export PATH=$INSTALLBASE/bin:$BASEDIR/bin:$PATH
 
 ROOTFOUND=`which root-config`
 

@@ -100,8 +100,6 @@ nlogrid::nlogrid(std::string inputName)
       
 
       appl::igrid::transformvar(apramval);
-      appl::igrid::reweight(pdfWeight);
-      
 
       gridObject = 
 	new appl::grid(
@@ -110,6 +108,9 @@ nlogrid::nlogrid(std::string inputName)
 		       Nxbins, xlow, xup, iOrderx,       
 		       pdf_function, lowest_order, nloops
 		       );
+
+      gridObject->reweight(pdfWeight);
+      
       cout<<"DONE Creating new grid"<<endl;
     }
   else

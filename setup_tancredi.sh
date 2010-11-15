@@ -37,7 +37,7 @@ export FASTJETPATH=/afs/cern.ch/sw/lcg/external/fastjet/2.4.2/slc4_amd64_gcc34
 #
 #export PATH=/usr/sue/bin:/usr/local/bin:/usr/local/bin/X11:/usr/bin:/bin:/usr/bin/X11
 export PATH=${BASEDIR}/bin:${ROOTSYS}/bin:${LHAPDFPATH}/bin:${FASTJETPATH}/bin:${PATH}
-export LD_LIBRARY_PATH=/usr/lib/${BASEDIR}/lib:${LHAPDFPATH}/lib:${FASTJETPATH}/lib
+export LD_LIBRARY_PATH=/usr/lib/:${BASEDIR}/lib:${LHAPDFPATH}/lib:${FASTJETPATH}/lib
 #
 #
 #

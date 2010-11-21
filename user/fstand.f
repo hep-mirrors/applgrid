@@ -48,7 +48,7 @@ C---  first set up the your pdfs however you like -----
 
       iset = 0
 
-      call initPDFSet("/usr/local/share/lhapdf/PDFsets/cteq6mE.LHgrid") 
+      call initPDFSetByName("cteq6mE.LHgrid") 
       call initpdf(iset)
 
 C--- next simply read in the grids ----

@@ -37,7 +37,7 @@ CLIBS += $(ROOTLIBS) $(LHAPDFLIBS) $(HOPPETLIBS) $(APPLCLIBS)
 FLIBS += $(ROOTLIBS) $(LHAPDFLIBS) $(HOPPETLIBS) $(APPLFLIBS) $(FRTLIB)
 
 install : all
-all : stand fnlo fstand
+all : stand fnlo fstand getdata
 
 stand: stand.o
 	$(CXX) $(LDFLAGS) -o $@ $< $(CLIBS) 
@@ -68,10 +68,12 @@ fnlo: fnmain.o
 getdata : getfnlodata getappldata
 
 getfnlodata: 
-	curl http://projects.hepforge.org/fastnlo/code/src/fnl0004.tab.gz | gunzip > fnl0004.tab
+	@ echo "\n************************\ndownloading fastnlo data\n************************\n"
+	(curl http://projects.hepforge.org/fastnlo/code/src/fnl0004.tab.gz | gunzip > fnl0004.tab ) 
 
 getappldata: 
-	curl http://www.hepforge.org/archive/applgrid/atlas-incljets-arXiv1009.5908v2.tgz | tar -xzf - 
+	@ echo "\n*************************************\n downloading atlas inclusive jet data\n***********************************\n"
+	(curl http://www.hepforge.org/archive/applgrid/atlas-incljets-arXiv1009.5908v2.tgz | tar -xzf - )
 
 clean:
 	rm -rf ./.libs ./.obj *.lo *.o *.la stand fnlo fstand *~

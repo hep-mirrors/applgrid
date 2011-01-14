@@ -186,6 +186,9 @@ namespace nlo {
     unsigned int nd() const { return _M_proc -> nd();}
     unsigned int nf() const { return _M_proc -> nf();}
 
+    // phasespace weight
+    double ps_weight() const {return _M_weight;};
+    
     //    get the contributionb type of the current amplitude
     contrib_type contrib() const { return _M_contr;}
     integral_type integral() const { return _M_itype;}

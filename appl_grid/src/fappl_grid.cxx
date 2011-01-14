@@ -58,6 +58,11 @@ extern "C" int getnbins_(int& id);
 extern "C" void convolute_(int& id, double* data);
 extern "C" void convoluteorder_(int& id, int& nloops, double* data);
 
+extern "C" void convolutewrap_(int& id, double* data, 
+			       void (*pdf)(const double& , const double&, double* ),
+			       double (*alphas)(const double& ) );
+
+
 /// print a grid
 extern "C" void printgrid_(int& id);
 
@@ -187,14 +192,9 @@ int getnbins_(int& id) {
 
 
 void convolute_(int& id, double* data) { 
-  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
-  if ( gitr!=_grid.end() ) { 
-    appl::grid*    g = gitr->second;
-    vector<double> v = g->vconvolute(fnpdf_, fnalphas_);
-    for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
-  }
-  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+  convolutewrap_(id, data, fnpdf_, fnalphas_); 
 }
+
 
 void convoluteorder_(int& id, int& nloops, double* data) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
@@ -205,6 +205,19 @@ void convoluteorder_(int& id, int& nloops, double* data) {
   }
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
+
+void convolutewrap_(int& id, double* data, 
+		       void (*pdf)(const double& , const double&, double* ),  
+		       double (*alphas)(const double& ) ) {  
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    appl::grid*    g = gitr->second;
+    vector<double> v = g->vconvolute( pdf, alphas);
+    for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
 
 
 

@@ -122,7 +122,6 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
-FC = @FC@
 FFLAGS = @FFLAGS@
 GREP = @GREP@
 HOPPETPATH = @HOPPETPATH@
@@ -237,7 +236,7 @@ AM_CXXFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I.. $(ROOTCFLAGS)  $(HOPPETCFLAGS)
 AM_CFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I.. $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
 #INCLUDES=-I$(LHAPDFDIR)/include
 # AM_LDFLAGS= -O -L$(LHAPDFDIR)/lib -lLHAPDF  $(ROOTLIBS) $(GSLLIBS) $(FCLIBS)
-AM_LDFLAGS = $(ROOTARCH) -O   $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS)
+AM_LDFLAGS = $(ROOTARCH) -O  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS)
 # program_LDFLAGS= $(AM_LDFLAGS) 
 AM_FCFLAGS = -c
 AM_FCLIBS = -lg2c
@@ -256,9 +255,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  src/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/Makefile
+	  $(AUTOMAKE) --foreign  src/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -559,7 +558,7 @@ uninstall-am: uninstall-libLTLIBRARIES \
 	uninstall-library_includeHEADERS
 
 clean-local:
-	rm *.o *.lo *Dict*
+	rm -rf *.o *.lo *Dict*
 %.o : %.cxx 
 	@ echo ROOTARCH $(ROOTARCH) 
 	$(CXX) $(AM_CXXFLAGS) -c $<

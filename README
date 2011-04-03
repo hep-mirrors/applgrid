@@ -263,3 +263,16 @@ Additional documentation (not checked)
                     int NQ2, double Q2min, double Q2max, 
                     int Nx,  double  xmin, double  xmax )
        
+
+C) Some problems:
+
+   1) on my ubunutu I had problems to run libtool in appl_grid
+  
+      I got
+      libtool  X-tag=CXX command not found
+ 
+       etc
+
+       running autoreconf -i
+       in ~/applgrid/appl_grid
+       solved the problem

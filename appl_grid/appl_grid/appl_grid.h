@@ -284,8 +284,8 @@ public:
 		int NQ2, double Q2min, double Q2max, 
 		int Nx,  double  xmin, double  xmax);
 
-  bool setNormalise(bool t=true) { return m_normalise=t; } 
-  bool getNormalise() const      { return m_normalise; } 
+  bool setNormalised(bool t=true) { return m_normalised=t; } 
+  bool getNormalised() const      { return m_normalised; } 
 
 
   // set the filling to be symmetric and test status
@@ -412,7 +412,7 @@ private:
   bool  m_optimised;
   bool  m_trimmed;
 
-  bool  m_normalise;
+  bool  m_normalised;
 
   bool   m_symmetrise; 
  

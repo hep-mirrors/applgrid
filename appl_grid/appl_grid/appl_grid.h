@@ -316,7 +316,7 @@ public:
   int subProcesses() const { return m_grids[0][0]->SubProcesses(); }  
 
   // general status accessors
-  int& run() { return m_run; }
+  double& run() { return m_run; }
  
   // accessors for the status information
   bool isOptimised() const { return m_optimised; }
@@ -408,9 +408,9 @@ private:
   double m_totalerror;
 
   // state variables
-  int   m_run;
-  bool  m_optimised;
-  bool  m_trimmed;
+  double   m_run;
+  bool     m_optimised;
+  bool     m_trimmed;
 
   bool  m_normalised;
 

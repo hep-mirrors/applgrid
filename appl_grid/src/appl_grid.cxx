@@ -206,6 +206,11 @@ grid::grid(const string& filename, const string& dirname)  :
   
   TFile* gridfilep = TFile::Open(filename.c_str());
   
+  if (gridfilep->IsZombie()) {
+    throw exception(std::cerr << "grid::grid() cannot open file: zombie " << filename << std::endl ); 
+    delete gridfilep;
+  }
+
   // TFile gridfile(filename.c_str());
   
   //  gDirectory->cd(dirname.c_str());
@@ -270,7 +275,7 @@ grid::grid(const string& filename, const string& dirname)  :
   // apparently has no constructor (???)
   TVectorT<double>* setup=(TVectorT<double>*)gridfilep->Get((dirname+"/State").c_str());
  
-  m_run        = int((*setup)(0)+0.5);
+  m_run        = (*setup)(0);
   m_optimised  = ( (*setup)(1)!=0 ? true : false );
   m_symmetrise = ( (*setup)(2)!=0 ? true : false );  
 

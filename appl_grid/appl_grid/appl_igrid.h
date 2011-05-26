@@ -360,6 +360,21 @@ public:
     return *this;
   } 
 
+  /// check that the grids match
+  bool operator==(const igrid& g) const { 
+    for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
+      if ( m_weight[ip] && g.m_weight[ip] ) { 
+	if ( (*m_weight[ip]) != (*g.m_weight[ip]) )  return false;
+      }
+      if ( m_weight[ip]    && g.m_weight[ip]==0 ) return false; 
+      if ( m_weight[ip]==0 && g.m_weight[ip]    ) return false; 
+    }
+    return true;
+  } 
+
+
+  
+
   // ouput header
   ostream& header(ostream& s) const;
 

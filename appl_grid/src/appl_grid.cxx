@@ -86,7 +86,7 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
 	   int leading_order, int nloops, 
 	   string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
-  m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false), 
+  m_run(0), m_optimised(false), m_trimmed(false), m_normalise(true), m_symmetrise(false), 
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_documentation("") {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
@@ -107,7 +107,7 @@ grid::grid(int Nobs, const double* obsbins,
 	   int leading_order, int nloops, 
 	   string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
-  m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),
+  m_run(0), m_optimised(false), m_trimmed(false),  m_normalise(true), m_symmetrise(false),
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_documentation("") {
   
@@ -129,7 +129,7 @@ grid::grid(const vector<double> obs,
 	   int leading_order, int nloops, 
 	   string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
-  m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),  
+  m_run(0), m_optimised(false), m_trimmed(false), m_normalise(true), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_documentation("") {
  
@@ -159,7 +159,7 @@ grid::grid(const vector<double> obs,
 	   int leading_order, int nloops, 
 	   string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
-  m_run(0), m_optimised(false), m_trimmed(false), m_symmetrise(false),  
+  m_run(0), m_optimised(false), m_trimmed(false), m_normalise(true), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_documentation("")  
 { 
@@ -192,6 +192,7 @@ grid::grid(const vector<double> obs,
 grid::grid(const string& filename, const string& dirname)  :
   m_leading_order(0),  m_order(0),
   m_optimised(false),  m_trimmed(false), 
+  m_normalise(true),
   m_symmetrise(false), m_transform(""), 
   m_documentation("") 
 {
@@ -203,7 +204,9 @@ grid::grid(const string& filename, const string& dirname)  :
 
   std::cout << "grid() reading grid from file " << filename << std::endl;
   
-  TFile gridfile(filename.c_str());
+  TFile* gridfilep = TFile::Open(filename.c_str());
+  
+  // TFile gridfile(filename.c_str());
   
   //  gDirectory->cd(dirname.c_str());
 
@@ -230,7 +233,7 @@ grid::grid(const string& filename, const string& dirname)  :
   // get the name of the transform pair and the
   // generalised pdf
 
-  TFileString _tags = *(TFileString*)gridfile.Get((dirname+"/Tags").c_str());  
+  TFileString _tags = *(TFileString*)gridfilep->Get((dirname+"/Tags").c_str());  
   // TFileString _tags = *(TFileString*)gridfile.Get("Tags");  
   m_transform  = _tags[0];
   m_genpdfname = _tags[1];
@@ -265,7 +268,7 @@ grid::grid(const string& filename, const string& dirname)  :
   // read state information
   // hmmm, have to use TVectorT<double> since TVector<int> 
   // apparently has no constructor (???)
-  TVectorT<double>* setup=(TVectorT<double>*)gridfile.Get((dirname+"/State").c_str());
+  TVectorT<double>* setup=(TVectorT<double>*)gridfilep->Get((dirname+"/State").c_str());
  
   m_run        = int((*setup)(0)+0.5);
   m_optimised  = ( (*setup)(1)!=0 ? true : false );
@@ -277,6 +280,9 @@ grid::grid(const string& filename, const string& dirname)  :
   if ( setup->GetNoElements()>5 ) m_cmsScale = (*setup)(5);
   else                            m_cmsScale = 0;
  
+  if ( setup->GetNoElements()>6 ) m_normalise = ( (*setup)(6)!=0 ? true : false );
+  else                            m_normalise = true;
+ 
   //  std::cout << "grid::grid()::m_cmsScale "   << m_cmsScale   << std::endl;
   //  std::cout << "grid::grid()::m_symmetrise=" << m_symmetrise << std::endl; 
 
@@ -286,7 +292,7 @@ grid::grid(const string& filename, const string& dirname)  :
 
   // Read observable bins information
   //  gridfile.GetObject("obs_bins", m_obs_bins );
-  m_obs_bins = (TH1D*)gridfile.Get((dirname+"/reference").c_str());
+  m_obs_bins = (TH1D*)gridfilep->Get((dirname+"/reference").c_str());
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
@@ -300,7 +306,7 @@ grid::grid(const string& filename, const string& dirname)  :
       char name[128];  sprintf(name, (dirname+"/weight[alpha-%d][%03d]").c_str(), iorder, iobs);
       // cout << "grid::grid() reading " << name << "\tiobs=" << iobs << endl;
 
-      m_grids[iorder][iobs] = new igrid(gridfile, name);
+      m_grids[iorder][iobs] = new igrid(*gridfilep, name);
 
       //    _size += m_grids[iorder][iobs]->size();
       //      cout << "grid::grid() done" << endl;
@@ -317,6 +323,7 @@ grid::grid(const grid& g) :
   m_obs_bins(new TH1D(*g.m_obs_bins)), 
   m_leading_order(g.m_leading_order), m_order(g.m_order), 
   m_run(g.m_run), m_optimised(g.m_optimised), m_trimmed(g.m_trimmed), 
+  m_normalise(true),
   m_symmetrise(g.m_symmetrise),
   m_transform(g.m_transform),
   m_cmsScale(g.m_cmsScale),
@@ -446,6 +453,22 @@ grid& grid::operator+=(const grid& g) {
   }
   return *this;
 }
+
+
+/// check grids match
+bool grid::operator==(const grid& g) const {
+  
+  bool match = true; 
+
+  if ( Nobs()!=g.Nobs() )    match = false;
+  if ( m_order!=g.m_order )  match = false;
+  if ( m_leading_order!=g.m_leading_order ) match = false;
+  for( int iorder=0 ; iorder<m_order ; iorder++ ) {
+    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) match &= ( (*m_grids[iorder][iobs]) == (*g.m_grids[iorder][iobs]) ); 
+  }
+  return match;
+}
+
 
 
 // fill the appropriate igrid with these weights
@@ -590,6 +613,7 @@ void grid::Write(const string& filename, const string& dirname) {
   (*setup)(3) =   m_leading_order ;
   (*setup)(4) =   m_order ;
   (*setup)(5) =   m_cmsScale ;
+  (*setup)(6) = ( m_normalise ? 1 : 0 );
   setup->Write("State");
   
   //  int _size     = 0;
@@ -639,7 +663,7 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
   std::vector<double> hvec;
 
   double invNruns = 1;
-  if ( run() ) invNruns /= double(run());
+  if ( m_normalise && run() ) invNruns /= double(run());
 
   //  std::cout << "grid::run() " << run() << std::endl; 
 
@@ -747,7 +771,7 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
   if ( Escale!=1 ) Escale2 = Escale*Escale;
   
   double invNruns = 1;
-  if ( run() ) invNruns /= double(run());
+  if ( m_normalise && run() ) invNruns /= double(run());
 
 #ifdef HAVE_HOPPET
   //  factorisation scale variation is disabled for the subprocess

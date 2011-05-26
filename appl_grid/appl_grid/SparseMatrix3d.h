@@ -99,11 +99,16 @@ public:
     cout << m_zaxis << "\n"; 
   }
 
-  bool operator==(const SparseMatrix3d& s) { 
+  bool operator==(const SparseMatrix3d& s) const { 
     return ( m_xaxis == s.m_xaxis &&  
 	     m_yaxis == s.m_yaxis &&
 	     m_zaxis == s.m_zaxis );
   }
+
+  bool operator!=(const SparseMatrix3d& s) const { 
+    return !( *this == s );
+  }
+
 
 private:
 

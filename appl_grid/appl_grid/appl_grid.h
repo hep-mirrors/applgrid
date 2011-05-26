@@ -284,6 +284,10 @@ public:
 		int NQ2, double Q2min, double Q2max, 
 		int Nx,  double  xmin, double  xmax);
 
+  bool setNormalise(bool t=true) { return m_normalise=t; } 
+  bool getNormalise() const      { return m_normalise; } 
+
+
   // set the filling to be symmetric and test status
   bool symmetrise(bool t=true) { return m_symmetrise=t; } 
   bool isSymmetric()     const { return m_symmetrise; } 
@@ -358,7 +362,10 @@ public:
   // very lovely algebraic operators
   grid& operator=(const grid& g); 
   grid& operator*=(const double& d); 
-  grid& operator+=(const grid& g);   
+  grid& operator+=(const grid& g);
+
+  /// test if grids have the same limits etc
+  bool operator==(const grid& g) const;   
 
   // shouldn't have these, the grid is too large a structure 
   // to be passed in a return
@@ -404,6 +411,8 @@ private:
   int   m_run;
   bool  m_optimised;
   bool  m_trimmed;
+
+  bool  m_normalise;
 
   bool   m_symmetrise; 
  

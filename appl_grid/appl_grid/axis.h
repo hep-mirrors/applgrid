@@ -93,7 +93,7 @@ public:
   }
 
 
-  bool operator==(const axis& ax) { 
+  bool operator==(const axis& ax) const { 
     return ( m_N==ax.m_N && m_min==ax.m_min && m_max==ax.m_max );
   }
 

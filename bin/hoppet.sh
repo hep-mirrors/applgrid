@@ -2,7 +2,7 @@
 
 if [ -e "hoppet-config" ]; then
    if [ "$1" = "--cxxflags" ]; then
-      hopper-config --cxxflags
+      hoppet-config --cxxflags
    elif [ "$1" = "--libs" ]; then
       hoppet-config --libs
    elif [ "$1" = "" ]; then

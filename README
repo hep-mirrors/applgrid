@@ -62,7 +62,7 @@ dynamic library code.
 Installation
 ------------
 
-By default include files, libraries and the config utilities mentioned
+By default, include files, libraries and the config utilities mentioned
 above are installed in the include, lib and bin directories from the 
 installation directory.
 
@@ -99,9 +99,10 @@ A: Install and run the code
    enabling the appl_grid compilation.
 
 
-Additional details (not checked) which may be of help... 
+Additional details, not checked, and which may be somewhat out of date,
+but which may in any case, still be of help... 
 
-1) run the setup.sh or setup.csh script (Only if you need to, shouldn't any longer)
+1) run the setup.sh script (Only if you *really* need to, shouldn't any longer)
 2) run the install.sh script. 
 3) compile the fillgrid.cxx
 

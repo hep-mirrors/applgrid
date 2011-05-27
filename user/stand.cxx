@@ -5,6 +5,7 @@
 #include "appl_grid/appl_grid.h"
 
 #include "TH1D.h"
+#include "TFile.h"
 
 
 // lhapdf routines
@@ -32,7 +33,8 @@ int main(int argc, char** argv) {
 
   // initialise lhapdf
 
-  const string _pdfname = "cteq6mE.LHgrid";  
+  //  const string _pdfname = "cteq6mE.LHgrid";  
+  const string _pdfname = "cteq66.LHgrid";  
   int iset = 0;
 
   LHAPDF::initPDFSet( _pdfname, iset );
@@ -49,9 +51,19 @@ int main(int argc, char** argv) {
     std::cout << "xsec(" << i << ")=" << xsec[i] << std::endl;
   }
 
+#if 0
+
+  TFile f("fout.root", "recreate");
+
   //  or get into a histogram
-  //  TH1D* hxsec = g.convolute( evolvepdf_, alphaspdf_ ); 
-  //  hxsec->SetName("xsec");
+  TH1D* hxsec = g.convolute( evolvepdf_, alphaspdf_ ); 
+  hxsec->SetName("xsec");
+
+  f.Write();
+  f.Close();
+
+#endif
 
   return 0;
 }
+

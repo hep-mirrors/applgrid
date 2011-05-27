@@ -49,6 +49,10 @@ extern "C" {
     int nflav;
   } nflav_;
   
+  extern struct  {
+    double sqrts;
+  } energy_;
+  
   
   extern struct {
     bool creategrid;
@@ -60,17 +64,21 @@ extern "C" {
 
 static const int mxpart = 12;        // mcfm parameter : max number of partons in event record
 
-static const int _Ngrids = 3;
-static const int  Ngrids = 3;
+static const int _Ngrids = 4;
+static const int  Ngrids = _Ngrids;
 appl::grid* mygrid[_Ngrids];
-static const char* gridFiles[_Ngrids] = {"weight_eta4.root",
-					 "weight_pt4c.root",
-					 "weight_pt4f.root"};
+static const char* gridFiles[_Ngrids] = 
+  {
+    "_eta3.root",
+    "_pt3.root",
+    "_eta4.root",
+    "_pt4.root"
+  };
 
-static double Observable[_Ngrids] = { 0.0, 0.0, 0.0 };   // observable array
+static double Observable[_Ngrids] = { 0.0, 0.0, 0.0, 0.0 };   // observable array
 
 
-int nObsBins[_Ngrids] = {20, 26, 26}; // eta4, pt4 cental eta-bin, pt4 forward eta-bin
+int nObsBins[_Ngrids] = {20, 26, 20, 26}; // eta4, pt4 cental eta-bin, pt4 forward eta-bin
 
 
 static const double eta[] = { -4.0, -3.6, -3.2, -2.8, -2.4, -2.0, -1.6,
@@ -130,7 +138,7 @@ extern "C" void book_grid_()  // inital grid booking
 
 
   // number of observables and binning for observables  
-  const double *obsBins[_Ngrids] = { eta, pt, pt };
+  const double *obsBins[_Ngrids] = { eta, pt, eta, pt };
 
 
   // NB don't know what the processes are - no documentation in
@@ -139,7 +147,8 @@ extern "C" void book_grid_()  // inital grid booking
   string pdf_function;
 
   cout << "Process : " << nproc_.nproc;
-  if      ( nproc_.nproc == 1 )  { cout << " W production"; pdf_function = "mcfm-w"; }  
+  if      ( nproc_.nproc == 1 )  { cout << " W+ production"; pdf_function = "mcfm-wp"; }  
+  else if ( nproc_.nproc == 6 )  { cout << " W- production"; pdf_function = "mcfm-wm"; }  
   else if ( nproc_.nproc == 31 ) { cout << " Z production"; pdf_function = "mcfm-z"; }  
   else                           { cerr << "don't know which process" << endl; exit(-1); } 
   cout << endl;
@@ -150,7 +159,7 @@ extern "C" void book_grid_()  // inital grid booking
   //  set parameters from file
   //  ReadCards cards("cards.dat");
 
-  string labels[3] = { "_eta", "_ptc", "_ptf" };
+  string labels[ _Ngrids ] = { "_eta3", "_pt3", "_eta4", "_pt4" };
 
   //  glabel = cards.GetString("Label");
   //  nXbins = cards.GetValue("Nx");
@@ -161,8 +170,13 @@ extern "C" void book_grid_()  // inital grid booking
   int xorder = 5;
 
 
-  if ( nproc_.nproc ==  1 ) glabel+="-W";
-  if ( nproc_.nproc == 31 ) glabel+="-Z";
+  if ( nproc_.nproc ==  1 ) glabel+="-Wplus";
+  if ( nproc_.nproc ==  6 ) glabel+="-Wminus";
+  if ( nproc_.nproc == 31 ) 
+  {
+    glabel+="-Z0";
+    q2Low = 8280.99, q2Up = 8281.01;
+  }
 
 
   for(int igrid=0; igrid < Ngrids; igrid++) {
@@ -196,7 +210,7 @@ extern "C" void book_grid_()  // inital grid booking
 					pdf_function, lowest_order, nloops ); 
 
 	//	mygrid[igrid]->symmetrise();
-	
+        mygrid[igrid]->setCMSScale( energy_.sqrts );
 #if 0
 	mygrid[igrid] = new appl::grid( Nbins, bins, // obs bins
 					2, q2Low, q2Up, 1,         // Q2 bins and interpolation order
@@ -288,10 +302,11 @@ extern "C" void write_grid_(double& xstotal)   // writes out grid after some eve
   for(int igrid = 0; igrid < Ngrids; igrid++)
     {
       cout << "\tsaving grid N=" << igrid+1 << "\tof total " << Ngrids << endl;
-      
+
+      //      mygrid[igrid]->getReference()->Print("all");
+     
+      mygrid[igrid]->setNormalised( true );
       mygrid[igrid]->run() = runs;
-      // fix this up later
-      //      mygrid[igrid]->setCrossSection(xstotal); 
 
       mygrid[igrid]->trim();
       int trim_size = mygrid[igrid]->size();
@@ -327,7 +342,9 @@ extern "C" void write_grid_(double& xstotal)   // writes out grid after some eve
 	  }
 	
       }
+      // myfile.Get("grid/reference")->Print("all");
       myfile.Close();
+
 
     }
 
@@ -386,9 +403,10 @@ void getObservable(const double evt[][mxpart])
   
   
   
-  Observable[0] = rapidity4;
-  Observable[1] = pt4;
-  Observable[2] = pt4;
+  Observable[ 0 ] = rapidity3;
+  Observable[ 1 ] = pt3;
+  Observable[ 2 ] = rapidity4;
+  Observable[ 3 ] = pt4;
   
 }
 
@@ -401,12 +419,17 @@ int cuts(int igrid)
       fill = 1;
       break;
     case(1):
-      (std::abs(Observable[0]) <= 0.5) ? fill = 1 : fill = 0;
+      fill = 1;
+      //      (std::abs(Observable[0]) <= 0.5) ? fill = 1 : fill = 0;
 //TC    (std::abs(Observable[0] <= 0.5)) ? fill = 1 : fill = 0;
       break;
     case(2):
+      fill = 1;
 //TC      (std::abs(Observable[0] >= 3.0)) ? fill = 1 : fill = 0;
-      (std::abs(Observable[0]) >= 3.0) ? fill = 1 : fill = 0;
+//      (std::abs(Observable[0]) >= 3.0) ? fill = 1 : fill = 0;
+      break;
+    case(3):
+      fill = 1;
       break;
     default: 
       std::cerr<<" In gridwrap.cpp::cuts(int). No such process : "<<igrid<<std::endl;
@@ -473,6 +496,7 @@ extern "C" void  fill_grid_reference_(const double evt[][mxpart],
 	  //  mygrid[igrid]->getReference2()->Fill(Observable[igrid],wt2);
 	}
     }
+  // mygrid[0]->getReference()->Print("all");
 }
 
 extern "C" void  fill_grid_reference__(const double evt[][mxpart], 

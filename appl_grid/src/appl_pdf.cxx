@@ -28,7 +28,8 @@ namespace appl {
 pdfmap appl_pdf::m_pdfmap; 
 
 mcfmz_pdf     mcfmzpdf;
-mcfmw_pdf     mcfmwpdf;
+mcfmwp_pdf    mcfmwpdf;
+mcfmwm_pdf    mcfmwmdf;
 nlojet_pdf    nlojetpdf;
 nlojetpp_pdf  nlojetpppdf;
 jetrad_pdf    jetradpdf;

@@ -17,10 +17,10 @@ using namespace appl;
 
 // get ckm related information
 
-void mcfmw_pdf::make_ckmsum() { 
+void mcfmwp_pdf::make_ckmsum() { 
   // cout << "make_ckmsum() initialising" << endl;
   m_ckmsum = new double[13];
-
+  
   double ckmsum[13] = { 
     0.000000000000000000000000000000000000 , 
     0.000000000000000000000000000000000000 , 
@@ -42,7 +42,7 @@ void mcfmw_pdf::make_ckmsum() {
 }
 
 
-void mcfmw_pdf:: make_ckm() {  
+void mcfmwp_pdf:: make_ckm() {  
   // cout << "make_ckm() initialising" << endl;
   m_ckm2 = new double*[13];
 
@@ -68,8 +68,70 @@ void mcfmw_pdf:: make_ckm() {
 
 // fortran callable wrapper
 
-extern "C" void fmcfmw_pdf__(const double* fA, const double* fB, double* H) { 
-  static mcfmw_pdf pdf;
+extern "C" void fmcfmwp_pdf__(const double* fA, const double* fB, double* H) { 
+  static mcfmwp_pdf pdf;
+  pdf.evaluate(fA, fB, H);
+}
+
+//---------------------------------------------------------------------------
+
+//
+// get ckm related information
+//
+
+void mcfmwm_pdf::make_ckmsum() { 
+  // cout << "make_ckmsum() initialising" << endl;
+  m_ckmsum = new double[13];
+
+  double ckmsum[13] = { 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 
+  }; 
+    
+  for ( int i=0 ; i<13 ; i++ ) m_ckmsum[i] = ckmsum[i];
+
+}
+
+
+void mcfmwm_pdf:: make_ckm() {  
+  // cout << "make_ckm() initialising" << endl;
+  m_ckm2 = new double*[13];
+
+  for ( int i=0 ; i<13 ; i++ ) {
+    m_ckm2[i] = new double[13]; 
+    for ( int j=0 ; j<13 ; j++ ) m_ckm2[i][j] = 0;
+  }
+
+  m_ckm2[4][9]  =   0.049284000000000001417976847051249933 ;
+  m_ckm2[9][4]  =   0.049284000000000001417976847051249933 ;
+
+  m_ckm2[7][4]  =   0.950624999999999942268402719491859898 ;
+  m_ckm2[4][7]  =   0.950624999999999942268402719491859898 ;
+
+  m_ckm2[7][2] =   0.049284000000000001417976847051249933 ;
+  m_ckm2[2][7] =   0.049284000000000001417976847051249933 ;
+
+  m_ckm2[9][2] =   0.950624999999999942268402719491859898 ;
+  m_ckm2[2][9] =   0.950624999999999942268402719491859898 ;
+
+}
+
+
+// fortran callable wrapper
+
+extern "C" void fmcfmwm_pdf__(const double* fA, const double* fB, double* H) { 
+  static mcfmwm_pdf pdf;
   pdf.evaluate(fA, fB, H);
 }
 

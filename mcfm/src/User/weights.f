@@ -90,7 +90,7 @@ c--->>>>>b bbar production process
             iProcess = 1
          endif
       endif
-c--->>>>> W_only production
+c--->>>>> W_only production W+
 c
 c   0: dbar-quark <--> u-quark
 c   1:    u-quark <--> dbar-quark
@@ -126,6 +126,46 @@ c
             iProcess = 0
          endif
       endif
+
+c---  >>>>> W_only production W-
+c
+c   0: d-quark    <-->  ubar-quark
+c   1: ubar-quark <-->  d-quark
+c   2: d-quark    <-->  Gluon
+c   3: ubar-quark <-->  Gluon
+c   4: Gluon      <-->  d-quark
+c   5: Gluon      <-->  ubar-quark
+c
+
+      if (nproc.eq.6)then
+         
+         if((iflav1.eq.0).and.(iflav2.eq. -2))then
+            factor = 1d0/Vsum(iflav2)
+            iProcess = 5
+         endif
+         if((iflav1.eq.0).and.(iflav2.eq.1))then
+            factor = 1d0/Vsum(iflav2)
+            iProcess = 4
+         endif
+         if((iflav2.eq.0).and.(iflav1.eq.-2))then
+            factor = 1d0/Vsum(iflav1)
+            iProcess = 3
+         endif
+         if((iflav2.eq.0).and.(iflav1.eq.1))then
+            factor = 1d0/Vsum(iflav1)
+            iProcess = 2
+         endif
+         if ((iflav1.eq.-2).and.(iflav2.eq.1)) then
+            factor = 1d0/Vsq(iflav1,iflav2)
+            iProcess = 1
+         endif
+         if ((iflav1.eq.1).and.(iflav2.eq.-2)) then
+            factor = 1d0/Vsq(iflav1,iflav2)
+            iProcess = 0
+         endif
+
+      endif
+c
 c--->>>>> Z_only production
 c
 c   0:       UP <--> UPbar
@@ -303,6 +343,7 @@ ccc   default value
 c------->>>> b bbar production process      
 
 c------->>>> w production
+c W+
       if (nproc.eq.1)then
          if((iflav1.eq.0).and.(iflav2.gt.0)) getProcess = 5
          if((iflav1.eq.0).and.(iflav2.lt.0)) getProcess = 4
@@ -310,6 +351,15 @@ c------->>>> w production
          if((iflav2.eq.0).and.(iflav1.lt.0)) getProcess = 2
          if((iflav1.gt.0).and.(iflav2.lt.0)) getProcess = 1
          if((iflav1.lt.0).and.(iflav2.gt.0)) getProcess = 0
+      endif
+c W-
+      if (nproc.eq.6)then
+         if((iflav1.eq.0).and.(iflav2.lt.0)) getProcess = 5
+         if((iflav1.eq.0).and.(iflav2.gt.0)) getProcess = 4
+         if((iflav2.eq.0).and.(iflav1.lt.0)) getProcess = 3
+         if((iflav2.eq.0).and.(iflav1.gt.0)) getProcess = 2
+         if((iflav1.lt.0).and.(iflav2.gt.0)) getProcess = 1
+         if((iflav1.gt.0).and.(iflav2.lt.0)) getProcess = 0
       endif
 c------->>>> z production
       if (nproc.eq.31) then

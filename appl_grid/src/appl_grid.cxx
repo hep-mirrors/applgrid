@@ -641,7 +641,10 @@ void grid::Write(const string& filename, const string& dirname) {
   //  d.pop();
 
   TH1D* reference = (TH1D*)m_obs_bins->Clone("reference");
-  if ( run() ) reference->Scale(1/double(run()));
+  
+  if ( !getNormalised() )
+    if ( run() ) reference->Scale(1/double(run()));
+  
   reference->Write();
   delete reference;
   rootfile.Close();

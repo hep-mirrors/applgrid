@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 
 ######################################################
 #  installation script - now greatly improved 
@@ -277,23 +277,41 @@ install_mcfm58() {
 
 ############################################
 # RUN THE MCFM TEST EXECUTABLE
-############################################
+###########################cd ..#################
 run_mcfm() { 
 
     cd $BASEDIR/mcfm/run
     rm -f *.log
 
-    if [ -e PDFsets ]; then 
-	ls -ld PDFsets
-    else
-	ln -s `lhapdf-config --pdfsets-path` .
-	ls -ld PDFsets
-    fi
+#   should no longer be needed by lhapdf
+#    if [ -e PDFsets ]; then 
+#	ls -ld PDFsets
+#    else
+#	ln -s `lhapdf-config --pdfsets-path` .
+#	ls -ld PDFsets
+#    fi
     
+    echo "running mcfm - please wait ..."
+
     if [ -e ../exe/$SYSARCH/mcfm ]; then 
-      ../exe/$SYSARCH/mcfm Winput.DAT >  mcfm-0.log
-      ../exe/$SYSARCH/mcfm Winput.DAT >  mcfm-1.log
-      ../exe/$SYSARCH/stand grid-30-Wweight_eta4.root
+
+      rm W_*	
+
+      #### Wminus test executable ####
+#      ../exe/$SYSARCH/mcfm WMinput.DAT >&  mcfm-wm0.log
+#      ../exe/$SYSARCH/mcfm WMinput.DAT >&  mcfm-wm1.log
+#      ../exe/$SYSARCH/stand grid-30-Wminus_eta4.root
+#      mv fout.root fout-Wminus.root
+
+      rm W_*	
+
+#      #### Wplus test executable ####
+      ../exe/$SYSARCH/mcfm WPinput.DAT >&  mcfm-wp0.log
+      ../exe/$SYSARCH/mcfm WPinput.DAT >&  mcfm-wp1.log
+      ../exe/$SYSARCH/stand grid-30-Wplus_eta4.root
+      mv fout.root fout-Wplus.root
+
+      cd ..
     fi
 }
 
@@ -403,7 +421,8 @@ install_nlojet_module() {
 
     echo PATH is: $PATH
     echo LD_LIBRARY_PATH: $LD_LIBRARY_PATH
-    
+ 
+    # recent LHAPDF should no longer need this   
     if [ -e PDFsets ]; then 
 	ls -ld PDFsets
     else
@@ -511,7 +530,7 @@ if [ "$APPLGRID" = 1 ]; then install_appl_grid  $ARGS; fi
 if [ "$MCFM" = 1 ];     then install_mcfm       $ARGS; fi
 if [ "$MCFM58" = 1 ];   then install_mcfm58     $ARGS; fi
 if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi        
-if [ "$NLO" = 1 ];      then install_nlojet         $ARGS; fi
+if [ "$NLO" = 1 ];      then install_nlojet     $ARGS; fi
 
 
 FASTJETFOUND=`which fastjet-config`

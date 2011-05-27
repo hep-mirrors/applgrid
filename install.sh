@@ -280,6 +280,8 @@ install_mcfm58() {
 ###########################cd ..#################
 run_mcfm() { 
 
+  if [ -d $BASEDIR/mcfm/run ]; then 
+
     cd $BASEDIR/mcfm/run
     rm -f *.log
 
@@ -295,17 +297,17 @@ run_mcfm() {
 
     if [ -e ../exe/$SYSARCH/mcfm ]; then 
 
-      rm W_*	
+       rm -rf W_*	
 
-      #### Wminus test executable ####
+       #### Wminus test executable ####
 #      ../exe/$SYSARCH/mcfm WMinput.DAT >&  mcfm-wm0.log
 #      ../exe/$SYSARCH/mcfm WMinput.DAT >&  mcfm-wm1.log
 #      ../exe/$SYSARCH/stand grid-30-Wminus_eta4.root
 #      mv fout.root fout-Wminus.root
 
-      rm W_*	
+      rm -rf W_*	
 
-#      #### Wplus test executable ####
+#     #### Wplus test executable ####
       ../exe/$SYSARCH/mcfm WPinput.DAT >&  mcfm-wp0.log
       ../exe/$SYSARCH/mcfm WPinput.DAT >&  mcfm-wp1.log
       ../exe/$SYSARCH/stand grid-30-Wplus_eta4.root
@@ -313,6 +315,7 @@ run_mcfm() {
 
       cd ..
     fi
+  fi
 }
 
 

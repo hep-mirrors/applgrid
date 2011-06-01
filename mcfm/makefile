@@ -4,6 +4,7 @@
 CERNLIB     = 
 # Replace this with the location of LHAPDF on your system (if desired)
 LHAPDFLIB       = $(shell lhapdf-config --prefix)/lib
+LHAPDFINC       = -I$(shell lhapdf-config --prefix)/include
 #LHAPDFLIB       = /home/tcarli/lhapdf-5.7.0/lib
 LHAPDFLIBNAME   = LHAPDF
 
@@ -77,7 +78,7 @@ GRIDINCS = $(shell applgrid-config --cxxflags)
 
 
 FFLAGS 	 +=  $(ROOTARCH) -fno-automatic -fno-f2c -O3 -g -I$(INCPATH)
-CXXFLAGS += -fPIC -O3 -g $(ROOTINCS) $(GRIDINCS)
+CXXFLAGS += -fPIC -O3 -g $(ROOTINCS) $(GRIDINCS) $(LHAPDFINC)
 
 
 DIRS	=	$(MCFMHOME):\
@@ -882,9 +883,11 @@ STANDOBJECTS = $(OBJDIR)/standalone.o  \
 	       $(OBJDIR)/InitMyPdf.o   
 
 
-SOBJECTS = $(OBJDIR)/stand.o  \
-           $(OBJDIR)/mypdfevolve.o \
-	   $(OBJDIR)/InitMyPdf.o   
+SOBJECTS = $(OBJDIR)/stand.o  
+
+# \
+#            $(OBJDIR)/mypdfevolve.o \
+#	     $(OBJDIR)/InitMyPdf.o   
 
 TOBJECTS = $(OBJDIR)/tester.o  \
            $(OBJDIR)/mypdfevolve.o \

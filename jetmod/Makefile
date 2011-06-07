@@ -31,16 +31,17 @@ ROOTLIBS = $(shell root-config --libs)
 CXXFLAGS   += $(ROOTINCS)
 
 #LHAPDF
-#LHAPDFDIR = $(shell lhapdf-config -- prefix)
 LHAPDFINCS = -I$(shell lhapdf-config --incdir) 
-LHAPDFLIBS = -L$(shell lhapdf-config --libdir) -lLHAPDF
-
+LHAPDFDIR   = $(shell lhapdf-config --prefix)/lib
+LHAPDFLIBS  = -L$(LHAPDFDIR) -lLHAPDF
 
 APPLCXXFLAGS = $(shell applgrid-config --cxxflags)
 APPLLIBS     = $(shell applgrid-config --ldcflags)
+#APPLCXXFLAGS= -I$(INSTALLBASE)/include
+#APPLLIBS    = -L$(INSTALLBASE)/lib -lAPPLgrid
 
 CXXFLAGS += $(APPLCXXFLAGS) $(LHAPDFINCS)
-LD_FLAGS += $(ARCH) -L$(LHAPDFLIBS)
+LD_FLAGS +=  $(LHAPDFLIBS)
 LD_FLAGS += $(APPLLIBS)
 
 FASTJET     = $(shell fastjet-config --prefix)
@@ -49,13 +50,6 @@ FASTJETINCS = $(shell fastjet-config --cxxflags)
 CXXFLAGS   += $(FASTJETINCS)
 
 #
-#F90 libraries
-#
-#FRTLIB   = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
-#FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
-#F90LIB = $(FRTLLIB)
-#PDFCONVLIBS = $(HOPPETLIBS) $(F90LIB) $(LHAPDFLIBS)
-
 # macros to setup contact interactions and reference histograms
 LHA = -DUSELHAPDF
 REF = -DREN_REFERENCE
@@ -63,30 +57,32 @@ REF = -DREN_REFERENCE
 ALLMACRO  = $(LHA) $(REF)
 ALLMACRO1 = $(LHA),$(REF)
 
-#ALL_LIBS = -L$(INSTALLBASE)/lib,-L$(INSTALLBASE)/lib,-lAPPLgrid,-L$(LHAPDFDIR)/lib,-lLHAPDF,`root-config --libs | sed 's/ /,/g'`
-#ALL_LIBS = -L$(INSTALLBASE)/lib,-L$(INSTALLBASE)/lib,-lAPPLgrid,$(LHAPDFLIBS),`root-config --libs | sed 's/ /,/g'`
-#NLOCXXFLAGS = -Wx,$(ARCH),$(ALLMACRO1),-O3,-Wall,$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS)
-#NLOFFLAGS   = -Wf,$(ARCH),-O3,-Wall
-#NLOLIBFLAGS = -Wl,$(ARCH),-lpthread,$(ALL_LIBS),-L$(INSTALLBASE)/lib,$(APPLLIBS),nlogrid.lo
+ALL_LIBS           = -L$(INSTALLBASE)/lib,-lAPPLgrid,-L$(LHAPDFDIR),-lLHAPDF,`root-config --libs | sed 's/ /,/g'`
+
+#NLOLIBTOOLFLAGS    = -Wc,$(ARCH),$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/nlo++,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS)
+#NLOCXXFLAGS        = -Wx,$(ARCH),$(ALLMACRO1),-O3,-Wall,$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS),$(FASTJETINCS) 
+#NLOFFLAGS          = -Wf,$(ARCH),-O3,-Wall
+#NLOLIBFLAGS        = -Wl,$(ARCH),-lpthread,$(ALL_LIBS),$(FASTJETLIBS),-L$(INSTALLBASE)/lib,-lAPPLgrid,nlogrid.lo
+#NLOINC             = -I$(INSTALLBASE)/include/nlo++ 
 
 
-ALL_LIBS           = -L$(INSTALLBASE)/lib,$(APPLLIBS),-L$(LHAPDFLIBS),`root-config --libs | sed 's/ /,/g'`
-NLOLIBTOOLFLAGS    = -Wc,$(ARCH),$(ROOTINCS),-I$(INSTALLBASE)/include,-I$(INSTALLBASE)/include/nlo++,-I$(INSTALLBASE)/include/lhpdf,$(APPLCXXFLAGS)
+NLOLIBTOOLFLAGS    = -Wc,$(ARCH),$(ROOTINCS),-I$(INSTALLBASE)/include/nlo++,-I$(INSTALLBASE)/include,$(APPLCXXFLAGS)
 NLOCXXFLAGS        = -Wx,$(ARCH),$(ALLMACRO1),-O3,-Wall,$(ROOTINCS),-I$(INSTALLBASE)/include,$(LHAPDFINCS),$(APPLCXXFLAGS),$(FASTJETINCS) 
 NLOFFLAGS          = -Wf,$(ARCH),-O3,-Wall
-NLOLIBFLAGS        = -Wl,$(ARCH),-lpthread,$(ALL_LIBS),$(FASTJETLIBS),-L$(INSTALLBASE)/lib,$(APPLLIBS),nlogrid.lo
-
+#NLOLIBFLAGS        = -Wl,$(ARCH),-lpthread,-L$(INSTALLBASE)/lib,$(APPLLIBS),$(LHAPDFLIBS),$(ROOTLIBS),$(FASTJETLIBS),nlogrid.lo,
+NLOLIBFLAGS        = -Wl,$(ARCH),-lpthread,-L$(INSTALLBASE)/lib,-lAPPLgrid,-L$(LHAPDFDIR),-lLHAPDF,`root-config --libs | sed 's/ /,/g'`,$(FASTJETLIBS),nlogrid.lo
+#                                                                                                   ugly, ugly but need to remove commas..
 install : all
 all : fillgrid stand
 
 
 standalone: standalone.o  InitMyPdf.o mypdfevolve.o
-	$(CXX) -o standalone $(LDFLAGS) $(ALLMACRO)  standalone.o InitMyPdf.o mypdfevolve.o    $(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) 
+	$(CXX) -o standalone $(LDFLAGS) $(ALLMACRO)  standalone.o InitMyPdf.o mypdfevolve.o $(APPLLIBS) $(ROOTLIBS) $(LHAPDFLIBS)
 
 stand: stand.o  InitMyPdf.o mypdfevolve.o
 	@ echo FRTLIB $(FRTLIB) $(FRTLLIB)
 	@ echo ARCH $(ARCH)
-	$(CXX) -o stand $(LDFLAGS) $(ALLMACRO)  stand.o InitMyPdf.o mypdfevolve.o $(APPLLIBS) $(ROOTLIBS) $(PDFCONVLIBS) $(LHAPDFLIBS)
+	$(CXX) -o stand $(LDFLAGS) $(ALLMACRO)  stand.o InitMyPdf.o mypdfevolve.o $(APPLLIBS) $(ROOTLIBS) $(LHAPDFLIBS)
 
 
 fillgrid: LHAPDF.h nlogrid.lo

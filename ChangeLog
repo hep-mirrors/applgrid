@@ -1,3 +1,6 @@
+2011-08-06 sutt -at- cern.ch
+	* include mcfm 6.0 etc
+
 2010-11-07  Gavin Salam  <salam@lpthe.jussieu.fr>
 
 	* appl_grid/src/hoppet_init.cxx: 

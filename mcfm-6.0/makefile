@@ -1274,10 +1274,10 @@ ALLMCFM = $(OTHER) $(OURCODE)
 
 MCFMOBJS = $(patsubst %,obj/%,$(ALLMCFM))
 
-.PHONY: qcdloop stand
+.PHONY: qcdloop doc stand
 
 
-install: dirs mcfm stand doc
+install: doc dirs mcfm stand 
 
 mcfm: qcdloop $(MCFMOBJS) 
 	$(CXX) $(ROOTARCH) $(LDFLAGS) $(FFLAGS) -o $@  $(MCFMOBJS) -L$(LIBDIR) $(LIBFLAGS) $(GRIDLIB) $(ROOTLIBS) $(FRTLLIB) 

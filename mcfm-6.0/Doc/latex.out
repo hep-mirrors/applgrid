@@ -7,65 +7,19 @@ ahasa, basque, bulgarian, catalan, croatian, czech, danish, dutch, esperanto, e
 stonian, finnish, greek, icelandic, irish, italian, latin, magyar, norsk, polis
 h, portuges, romanian, russian, serbian, slovak, slovene, spanish, swedish, tur
 kish, ukrainian, nohyphenation, loaded.
-(/usr/share/texmf/tex/latex/base/article.cls
+(/sw/share/texmf-dist/tex/latex/base/article.cls
 Document Class: article 2004/02/16 v1.4f Standard LaTeX document class
-(/usr/share/texmf/tex/latex/base/size12.clo))
-No file mcfm.aux.
-[1]
-No file mcfm.toc.
-(/usr/share/texmf/tex/latex/base/omscmr.fd) [2] [3]
-
-LaTeX Warning: Citation `Ellis:2007qk' on page 4 undefined on input line 163.
-
-
-LaTeX Warning: Reference `ewscheme' on page 4 undefined on input line 179.
-
-
-LaTeX Warning: Reference `default' on page 4 undefined on input line 182.
-
-[4]
+(/sw/share/texmf-dist/tex/latex/base/size12.clo)) (./mcfm.aux) [1] (./mcfm.toc
+[2]) [3] (/sw/share/texmf-dist/tex/latex/base/omscmr.fd) [4] [5] [6]
 Overfull \hbox (56.70538pt too wide) in paragraph at lines 186--207
  [] 
-
-LaTeX Warning: Citation `Amsler:2008zzb' on page 5 undefined on input line 207.
-
-
-
-LaTeX Warning: Citation `Amsler:2008zzb' on page 5 undefined on input line 207.
-
-
-
-LaTeX Warning: Citation `Georgi:1991ci' on page 5 undefined on input line 222.
-
-
-LaTeX Warning: Citation `Maltoni:2002qb' on page 5 undefined on input line 227.
-
-
-
-LaTeX Warning: Citation `Alpgen' on page 5 undefined on input line 230.
-
-
-LaTeX Warning: Citation `Lusifer' on page 5 undefined on input line 230.
-
-
-LaTeX Warning: Citation `Amsler:2008zzb' on page 5 undefined on input line 255.
-
-
-
-LaTeX Warning: Citation `Amsler:2008zzb' on page 5 undefined on input line 255.
-
-
-[5]
-
-LaTeX Warning: Reference `pdlabel' on page 6 undefined on input line 279.
-
-
+[7]
 Overfull \hbox (53.41382pt too wide) in paragraph at lines 285--359
  [] 
 
 LaTeX Warning: Float too large for page by 10.63277pt on input line 364.
 
-[6]
+[8]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
@@ -73,26 +27,11 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 Overfull \hbox (15.99513pt too wide) in paragraph at lines 398--401
 []\OT1/cmr/m/n/12 One may al-ways re-turn to the built-in dis-tri-bu-tions by r
 e-set-ting \OT1/cmtt/m/n/12 PDFROUTINES
-[7] [8]
-
-LaTeX Warning: Reference `clopts' on page 9 undefined on input line 415.
-
-
-LaTeX Warning: Reference `subsec:otheroutput' on page 9 undefined on input line
- 457.
-
-[9]
-
-LaTeX Warning: Reference `nproctable' on page 10 undefined on input line 469.
-
-
-LaTeX Warning: Citation `Frixione:1998jh' on page 10 undefined on input line 47
-6.
-
+[9] [10] [11]
 
 LaTeX Warning: Float too large for page by 4.59938pt on input line 531.
 
-[10] [11]
+[12] [13]
 Overfull \hbox (35.97722pt too wide) in paragraph at lines 535--574
  [] 
 
@@ -110,254 +49,28 @@ Overfull \hbox (30.89407pt too wide) in paragraph at lines 691--729
 
 Overfull \hbox (92.90099pt too wide) in paragraph at lines 734--767
  [] 
-[12] [13] [14] [15] [16] [17]
-
-LaTeX Warning: Reference `subsec:stop' on page 18 undefined on input line 798.
-
-
-LaTeX Warning: Reference `subsec:wt' on page 18 undefined on input line 799.
-
-
-LaTeX Warning: Reference `subsec:gamgam' on page 18 undefined on input line 801
-.
-
-
-LaTeX Warning: Reference `subsec:wgamma' on page 18 undefined on input line 801
-.
-
-
-LaTeX Warning: Reference `subsec:zgamma' on page 18 undefined on input line 802
-.
-
-
-LaTeX Warning: Reference `sec:nucleus' on page 18 undefined on input line 819.
-
-[18]
-
-LaTeX Warning: Reference `dynamicscales' on page 19 undefined on input line 861
-.
-
-[19]
-
-LaTeX Warning: Reference `sec:specific' on page 20 undefined on input line 901.
-
-
-[20]
-
-LaTeX Warning: Reference `subsec:w2jets' on page 21 undefined on input line 934
-.
-
-
-LaTeX Warning: Reference `subsec:w2jets' on page 21 undefined on input line 938
-.
-
-
-LaTeX Warning: Reference `pdlabel' on page 21 undefined on input line 955.
-
-
-LaTeX Warning: Reference `sec:histos' on page 21 undefined on input line 966.
-
-[21]
-
-LaTeX Warning: Citation `Cacciari:2008' on page 22 undefined on input line 992.
-
-
-[22]
+[14] [15] [16] [17] [18] [19] [20] [21] [22] [23] [24]
 Overfull \hbox (4.98042pt too wide) in paragraph at lines 1023--1027
 []\OT1/cmtt/m/n/12 ptlepton(2nd+)[]min, |etalepton(2nd+)|[]max\OT1/cmr/m/n/12 .
  These spec-ify the val-
-
-LaTeX Warning: Citation `Frixione:1998jh' on page 23 undefined on input line 10
-66.
-
-[23]
-
-LaTeX Warning: Citation `Bourhis:1997yu' on page 24 undefined on input line 107
-1.
-
-
+[25]
 Overfull \hbox (11.96594pt too wide) in paragraph at lines 1080--1084
 \OT1/cmr/m/n/12 that all photon-lepton pairs are sep-a-rated by $^^A\OML/cmm/m/
 it/12 R >$ \OT1/cmtt/m/n/12 R(photon,lept)[]min\OT1/cmr/m/n/12 .
-
-LaTeX Warning: Reference `subsec:diboson' on page 24 undefined on input line 11
-03.
-
-
-LaTeX Warning: Reference `subsec:diboson' on page 24 undefined on input line 11
-04.
-
-
-LaTeX Warning: Reference `subsec:diboson' on page 24 undefined on input line 11
-05.
-
-
-LaTeX Warning: Reference `subsec:diboson' on page 24 undefined on input line 11
-06.
-
-
-LaTeX Warning: Reference `subsec:diboson' on page 24 undefined on input line 11
-07.
-
-[24]
-
-LaTeX Warning: Reference `subsec:diboson' on page 25 undefined on input line 11
-08.
-
-[25] [26]
-
-LaTeX Warning: Citation `Nagy:2003tz' on page 27 undefined on input line 1209.
-
-
-LaTeX Warning: Citation `Nagy:2003tz' on page 27 undefined on input line 1215.
-
-
-LaTeX Warning: Citation `Nagy:2003tz' on page 27 undefined on input line 1221.
-
-
-LaTeX Warning: Citation `Nagy:2003tz' on page 27 undefined on input line 1227.
-
-[27]
-
-LaTeX Warning: Citation `Eskola:1998df' on page 28 undefined on input line 1259
-.
-
-
-LaTeX Warning: Citation `Campbell:2006wx' on page 28 undefined on input line 12
-88.
-
-
-LaTeX Warning: Citation `Ball:2008by' on page 28 undefined on input line 1290.
-
-[28]
+[26] [27] [28] [29] [30]
 Overfull \hbox (4.86485pt too wide) in paragraph at lines 1324--1328
 \OT1/cmr/m/n/12 Extra his-tograms may be added to the plot-ting files, e.g. \OT
 1/cmtt/m/n/12 nplotter[]generic.f
-[29] [30] [31] [32]
-
-LaTeX Warning: Citation `Badger:2010mg' on page 33 undefined on input line 1498
-.
-
-
-LaTeX Warning: Reference `subsec:wbbfilter' on page 33 undefined on input line 
-1502.
-
-[33]
-
-LaTeX Warning: Citation `Bern:1997sc' on page 34 undefined on input line 1530.
-
-[34] [35]
-
-LaTeX Warning: Reference `subsec:w2jets' on page 36 undefined on input line 162
-4.
-
-
-LaTeX Warning: Citation `Bern:1997sc' on page 36 undefined on input line 1628.
-
-[36]
-
-LaTeX Warning: Citation `Dixon:1998py' on page 37 undefined on input line 1701.
-
-
-[37] [38] [39] [40]
-
-LaTeX Warning: Citation `Ellis:1991qj' on page 41 undefined on input line 1888.
-
-
-[41]
-
-LaTeX Warning: Citation `Melia:2010bm' on page 42 undefined on input line 1898.
-
-
-
-LaTeX Warning: Citation `Korner:2002hy' on page 42 undefined on input line 1936
-.
-
-[42]
-
-LaTeX Warning: Citation `Nason:1987xz' on page 43 undefined on input line 1959.
-
-
-
+[31] [32] [33] [34] [35] [36] [37] [38] [39] [40] [41] [42] [43] [44]
 Overfull \hbox (7.4047pt too wide) in paragraph at lines 1976--1984
 []\OT1/cmr/m/n/12 Single top pro-duc-tion is di-vided as usual into $\OML/cmm/m
 /it/12 s$\OT1/cmr/m/n/12 -channel (pro-cesses \OT1/cmtt/m/n/12 171-177\OT1/cmr/
 m/n/12 )
-[43] [44] [45]
-
-LaTeX Warning: Citation `Ravindran:2002dc' on page 46 undefined on input line 2
-120.
-
-
-LaTeX Warning: Citation `Schmidt:1997wr' on page 46 undefined on input line 212
-0.
-
-
-LaTeX Warning: Citation `deFlorian:1999zd' on page 46 undefined on input line 2
-122.
-
-
-LaTeX Warning: Citation `Ravindran:2002dc' on page 46 undefined on input line 2
-122.
-
-
-LaTeX Warning: Citation `Glosser:2002gm' on page 46 undefined on input line 212
-3.
-
-[46]
-
-LaTeX Warning: Citation `Kleiss:1988xr' on page 47 undefined on input line 2155
-.
-
-[47] [48]
-
-LaTeX Warning: Citation `Frixione:1998jh' on page 49 undefined on input line 22
-48.
-
-
-LaTeX Warning: Citation `Frixione:1998jh' on page 49 undefined on input line 22
-64.
-
-
-LaTeX Warning: Citation `Bern:2002jx' on page 49 undefined on input line 2266.
-
-[49]
-
-LaTeX Warning: Citation `Dixon:1998py' on page 50 undefined on input line 2293.
-
-
-
-LaTeX Warning: Citation `Frixione:1998jh' on page 50 undefined on input line 22
-96.
-
-
-LaTeX Warning: Citation `Dixon:1998py' on page 50 undefined on input line 2318.
-
-
-
-LaTeX Warning: Citation `Frixione:1998jh' on page 50 undefined on input line 23
-20.
-
-[50] [51]
-
-LaTeX Warning: Reference `subsec:wbb' on page 52 undefined on input line 2413.
-
-
-LaTeX Warning: Reference `table:wbbfilter' on page 52 undefined on input line 2
-415.
-
-[52]
+[45] [46] [47] [48] [49] [50] [51] [52] [53] [54]
 Underfull \hbox (badness 1163) in paragraph at lines 2457--2462
 []\OT1/cmr/m/n/12 F. Mal-toni and T. Stelzer, JHEP \OT1/cmr/bx/n/12 0302\OT1/cm
 r/m/n/12 , 027 (2003) [arXiv:hep-
-[53] [54] [55] (./mcfm.aux)
-
-LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
- )
+[55] [56] [57] (./mcfm.aux) )
 (see the transcript file for additional information)
-Output written on mcfm.dvi (55 pages, 192060 bytes).
+Output written on mcfm.dvi (57 pages, 205872 bytes).
 Transcript written on mcfm.log.

@@ -64,6 +64,10 @@ c
       double precision mass2,width2,mass3,width3
       double precision amz,alphas
       
+C---- prototypes for argument passing -----
+      integer cargc
+      integer clenargv
+
       common/couple/amz
       
       common/breit/n2,n3,mass2,width2,mass3,width3
@@ -98,15 +102,36 @@ c
       verbose=.true.
 
 c--- work out the name of the input file and open it
+c--- use functions defined in main.cxx since this is 
+c--- c++ linked now 
 
-      nargs=iargc()
-      if (nargs .ge. 1) then
-        call getarg(1,inputfile)
-      else
-        inputfile='input.DAT'
-      endif
+C     nargs=iargc()
+C      nargs=iargc()
+C      if (nargs .ge. 1) then
+C        call getarg(1,inputfile)
+C      else
+C        inputfile='input.DAT'
+C      endif
       
-      lenarg=lenocc(inputfile)
+C     lenarg=lenocc(inputfile)
+
+      nargs=cargc()
+
+      write (6,*) "argc=", nargs
+
+      lenarg = 0
+
+      if (nargs .ge. 1) then
+         inputfile='duffer'
+         call cargv(1,inputfile)
+         lenarg = clenargv(1)
+C        call get_command_argument(1, inputfile, cmdlength, cmdstatus)
+C        call getarg(1,inputfile)
+         write (6,*) "inputfile=", inputfile, "lenarg=", lenarg
+      else
+        inputfile='Winput.DAT'
+      endif
+     
 
       if ((lenarg.lt.4).or.(inputfile(lenarg-3:lenarg).ne.'.DAT')) then
         workdir=inputfile

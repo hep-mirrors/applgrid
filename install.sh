@@ -11,7 +11,9 @@
 #    APPLGRID - install appl_grid
 #    PDF      - install hoppet
 #    MCFM     - install mcfm
+#    MCFM60   - install mcfm 6.0
 #    RMCFM    - run mcfm
+#    RMCFM60  - run mcfm 6.0
 #    NLO      - install nlojet
 #    NLOMOD   - instal nlojet module
 #    RNLOMOD  - run nlojet module
@@ -44,6 +46,7 @@ PDF=1
 MCFM=0
 MCFM60=0
 RMCFM=0
+RMCFM60=0
 NLO=1
 NLOMOD=1
 RNLOMOD=1
@@ -55,7 +58,9 @@ setall() {
     APPLGRID=1
     PDF=1
     MCFM=1
+    MCFM60=1
     RMCFM=1
+    RMCFM60=1
     NLO=1
     NLOMOD=1
     RNLOMOD=1
@@ -70,6 +75,7 @@ unsetall() {
     MCFM=0
     MCFM60=0
     RMCFM=0
+    RMCFM60=0
     NLO=0
     NLOMOD=0
     RNLOMOD=0
@@ -127,6 +133,7 @@ for WORD in $ARGS ; do
        --mcfm)     MCFM=1;;
        --mcfm60)   MCFM60=1;;
        --runmcfm)  RMCFM=1;;
+       --runmcfm60) RMCFM60=1;;
        --nlo)      NLO=1;;
        --mod)      NLOMOD=1;;
        --runmod)   RNLOMOD=1;;
@@ -273,6 +280,16 @@ install_mcfm60() {
     cd $BASEDIR
     cd $BASEDIR/mcfm-6.0
     make install    
+#   should no longer be needed by lhapdf. hmmmm
+    cd Bin
+    if [ -e PDFsets ]; then 
+	ls -ld PDFsets
+    else
+	ln -s `lhapdf-config --pdfsets-path` .
+	ls -ld PDFsets
+    fi
+    
+
 }
 
 
@@ -320,7 +337,7 @@ run_mcfm() {
 }
 
 
-run_mcfm() { 
+run_mcfm60() { 
 
   if [ -d $BASEDIR/mcfm-6.0/Bin ]; then 
 
@@ -342,9 +359,9 @@ run_mcfm() {
       rm -rf W_*	
 
 #     #### Wplus test executable ####
-      ../exe/$SYSARCH/mcfm input.DAT >&  mcfm.log
-      ../exe/$SYSARCH/mcfm input.DAT >&  mcfm.log
-      ../exe/$SYSARCH/stand grid-30-Wplus_eta4.root
+      mcfm winput.DAT >&  mcfm.log
+      mcfm winput.DAT >&  mcfm.log
+      stand grid-30-Wplus_eta4.root
       mv fout.root fout-Wplus.root
 
       cd ..
@@ -567,6 +584,7 @@ if [ "$APPLGRID" = 1 ]; then install_appl_grid  $ARGS; fi
 if [ "$MCFM" = 1 ];     then install_mcfm       $ARGS; fi
 if [ "$MCFM60" = 1 ];   then install_mcfm60     $ARGS; fi
 if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi        
+if [ "$RMCFM60" = 1 ];  then run_mcfm60;               fi        
 if [ "$NLO" = 1 ];      then install_nlojet     $ARGS; fi
 
 

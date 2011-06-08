@@ -42,7 +42,7 @@ export INSTALLBASE=$BASEDIR
 APPLGRID=1
 PDF=1
 MCFM=0
-MCFM58=0
+MCFM60=0
 RMCFM=0
 NLO=1
 NLOMOD=1
@@ -68,7 +68,7 @@ unsetall() {
     APPLGRID=0
     PDF=0
     MCFM=0
-    MCFM58=0
+    MCFM60=0
     RMCFM=0
     NLO=0
     NLOMOD=0
@@ -87,11 +87,12 @@ usage() {
     echo "  --appl          install appl_grid"
     echo "  --pdf|--hoppet  install hoppet"
     echo "  --mcfm          install mcfm"
-    echo "  --mcfm58        install mcfm v5.8"
+    echo "  --mcfm60        install mcfm v6.0"
     echo "  --nlo           install nlojet"
     echo "  --mod           install nlojet module"
     echo
     echo "  --runmcfm       run mcfm"
+    echo "  --runmcfm60     run mcfm v6.0"
     echo "  --runmod        run nlojet module"
     echo 
     echo "  --user          build and run simple user example"
@@ -124,7 +125,7 @@ for WORD in $ARGS ; do
        --appl)     APPLGRID=1;;
        --pdf|--hoppet)      PDF=1;;
        --mcfm)     MCFM=1;;
-       --mcfm58)   MCFM58=1;;
+       --mcfm60)   MCFM60=1;;
        --runmcfm)  RMCFM=1;;
        --nlo)      NLO=1;;
        --mod)      NLOMOD=1;;
@@ -268,9 +269,9 @@ install_mcfm() {
     make install    
 }
 
-install_mcfm58() { 
+install_mcfm60() { 
     cd $BASEDIR
-    cd $BASEDIR/mcfm-5.8
+    cd $BASEDIR/mcfm-6.0
     make install    
 }
 
@@ -285,13 +286,13 @@ run_mcfm() {
     cd $BASEDIR/mcfm/run
     rm -f *.log
 
-#   should no longer be needed by lhapdf
-#    if [ -e PDFsets ]; then 
-#	ls -ld PDFsets
-#    else
-#	ln -s `lhapdf-config --pdfsets-path` .
-#	ls -ld PDFsets
-#    fi
+#   should no longer be needed by lhapdf. hmmmm
+    if [ -e PDFsets ]; then 
+	ls -ld PDFsets
+    else
+	ln -s `lhapdf-config --pdfsets-path` .
+	ls -ld PDFsets
+    fi
     
     echo "running mcfm - please wait ..."
 
@@ -310,6 +311,39 @@ run_mcfm() {
 #     #### Wplus test executable ####
       ../exe/$SYSARCH/mcfm WPinput.DAT >&  mcfm-wp0.log
       ../exe/$SYSARCH/mcfm WPinput.DAT >&  mcfm-wp1.log
+      ../exe/$SYSARCH/stand grid-30-Wplus_eta4.root
+      mv fout.root fout-Wplus.root
+
+      cd ..
+    fi
+  fi
+}
+
+
+run_mcfm() { 
+
+  if [ -d $BASEDIR/mcfm-6.0/Bin ]; then 
+
+    cd $BASEDIR/mcfm-6.0/Bin
+    rm -f *.log
+
+#   should no longer be needed by lhapdf. hmmmm
+    if [ -e PDFsets ]; then 
+	ls -ld PDFsets
+    else
+	ln -s `lhapdf-config --pdfsets-path` .
+	ls -ld PDFsets
+    fi
+    
+    echo "running mcfm - please wait ..."
+
+    if [ -e mcfm ]; then 
+
+      rm -rf W_*	
+
+#     #### Wplus test executable ####
+      ../exe/$SYSARCH/mcfm input.DAT >&  mcfm.log
+      ../exe/$SYSARCH/mcfm input.DAT >&  mcfm.log
       ../exe/$SYSARCH/stand grid-30-Wplus_eta4.root
       mv fout.root fout-Wplus.root
 
@@ -531,7 +565,7 @@ fi
 
 if [ "$APPLGRID" = 1 ]; then install_appl_grid  $ARGS; fi
 if [ "$MCFM" = 1 ];     then install_mcfm       $ARGS; fi
-if [ "$MCFM58" = 1 ];   then install_mcfm58     $ARGS; fi
+if [ "$MCFM60" = 1 ];   then install_mcfm60     $ARGS; fi
 if [ "$RMCFM" = 1 ];    then run_mcfm;                 fi        
 if [ "$NLO" = 1 ];      then install_nlojet     $ARGS; fi
 

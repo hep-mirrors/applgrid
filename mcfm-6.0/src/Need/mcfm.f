@@ -1,4 +1,5 @@
-      program mcfm
+C     program mcfm
+      subroutine mcfm
 ************************************************************************
 *                                                                      *
 *  This is the main program for MCFM                                   *

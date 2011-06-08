@@ -1,7 +1,7 @@
 FC = gfortran
-FFLAGS 	= 
-HERE = $(PWD)
-LIBDIR = $(HERE)/../ff/
+ROOTINCS   = $(shell root-config --cflags) 
+FFLAGS 	= $(findstring -m64, $(ROOTINCS) )
+LIBDIR = $(PWD)/../ff/
 LIBRARY	      = libqcdloop.a
 
 
@@ -77,7 +77,7 @@ $(LIBRARY):	$(OBJS)
  
 
 .f.o:	
-		$(FC) $(F77FLAGS)  -c $*.f
+		$(FC) $(F77FLAGS)  -c $<
 
 
 # -----------------------------------------------------------------------------

@@ -1,33 +1,33 @@
 FC = gfortran
 FFLAGS =  
-HERE   = $(PWD)
-QLDIR  = $(HERE)/ql
-FFDIR  = $(HERE)/ff
+QLDIR  = ql
+FFDIR  = ff
 
 # -----------------------------------------------------------------------------
 # Specify the object files. 
 
-TEST= \
-test.o 
+TEST=test.o 
+
+
+all: test
+
+.PHONY: fflib qllib
 
 .f.o:	
-		$(FC) $(F77FLAGS) -c $*.f
+		$(FC) $(F77FLAGS) -c $<  -DREPLACEPATH=\'$(PWD)\'
 
 
 # -----------------------------------------------------------------------------
 
-all: test
 
-test: qldir ffdir 		\
-	$(TEST)
-	$(FC) $(FFLAGS) -L$(QLDIR) -L$(FFDIR) -o $@ \
-            $(TEST) -lqcdloop -lff 
+test: qllib fflib $(TEST)
+	$(FC) $(FFLAGS) -o $@  $(TEST) -L$(QLDIR) -lqcdloop  -L$(FFDIR) -lff 
 
-ffdir:
-	(cd $(FFDIR); make; ranlib libff.a) 
+fflib: 
+	make -C $(FFDIR) 
 
-qldir:
-	(cd $(QLDIR); make) 
+qllib:
+	make -C $(QLDIR) 
 
 
 # -----------------------------------------------------------------------------

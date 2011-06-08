@@ -1,7 +1,8 @@
 FC            = gfortran 
-FFLAGS        = 
+ROOTINCS   = $(shell root-config --cflags) 
+FFLAGS        = $(findstring -m64, $(ROOTINCS) ) -DREPLACEPATH=\'$(PWD)\'
 
-LFLAGS	      = $(FFLAGS)
+LFLAGS	      = $(FFLAGS) $(findstring -m64, $(ROOTINCS) )
 
 DEST	      = /usr/local/lib
 
@@ -9,6 +10,7 @@ HDRS	      = aa.h \
 		ff.h
 
 LIBRARY	      = libff.a
+LIB = -lff
 
 MAKEFILE      = Makefile
 
@@ -162,8 +164,8 @@ test:		npointes
 		npointes > npointes.out
 		diff -w npointes.out npointes.sun
 
-npointes:	npointes.o $(LIBRARY)
-		$(FC) $(LFLAGS) -o npointes npointes.o $(LIBRARY)
+npointes:	npointes.o 
+		$(FC) $(LFLAGS) -o $@ $< $(LIBRARY)
 
 $(LIBRARY):	$(OBJS) $(AAOBJS)
 		ar cru $(LIBRARY) $(OBJS) $(AAOBJS)
@@ -191,6 +193,12 @@ update:		$(DEST)/$(LIBRARY)
 $(DEST)/$(LIBRARY): $(SRCS) $(HDRS) $(EXTHDRS)
 		@-ar xo $(DEST)/$(LIBRARY)
 		@make -f $(MAKEFILE) DEST=$(DEST) install clean
+
+.f.o:	
+		$(FC) -cpp $(FFLAGS) -c $<  
+
+
+
 ###
 aaxbx.o: ff.h aa.h
 aaxcx.o: ff.h aa.h

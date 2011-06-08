@@ -3,22 +3,19 @@
 # Replace this with the location of Cernlib on your system (if desired)
 CERNLIB     = 
 # Replace this with the location of LHAPDF on your system (if desired)
-LHAPDFLIB   = /afs/cern.ch/sw/lcg/external/MCGenerators/lhapdf/5.8.2/x86_64-slc5-gcc43-opt/lib
+LHAPDFLIB   =   $(shell lhapdf-config --prefix)/lib
+LHAPDFINC   = -I$(shell lhapdf-config --prefix)/include
 
-MCFMHOME        = /home/pavel/temp/applgrid-full-installation-01-01-03-02/mcfm-6.0
-SOURCEDIR       = /home/pavel/temp/applgrid-full-installation-01-01-03-02/mcfm-6.0/src
+LHAPDFLLIB = -L$(LHAPDFLIB) -lLHAPDF 
+
+MCFMHOME        = .
+SOURCEDIR       = $(MCFMHOME)/src
 VPATH		= $(DIRS)
 BIN		= $(MCFMHOME)/Bin
 INCPATH  	= $(SOURCEDIR)/Inc
 QLDIR		= $(MCFMHOME)/QCDLoop/ql
 FFDIR		= $(MCFMHOME)/QCDLoop/ff
 OUTPUT_OPTION	= -o $(MCFMHOME)/obj/$@
-
-# Set this to NATIVE/PDFLIB/LHAPDF
-#   NATIVE -- internal routines
-#   PDFLIB -- PDFLIB v8.04
-#   LHAPDF -- Les Houches library
-PDFROUTINES = LHAPDF
 
 HOPPETLIBS = $(shell hoppet-config --libs) 
 
@@ -30,7 +27,15 @@ ROOTINCS   = $(shell root-config --cflags)
 ROOTLIBS   = $(shell root-config --glibs) 
 ROOTARCH   = $(findstring -m64, $(ROOTINCS) )
 
+### Fortran run time libraries for linking c++ and fortran
+FRTLIB   = $(shell gfortran $(CXXFLAGS) -print-file-name=libgfortran.a)
+FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
 
+# Set this to NATIVE/PDFLIB/LHAPDF
+#   NATIVE -- internal routines
+#   PDFLIB -- PDFLIB v8.04
+#   LHAPDF -- Les Houches library
+PDFROUTINES = LHAPDF
 
 # Set this to NO/YES/FROOT
 #   NO  -- no n-tuple output or unweighting is possible
@@ -43,7 +48,7 @@ FC = gfortran
 FFLAGS 	= -fno-automatic -fno-f2c -O0 -g -I$(INCPATH) -Iobj
 
 F90 = gfortran
-F90FLAGS = -fno-automatic -fno-f2c -O2 -g -I$(INCPATH) -Iobj -Jobj
+F90FLAGS = -fno-automatic -fno-f2c -O2 -g -I$(INCPATH) -Iobj -Jobj 
 
 
 # If using FROOT package for ROOT ntuples, first specify C++ compiler:
@@ -90,7 +95,7 @@ DIRS	=	$(MCFMHOME):\
 		$(SOURCEDIR)/qqZtt:$(SOURCEDIR)/ggHgaga:\
 		$(SOURCEDIR)/Gamgam:$(SOURCEDIR)/Dirgam:\
 		$(SOURCEDIR)/Frag
-
+		
 
 # -----------------------------------------------------------------------------
 # Specify the object files. 
@@ -109,9 +114,9 @@ transformfrag.o
 
 WPWP2JFILES = \
 qqqqampl.o \
+qqqqgampl.o \
 qqb_wpwp_qqb.o\
-qqb_wpwp_qqb_g.o \
-qqqqgampl.o
+qqb_wpwp_qqb_g.o
 
 F90FILES = \
 consts_dp.o \
@@ -753,7 +758,6 @@ jetlabel_to_stdhep.o \
 jetreorder.o \
 mdata.o \
 miscclust.o \
-gridwrap.o \
 nplotter.o \
 nplotter_generic.o \
 nplotter_gamgam.o \
@@ -770,7 +774,11 @@ plots_stop_cfmt.o \
 stopcuts.o \
 wbfcuts.o \
 wbfcuts_jeppe.o \
-wconstruct.o 
+wconstruct.o \
+gridwrap.o \
+main.o
+
+
 
 VOLFILES = \
 qqb_vol.o \
@@ -1139,8 +1147,7 @@ qqb_zbjet_v.o \
 qqb_zbjet_z.o
 
 LIBDIR=.
-#LIBFLAGS= -lgfortran -lgfortranbegin -lqcdloop -lff
-LIBFLAGS=  -lqcdloop -lff
+LIBFLAGS=-L$(QLDIR) -lqcdloop -L$(FFDIR) -lff
 
 # Check NTUPLES flag
 ifeq ($(NTUPLES),FROOT)
@@ -1253,39 +1260,62 @@ OURCODE = $(LIBFILES) $(NEEDFILES)  $(PROCDEPFILES) \
 	  $(TOPFILES) $(ZQFILES) $(ZQJETFILES) $(WTFILES) $(HWWJETFILES) \
 	  $(WHWWFILES) $(ZHWWFILES) \
 	  $(STOPBFILES) $(STOPJETFILES) $(EPEM3JFILES) $(QQZTTFILES) \
-	  $(WPWP2JFILES) $(F90FILES) \
+	  $(F90FILES) $(WPWP2JFILES) \
 	  $(GAMGAMFILES) $(DIRGAMFILES) \
 	  $(WBBMFILES) $(ZBBMFILES) $(FRAGFILES)\
 	  $(CHECKINGFILES)
-
+          
 OTHER = $(INTEGRATEFILES) $(PARTONFILES) 
 ALLMCFM = $(OTHER) $(OURCODE)
 
-
+          
 # CERNLIB libraries for PDFLIB: -lpdflib804 -lmathlib -lpacklib 
 
-mcfm: $(ALLMCFM)
-	$(FC) $(FFLAGS) -L$(LIBDIR) -L$(QLDIR) -L$(FFDIR) -o $@ \
-	$(patsubst %,obj/%,$(ALLMCFM)) $(LIBFLAGS) $(ROOTLIBS) $(GRIDLIB) 
+
+MCFMOBJS = $(patsubst %,obj/%,$(ALLMCFM))
+
+.PHONY: qcdloop stand
+
+
+install: dirs mcfm stand doc
+
+mcfm: qcdloop $(MCFMOBJS) 
+	$(CXX) $(ROOTARCH) $(LDFLAGS) $(FFLAGS) -o $@  $(MCFMOBJS) -L$(LIBDIR) $(LIBFLAGS) $(GRIDLIB) $(ROOTLIBS) $(FRTLLIB) 
 	mv mcfm Bin/
 	@echo $(PDFMSG)
 	@echo $(NTUPMSG)
 
-# for gridwrap
-%.o: %.cxx
-	$(CXX) -c $(CXXFLAGS) $(GRIDINCS) $(ROOTINCS) -o obj/$@ $<
-# for FROOT package
-%.co: %.c
-	$(CXX) -c $(CXXFLAGS) $(DMYROOT) $(ROOTINCLUDE) -o obj/$@ $<
-# TM Include F90 files too
-%.o: %.f90
-	$(F90) $(F90FLAGS) -c -o obj/$@ $<
 
-#
-#  standalone
-#
-stand: stand.o src/User/LHAPDF.h
-	$(CXX) -o Bin/stand $(CXXFLAGS) obj/stand.o src/User/lhapdf_string_interface.f -lgfortran -lgfortranbegin $(ROOTLIBS) $(GRIDLIB) -L$(LHAPDFLIB) -lLHAPDF
+SOBJECTS = obj/stand.o  
+
+stand: $(BIN)/stand
+$(BIN)/stand : $(SOBJECTS) 
+	$(CXX) $(ROOTARCH) $(LDFLAGS) -o $@  $(SOBJECTS) $(LHAPDFLLIB) $(PDFCONVLIBS) $(GRIDLIB) $(ROOTLIBS)
+
+
+# for c++ tagrets
+obj/%.o: %.cxx
+	$(CXX) -c $(CXXFLAGS) $(DMYROOT) $(GRIDINCS) $(ROOTINCS) $(LHAPDFINC) -o $@ $<
+
+# for FROOT package
+obj/%.co: %.c
+	$(CXX) -c $(CXXFLAGS) $(DMYROOT) $(GRIDINCS) $(ROOTINCS) -o $@ $<
+
+# TM Include F90 files too
+obj/%.o: %.f90
+	$(F90) $(F90FLAGS) -c -o $@ $<
+
+
+obj/%.o: %.cxx
+	$(CXX) -c $(CXXFLAGS) $(DMYROOT) $(GRIDINCS) $(ROOTINCS) $(LHAPDFINC) -o $@ $<
+
+# for actually compiling the fortran
+obj/%.o: %.f
+	$(FC) -c $(FFLAGS) $(GRIDINCS) $(ROOTINCS) -o $@ $<
+
+
+qcdloop : 
+	make -C QCDLoop
 
 # -----------------------------------------------------------------------------
 # Specify other options.
@@ -1306,7 +1336,7 @@ FOROPTS = -include=$(INCPATH) -nonovice -nopretty -quiet
             $(FOROPTS) $< ; \
             if ! [ -e $(MCFMHOME)/$(notdir $<) ] ; then \
             mv $(basename $<).prj $(MCFMHOME) ; fi
-
+            
 PRJS =      $(OURCODE:.o=.prj) 
 
 check:      $(PRJS) 
@@ -1322,6 +1352,15 @@ checkf:
 clean:
 	- rm -f *.o obj/*.o obj/*.mod *.s *.prj *~ core
 
+doc: Doc/mcfm.pdf 
+Doc/mcfm.pdf : 
+	make -C Doc
+
+
+dirs : 
+	if ! [ -e obj ] ; then \
+	mkdir obj ; fi 
+
 # -----------------------------------------------------------------------------
 
 # DO NOT DELETE
@@ -1336,3 +1375,5 @@ qqqqampl.o: consts_dp.o spinfns.o recurrence.o
 qqqqampl.o: consts_dp.o spinfns.o recurrence.o
 qqb_wpwp_qqb.o: qqqqampl.o consts_dp.o
 qqb_wpwp_qqb_g.o: qqqqgampl.o consts_dp.o
+
+

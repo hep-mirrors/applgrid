@@ -117,7 +117,11 @@ public:
   void fill_index(const int ix1, const int ix2, const int iQ2, 
 		  const int iobs, 
 		  const double* weight, const int iorder);
-  
+
+  //  fill weight from MCFM common block  
+  void fillMCFM( double obs);
+  void collectWeight   ( const int&, const int&, double* wt);
+  void decideSubProcess( const int&, const int& , int&, double& );
 
   // trim/untrim the grid to reduce memory footprint
   void trim();

@@ -276,7 +276,7 @@ install_mcfm() {
     make install    
 }
 
-install_mcfm60() { 
+install_mcfm60() {
     cd $BASEDIR
     cd $BASEDIR/mcfm-6.0
     make install    

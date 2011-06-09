@@ -17,6 +17,9 @@ QLDIR		= $(MCFMHOME)/QCDLoop/ql
 FFDIR		= $(MCFMHOME)/QCDLoop/ff
 OUTPUT_OPTION	= -o $(MCFMHOME)/obj/$@
 
+# needed for the mcfm/QCDLoop/ff library compilation, ffinit_mine.f
+# to hardcode the path into the library for some reason
+
 HOPPETLIBS = $(shell hoppet-config --libs) 
 
 GRIDPATH   = $(shell applgrid-config --prefix) 

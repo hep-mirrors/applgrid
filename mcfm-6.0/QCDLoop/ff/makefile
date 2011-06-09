@@ -1,6 +1,6 @@
 FC            = gfortran 
-ROOTINCS   = $(shell root-config --cflags) 
-FFLAGS        = $(findstring -m64, $(ROOTINCS) ) -DREPLACEPATH=\'$(PWD)\'
+ROOTINCS      = $(shell root-config --cflags) 
+FFLAGS        = $(findstring -m64, $(ROOTINCS) ) 
 
 LFLAGS	      = $(FFLAGS) $(findstring -m64, $(ROOTINCS) )
 
@@ -13,6 +13,7 @@ LIBRARY	      = libff.a
 LIB = -lff
 
 MAKEFILE      = Makefile
+
 
 AAOBJS	      = aaxbx.o \
 		aaxcx.o \
@@ -188,16 +189,20 @@ library:	$(LIBRARY)
 
 print:;		$(PRINT) $(HDRS) $(SRCS)
 
-update:		$(DEST)/$(LIBRARY)
+update:	 	$(DEST)/$(LIBRARY)
 
 $(DEST)/$(LIBRARY): $(SRCS) $(HDRS) $(EXTHDRS)
 		@-ar xo $(DEST)/$(LIBRARY)
 		@make -f $(MAKEFILE) DEST=$(DEST) install clean
 
+.SUFFIXES: .f .o .fc
+
 .f.o:	
-		$(FC) -cpp $(FFLAGS) -c $<  
+	$(FC) $(FFLAGS) -c $<  
 
 
+ffinit_mine.f : ffinit_mine.fc
+	sed "s|REPLACEPATH|$(PWD)|g" $< > $@
 
 ###
 aaxbx.o: ff.h aa.h

@@ -6,6 +6,9 @@ LFLAGS	      = $(FFLAGS) $(findstring -m64, $(ROOTINCS) )
 
 DEST	      = /usr/local/lib
 
+DIR = $(shell pwd)
+
+
 HDRS	      = aa.h \
 		ff.h
 
@@ -202,7 +205,7 @@ $(DEST)/$(LIBRARY): $(SRCS) $(HDRS) $(EXTHDRS)
 
 
 ffinit_mine.f : ffinit_mine.fc
-	sed "s|REPLACEPATH|$(PWD)|g" $< > $@
+	sed "s|REPLACEPATH|$(DIR)|g" $< > $@
 
 ###
 aaxbx.o: ff.h aa.h

@@ -54,6 +54,18 @@ extern "C" {
 }
 
 
+
+bool file_exists(const string& s) {   
+  //  FILE* testfile=fopen(s.c_str(),"r");
+
+  if ( FILE* testfile=fopen(s.c_str(),"r") ) { 
+    fclose(testfile);
+    return true;
+  }
+  else return false;
+}
+
+
 static const int mxpart = 12;        // mcfm parameter : max number of partons in event record. defined in Inc/constants.f
 
 static const int _Ngrids = 4;
@@ -161,10 +173,20 @@ extern "C" void book_grid_()  // inital grid booking
   
   for(int igrid=0; igrid < Ngrids; igrid++) 
     {
-      
-      // if the file does not exist, create a new grid
-      TFile testFile( (glabel+gridFiles[igrid]).c_str() );
-      if ( testFile.IsZombie() ) 
+    
+      bool create_new = false;
+
+      // if the file does not exist, create a new grid...
+      if ( !file_exists( glabel+gridFiles[igrid]) )  create_new = true;
+
+      // or if it does exists but root file is a zombie...
+      if ( !create_new ) {  
+	TFile testFile( (glabel+gridFiles[igrid]).c_str() );
+	if ( testFile.IsZombie() ) create_new = true;
+	testFile.Close();
+      }
+
+      if ( create_new ) 
 	{ 
 	  cout<<"Creating NEW grid... "<<endl;
 	  
@@ -183,6 +205,7 @@ extern "C" void book_grid_()  // inital grid booking
 	}
       else 
 	{
+	  std::cout << "Using existing grid file " << (glabel+gridFiles[igrid]) << std::endl;
 	  
 	  mygrid[igrid] = new appl::grid(glabel+gridFiles[igrid]); //optimise grid x,Q2 bins
 	  grid_.nSubProcess = mygrid[igrid]->subProcesses();

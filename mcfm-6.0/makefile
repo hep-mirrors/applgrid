@@ -45,10 +45,10 @@ PDFROUTINES = LHAPDF
 NTUPLES = NO
 
 FC = gfortran
-FFLAGS 	= -fno-automatic -fno-f2c -O0 -g -I$(INCPATH) -Iobj
+FFLAGS 	= -fno-automatic -fno-f2c -O0 -g -I$(INCPATH)
 
 F90 = gfortran
-F90FLAGS = -fno-automatic -fno-f2c -O2 -g -I$(INCPATH) -Iobj -Jobj 
+F90FLAGS = -fno-automatic -fno-f2c -O2 -g -I$(INCPATH) -Jobj 
 
 
 # If using FROOT package for ROOT ntuples, first specify C++ compiler:

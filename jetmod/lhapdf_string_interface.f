@@ -24,7 +24,9 @@ C
       do i = 1, maxlen
          if (name(i) .eq. 0) then
             hitend = i-1
-            exit
+CTC>>>      exit
+            return
+CTC>>>
          end if
          f77name(i:i) = achar(name(i))
       end do
@@ -34,4 +36,5 @@ C
          stop
       end if
       call initPDFset(f77name(1:hitend))
-      end subroutine
+CTC      end subroutine
+      end 

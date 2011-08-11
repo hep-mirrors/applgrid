@@ -21,9 +21,6 @@ using std::endl;
 
 
 #include <cmath>
-using std::fabs;
-using std::pow;
-using std::log10;
 
 
 class tsparse_base {
@@ -72,7 +69,7 @@ public:
 
   // shouldn't really be in here, it's just for printing 
   static double mant(double x) { 
-    return  x/pow(10.,int(log10(fabs(x))+128)-128);
+    return  x/std::pow(10.,int(std::log10(std::fabs(x))+128)-128);
   }
 
 protected:

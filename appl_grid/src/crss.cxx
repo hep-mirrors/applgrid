@@ -16,9 +16,9 @@ using appl::grid;
 using std::vector;
 
 #include <cmath>
-using std::pow;
-using std::fabs;
-using std::log;
+// using std::pow;
+// using std::fabs;
+// using std::log;
 
 #include "lcg.h"
 

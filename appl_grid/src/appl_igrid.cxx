@@ -24,8 +24,6 @@ using std::setw;
 using appl::igrid;
 
 #include <cmath>
-using std::abs;
-using std::fabs;
 
 #include <iomanip>
 using std::setw;
@@ -771,7 +769,7 @@ void igrid::pdfinterp(double x, double Q2, double* f)
       fI_factor=fI(i1, m_yorder, u_y1) * fI(i3, m_tauorder, u_tau);
                     
       for ( int ip1=0 ; ip1<13 ; ip1++ ) { 
-	f[ip1] += fI_factor*m_fg1[k3+i3][abs(k1+i1)][ip1];     
+	f[ip1] += fI_factor*m_fg1[k3+i3][std::abs(k1+i1)][ip1];     
       }
     }
   }

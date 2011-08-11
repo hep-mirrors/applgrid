@@ -33,9 +33,9 @@ using std::setw;
 using std::setprecision;
 
 #include <cmath>
-using std::fabs;
-using std::pow;
-using std::log10;
+// using std::fabs;
+// using std::pow;
+// using std::log10;
 
 
 
@@ -223,7 +223,7 @@ public:
 	else              cout << "  "; 
 #else
       	if ( trimmed(i,j) ) { 
-	  cout << setprecision(1) << setw(1) << mant(fabs((*this)(i,j)));
+	  cout << setprecision(1) << setw(1) << mant(std::fabs((*this)(i,j)));
 	}
       	else  if ( i==j ) cout << "  "; 
 	else              cout << "  "; 

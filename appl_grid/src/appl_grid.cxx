@@ -22,8 +22,8 @@ using std::setprecision;
 using std::setw;
 
 #include <cmath>
-using std::abs;
-using std::fabs;
+// using std::abs;
+// using std::fabs;
 
 #include "appl_grid/appl_pdf.h"
 #include "appl_grid/appl_timer.h"
@@ -77,6 +77,32 @@ void Splitting(const double& x, const double& Q, double* xf) {
 #endif
 
 
+
+// return chomped string
+std::string chomptoken(std::string& s1, const std::string& s2)
+{
+  std::string s3 = "";
+  std::string::size_type pos = s1.find(s2);
+  if ( pos != std::string::npos ) {
+    s3 = s1.substr(0, pos);
+    s1.erase(0, pos+1);
+  }
+  else { 
+    s3 = s1.substr(0, s1.size());
+    s1.erase(0, s1.size()+1);
+  }
+  return s3;
+} 
+
+
+std::vector<std::string> parse(std::string s, const std::string& key) {
+  std::vector<std::string> clauses;
+  while ( s.size() ) clauses.push_back( chomptoken(s, key) );
+  return clauses;
+}
+
+
+
 grid::grid(int NQ2, double Q2min, double Q2max, int Q2order, 
 	   int Nx,  double xmin,  double xmax,  int xorder,
 	   int Nobs,  double obsmin, double obsmax, 
@@ -91,7 +117,12 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
   m_obs_bins->SetDirectory(0);
   //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
-  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+
+  std::vector<std::string> _name = parse( m_genpdfname, ":" );
+  if ( _name.size()>1 ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[i] );
+  else                  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[0] );
+
+  //  m_genpdf = appl_pdf::getpdf(m_genpdfname);
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
 }
 
@@ -112,8 +143,14 @@ grid::grid(int Nobs, const double* obsbins,
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
   m_obs_bins->SetDirectory(0);
+
   //   m_genpdf = genpdf_map.find(m_genpdfname)->second;  
-  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+  //  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+
+  std::vector<std::string> _name = parse( m_genpdfname, ":" );
+  if ( _name.size()>1 ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[i] );
+  else                  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[0] );
+
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform );
 }
 
@@ -146,7 +183,12 @@ grid::grid(const vector<double> obs,
   delete[] obsbins;
 
   //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
-  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+  //  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+
+  std::vector<std::string> _name = parse( m_genpdfname, ":" );
+  if ( _name.size()>1 ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[i] );
+  else                  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[0] );
+
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
 }
 
@@ -177,7 +219,11 @@ grid::grid(const vector<double> obs,
   delete[] obsbins;
 
   //  m_genpdf = genpdf_map.find(m_genpdfname)->second;
-  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+  //  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+
+  std::vector<std::string> _name = parse( m_genpdfname, ":" );
+  if ( _name.size()>1 ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[i] );
+  else                  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[0] );
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     m_grids[iorder] = new igrid*[Nobs];
@@ -254,15 +300,22 @@ grid::grid(const string& filename, const string& dirname)  :
   
   //  cout << "Tags=" << _tags << endl;
 
-  m_genpdf = appl_pdf::getpdf(m_genpdfname);
+  //  m_genpdf = appl_pdf::getpdf(m_genpdfname);
 
+    std::vector<std::string> _name = parse( m_genpdfname, ":" );
+  if ( _name.size()>1 ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[i] );
+  else                  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[0] );
+  
 #if 0
   if ( genpdf_map.find(m_genpdfname)==genpdf_map.end() )  { 
     cerr << "grid::grid() generalised pdf " << m_genpdfname << " not in map" << endl;
     exit(0);
   }
   else { 
-    m_genpdf = genpdf_map.find(m_genpdfname)->second; 
+    std::vector<std::string> _name = parse( m_genpdfname, ":" );
+    if ( _name.size()>1 ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[i] );
+    else                  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]=appl_pdf::getpdf(_name[0] );
+    //    m_genpdf = genpdf_map.find(m_genpdfname)->second; 
   }
 #endif
 
@@ -356,7 +409,7 @@ void grid::construct(int Nobs,
     for ( int iobs=0 ; iobs<Nobs ; iobs++ ) {
       m_grids[iorder][iobs] = new igrid(NQ2, Q2min, Q2max, Q2order, 
 					Nx, xmin, xmax, xorder, 
-					transform, m_genpdf->Nproc());
+					transform, m_genpdf[iorder]->Nproc());
     }
   }
 
@@ -488,7 +541,7 @@ void grid::fill(const double x1, const double x2, const double Q2,
   }
   
   //  cout << "iobs=" << iobs << "\tobs=" << obs;
-  //  for ( int i=0 ; i<subProcesses() ; i++ ) cout << "\t" << weight[i];
+  //  for ( int i=0 ; i<subProcesses(iorder) ; i++ ) cout << "\t" << weight[i];
   //  cout << endl;
 
   //  cout << "\tiobs=" << iobs << endl;
@@ -701,28 +754,28 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
     if ( nloops==0 ) {
       label = "lo      ";
       // leading order cross section
-      dsigma = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 0, 1, 1, Escale);
+      dsigma = m_grids[0][iobs]->convolute(pdf, m_genpdf[0], alphas, m_leading_order, 0, 1, 1, Escale);
     }
     else if ( nloops==1 ) { 
       label = "nlo     ";
       // next to leading order cross section
       // cout << "convolute() nloop=1" << endl;
       // leading order contribution and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
+      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf[0], alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
       // cout << "dsigma_lo=" << dsigma_lo << endl;
       // next to leading order contribution
       //      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
       // GPS: the NLO piece must use the same rscale_factor and fscale_factor as
       //      the LO piece -- that's the convention that defines how NLO calculations
       //      are done.
-      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
       // cout << "dsigma_nlo=" << dsigma_nlo << endl;
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) {
       label = "nlo only";
       // nlo contribution only (only strict nlo contributions) 
-      dsigma = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+      dsigma = m_grids[1][iobs]->convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
     } 
     else if ( nloops==2 ) {
       // FIXME: not implemented completely yet 
@@ -730,17 +783,17 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts so only  muR=muF=mu
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order, 0);
+      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf[0], alphas, m_leading_order, 0);
       // next to leading order contribution      
-      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
+      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0);
       // next to next to leading order contribution
-      double dsigma_nnlo = m_grids[2][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+2, 0);
+      double dsigma_nnlo = m_grids[2][iobs]->convolute(pdf, m_genpdf[2], alphas, m_leading_order+2, 0);
       dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
     }
     else if ( nloops==-2 ) {
       label = "nnlo only";
       // next to next to leading order contribution
-      dsigma = m_grids[2][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+2, 0);
+      dsigma = m_grids[2][iobs]->convolute(pdf, m_genpdf[2], alphas, m_leading_order+2, 0);
     }
 
     //   double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
@@ -817,20 +870,20 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
       label = "lo      ";
       //      cout << "convolute() nloop=0" << iobs << endl;
       // leading order cross section
-      dsigma = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order, 0, 1, 1, Escale);
+      dsigma = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf[0], alphas, lo_order, 0, 1, 1, Escale);
     }
     else if ( nloops==1 ) { 
       label = "nlo     ";
       // next to leading order cross section
       // leading and next to order contributions and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order,   1, rscale_factor, 1,  Escale );
-      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, 1,  Escale );
+      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf[0], alphas, lo_order,   1, rscale_factor, 1,  Escale );
+      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf[1], alphas, lo_order+1, 0, rscale_factor, 1,  Escale );
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) { 
       label = "nlo only";
       // nlo contribution only (only strict nlo contributions)
-      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0, rscale_factor, 1, Escale );
+      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf[1], alphas, lo_order+1, 0, rscale_factor, 1, Escale );
     }
     else if ( nloops==2 ) { 
       // FIXME: not implemented completely yet 
@@ -838,9 +891,9 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts, so only muR=muF=mu
-      double dsigma_lo   = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order,   0);
-      double dsigma_nlo  = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+1, 0);
-      double dsigma_nnlo = m_grids[2][iobs]->convolute_subproc(subproc, pdf, m_genpdf, alphas, lo_order+2, 0);
+      double dsigma_lo   = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf[0], alphas, lo_order,   0);
+      double dsigma_nlo  = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf[1], alphas, lo_order+1, 0);
+      double dsigma_nnlo = m_grids[2][iobs]->convolute_subproc(subproc, pdf, m_genpdf[2], alphas, lo_order+2, 0);
       dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
     }
     
@@ -973,7 +1026,7 @@ void grid::redefine(int iobs, int iorder,
 
   m_grids[iorder][iobs] = new igrid(NQ2, Q2min, Q2max, oldgrid->tauorder(),
 				    Nx,  xmin,  xmax,  oldgrid->yorder(), 
-				    oldgrid->transform(), m_genpdf->Nproc());
+				    oldgrid->transform(), m_genpdf[iorder]->Nproc());
 
   delete oldgrid;
 }
@@ -1090,15 +1143,20 @@ extern "C" __nflav__ nflav_;
 void grid::fillMCFM(double obs)
 {
   //  std::cout << "   --------------------------------------------- " << std::endl;
-  double* weight = new double[ subProcesses() ];
+  //  double* weight = new double[ subProcesses() ];
+
+  std::vector<double> _weight( subProcesses() );
+
+  double* weight = &_weight[0];
+
   double  scale2 =  gridevent_.ag_scale * gridevent_.ag_scale;
   
-//   std::cout <<" x1 = "<< gridevent_.ag_xx1
-// 	    <<" x2 = "<< gridevent_.ag_xx2
-// 	    <<" Q  = "<< gridevent_.ag_scale
-// 	    <<" CON = "<< gridevent_.contrib
-// 	    <<std::endl;
-
+  //   std::cout <<" x1 = "<< gridevent_.ag_xx1
+  // 	    <<" x2 = "<< gridevent_.ag_xx2
+  // 	    <<" Q  = "<< gridevent_.ag_scale
+  // 	    <<" CON = "<< gridevent_.contrib
+  // 	    <<std::endl;
+  
   int flag = 0;
 
   if ( gridevent_.contrib == 100 )  // BORN
@@ -1106,88 +1164,89 @@ void grid::fillMCFM(double obs)
       flag = 0;
       collectWeight( gridevent_.contrib , flag, weight );
       
-      if (isOptimised())
-	{
-	  fill( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 0 );
-	  getReference()->Fill( obs, gridevent_.refwt );
-	}
-      else
-	fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 0 );
-    }
-  else if ( gridevent_.contrib == 200 ) //REAL
-    {
-      collectWeight( gridevent_.contrib, gridevent_.dipole, weight );
-      
-      if (isOptimised())
-	{
-	  fill( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 1 );
-	  getReference()->Fill( obs, gridevent_.refwt );
-	}
-      else
-	fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 1 );
-    }
-  else if ( gridevent_.contrib == 300 ) //VIRTUAL
-    {
-
-      // BORN
-      int flag = 0;
-      collectWeight( gridevent_.contrib, flag, weight );
-      if (isOptimised())
+      if (isOptimised())  {
 	fill( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 0 );
-      else
+	getReference()->Fill( obs, gridevent_.refwt );
+      }
+      else { 
 	fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 0 );
-      
-      //VIRT X1X2
-      flag = -1;
-      collectWeight( gridevent_.contrib, flag, weight );
-      if (isOptimised())
-	fill( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 1 );
-      else
-	fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 1 );
-
-      //VIRT X1onZ
-      flag = -2;
-      collectWeight( gridevent_.contrib, flag, weight );
-      if (isOptimised())
-	fill( gridevent_.ag_x1z, gridevent_.ag_xx2, scale2, obs, weight, 1 );
-      else
-	fill_phasespace( gridevent_.ag_x1z, gridevent_.ag_xx2, scale2, obs, weight, 1 );
-
-      //VIRT X2onZ
-      flag = -3;
-      collectWeight( gridevent_.contrib, flag, weight );
-      if (isOptimised())
-	fill( gridevent_.ag_xx1, gridevent_.ag_x2z, scale2, obs, weight, 1 );
-      else
-	fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_x2z, scale2, obs, weight, 1 );
-      
-      if (isOptimised()) getReference()->Fill( obs, gridevent_.refwt );
-      
+      }
     }
-  else  // UNKNOWN
-    {
-      std::cout <<__PRETTY_FUNCTION__<<" Unknown contribution!!!!!!!!!"<< std::endl; 
-      std::cout <<__PRETTY_FUNCTION__<<" Unknown contribution!!!!!!!!!"<< std::endl; 
-      std::cout <<__PRETTY_FUNCTION__<<" Unknown contribution!!!!!!!!!"<< std::endl; 
+  else if ( gridevent_.contrib == 200 ) { 
+    //REAL
+    
+    collectWeight( gridevent_.contrib, gridevent_.dipole, weight );
+      
+    if (isOptimised()) {
+      fill( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 1 );
+      getReference()->Fill( obs, gridevent_.refwt );
     }
-
-  //  std::cout << "   --------------------------------------------- " << std::flush << std::endl;
+    else { 
+      fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 1 );
+    }
+  }
+  else if ( gridevent_.contrib == 300 ) { 
+    //VIRTUAL
+   
+    // BORN
+    int flag = 0;
+    collectWeight( gridevent_.contrib, flag, weight );
+    if (isOptimised())
+      fill( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 0 );
+    else
+      fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 0 );
+    
+    //VIRT X1X2
+    flag = -1;
+    collectWeight( gridevent_.contrib, flag, weight );
+    if (isOptimised())
+      fill( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 1 );
+    else
+      fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_xx2, scale2, obs, weight, 1 );
+    
+    //VIRT X1onZ
+    flag = -2;
+    collectWeight( gridevent_.contrib, flag, weight );
+    if (isOptimised())
+      fill( gridevent_.ag_x1z, gridevent_.ag_xx2, scale2, obs, weight, 1 );
+    else
+      fill_phasespace( gridevent_.ag_x1z, gridevent_.ag_xx2, scale2, obs, weight, 1 );
+    
+    //VIRT X2onZ
+    flag = -3;
+    collectWeight( gridevent_.contrib, flag, weight );
+    if (isOptimised())
+      fill( gridevent_.ag_xx1, gridevent_.ag_x2z, scale2, obs, weight, 1 );
+    else
+      fill_phasespace( gridevent_.ag_xx1, gridevent_.ag_x2z, scale2, obs, weight, 1 );
+    
+    if (isOptimised()) getReference()->Fill( obs, gridevent_.refwt );
+    
+  }
+  else  { 
+    // UNKNOWN
+    std::cout <<__PRETTY_FUNCTION__<<" Unknown contribution!!!!!!!!!"<< std::endl; 
+    std::cout <<__PRETTY_FUNCTION__<<" Unknown contribution!!!!!!!!!"<< std::endl; 
+    std::cout <<__PRETTY_FUNCTION__<<" Unknown contribution!!!!!!!!!"<< std::endl; 
+  }
   
-
-  delete [] weight;
+  //  std::cout << "   --------------------------------------------- " << std::endl;
+  
+  //  delete [] weight;
   return;
 }
+
 
 void grid::collectWeight(const int& order, const int& id, double* wt)
 {
   double factor = 1.0;
   int iproc = -1;
-  for ( int i = 0 ;i <subProcesses(); i++ ) wt[i] =  0.0;
+  for ( int i = 0 ;i <subProcesses(order); i++ ) wt[i] =  0.0;
 
-//   std::cout<<" \n( ";
-//   for (int jj =  0 ; jj < subProcesses();jj++) std::cout << wt[jj] <<" , ";
-//   std::cout<<")\n";
-
+  //   std::cout<<" \n( ";
+  //   for (int jj =  0 ; jj < subProcesses(order);jj++) std::cout << wt[jj] <<" , ";
+  //   std::cout<<")\n";
+  
   for ( int iflav = -nflav_.nflav; iflav <= nflav_.nflav; iflav++)
     for ( int jflav = -nflav_.nflav; jflav <= nflav_.nflav; jflav++)
       {
@@ -1200,18 +1259,18 @@ void grid::collectWeight(const int& order, const int& id, double* wt)
 	if ( order == 200 ) 
 	  wt[ iproc ] +=  factor * gridweight_.weightr[ __nf__ + jflav ][ __nf__ + iflav ][ id ];
 
-
-// 	if (true)
-// 	  {
-// 	    if (0 != gridweight_.weightb[ __nf__ + jflav ][ __nf__ + iflav ]) 
-// 	      std::cout <<" ( i= "<<iflav<<" j= "<<jflav<<" : "
-// 			<< gridweight_.weightb[ __nf__ + jflav ][ __nf__ + iflav ]<<" ) proc = "<<iproc;
-
-// 	    std::cout<<" \n( ";
-// 	    for (int jj =  0 ; jj < subProcesses();jj++) std::cout << wt[jj] <<" , ";
-// 	    std::cout<<")\n";
-
-// 	  }
+	
+	// 	if (true)
+	// 	  {
+	// 	    if (0 != gridweight_.weightb[ __nf__ + jflav ][ __nf__ + iflav ]) 
+	// 	      std::cout <<" ( i= "<<iflav<<" j= "<<jflav<<" : "
+	// 			<< gridweight_.weightb[ __nf__ + jflav ][ __nf__ + iflav ]<<" ) proc = "<<iproc;
+	
+	// 	    std::cout<<" \n( ";
+	// 	    for (int jj =  0 ; jj < subProcesses(order);jj++) std::cout << wt[jj] <<" , ";
+	// 	    std::cout<<")\n";
+	
+	// 	  }
 
 	if ( order == 300 )
 	  {
@@ -1228,16 +1287,16 @@ void grid::collectWeight(const int& order, const int& id, double* wt)
 
       }
 
-  for (int jj =  0 ; jj < subProcesses();jj++) wt[ jj ] *= gridweight_.weightfactor ;
+  for (int jj=0 ; jj<subProcesses(order) ; jj++ )  wt[jj] *= gridweight_.weightfactor ;
 
-//   std::cout<<" factor = "<< gridweight_.weightfactor<<std::endl;
+  //   std::cout<<" factor = "<< gridweight_.weightfactor<<std::endl;
   
-//   std::cout << "PROC = " << nproc_.nproc <<" W = ( dip = "<<id<<" , ";
-//   for (int jj =  0 ; jj < subProcesses();jj++) std::cout << wt[jj] <<" , ";
-//   std::cout <<" ) if = "<<factor<<" psw = "<< gridweight_.weightfactor <<" refwt = "<<gridevent_.refwt  << std::endl;
-//   std::cout <<" me(2,-1,0)"<< gridweight_.weightr[ __nf__ - 1][ __nf__ + 2][0] <<std::endl;
-//   std::cout <<" me(2,-1,1)"<< gridweight_.weightr[ __nf__ - 1][ __nf__ + 2][1] <<std::endl;
-
+  //   std::cout << "PROC = " << nproc_.nproc <<" W = ( dip = "<<id<<" , ";
+  //   for (int jj =  0 ; jj < subProcesses(order);jj++) std::cout << wt[jj] <<" , ";
+  //   std::cout <<" ) if = "<<factor<<" psw = "<< gridweight_.weightfactor <<" refwt = "<<gridevent_.refwt  << std::endl;
+  //   std::cout <<" me(2,-1,0)"<< gridweight_.weightr[ __nf__ - 1][ __nf__ + 2][0] <<std::endl;
+  //   std::cout <<" me(2,-1,1)"<< gridweight_.weightr[ __nf__ - 1][ __nf__ + 2][1] <<std::endl;
+  
   return ;
 }
 
@@ -1338,13 +1397,13 @@ void grid::decideSubProcess(const int& iflav1, const int& iflav2, int & iProcess
 	}
       factor = 1.0;
     }
-//   else
-//     {
-//       iProcess = -1;
-//       factor   = 0.;
-//     }
-//  std::cout << "\t\t *** \t"<<iflav1<<" <> "<<iflav2<<" iproc = "<<iProcess<< std::endl; 
-
+  //   else
+  //     {
+  //       iProcess = -1;
+  //       factor   = 0.;
+  //     }
+  //  std::cout << "\t\t *** \t"<<iflav1<<" <> "<<iflav2<<" iproc = "<<iProcess<< std::endl; 
+  
   return;
 }
 
@@ -1353,7 +1412,12 @@ void grid::decideSubProcess(const int& iflav1, const int& iflav2, int & iProcess
 
 ostream& operator<<(ostream& s, const appl::grid& g) {
   s << "==================================================" << endl;
-  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses() << " initial states, " << g.Nobs() << " observable bins)" << endl;
+  //  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses(0) << " initial states, " << g.Nobs() << " observable bins)" << endl;
+  s << "appl::grid version " << g.version() << "\t(" 
+    << g.subProcesses(0) << " LO, " 
+    << g.subProcesses(1) << " NLO, " 
+    << g.subProcesses(2) << " NNLO "  
+    << "initial states, " << g.Nobs() << " observable bins)" << endl;
   if ( g.isOptimised() ) s << "Optimised grid" << endl;
   if ( g.isSymmetric() ) s << "Symmetrised in x1, x2" << endl;
   else                   s << "Unsymmetrised in x1, x2" << endl;

@@ -30,8 +30,8 @@ using std::cout;
 using std::endl;
 
 #include <cmath>
-using std::abs;
-using std::fabs;
+// using std::abs;
+// using std::fabs;
 using std::log;
 using std::exp;
 using std::sqrt;
@@ -317,7 +317,7 @@ public:
   const TH1D* getReference()  const { return m_obs_bins; } 
 
   // number of subprocesses 
-  int subProcesses() const { return m_grids[0][0]->SubProcesses(); }  
+  int subProcesses(int i=0) const { return m_grids[i][0]->SubProcesses(); }  
 
   // general status accessors
   double& run() { return m_run; }
@@ -425,7 +425,7 @@ private:
   string m_genpdfname; 
 
   // pdf combination class
-  appl_pdf* m_genpdf;
+  appl_pdf* m_genpdf[3];
 
   static const string m_version;
 

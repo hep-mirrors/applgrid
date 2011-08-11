@@ -40,12 +40,12 @@ using std::map;
 using std::string;
 
 #include <cmath>
-using std::abs;
-using std::fabs;
-using std::log;
-using std::exp;
-using std::sqrt;
-using std::pow;
+// using std::abs;
+// using std::fabs;
+// using std::log;
+// using std::exp;
+// using std::sqrt;
+// using std::pow;
 
 #include "appl_grid/Directory.h"
 #include "appl_grid/SparseMatrix3d.h"
@@ -204,12 +204,12 @@ public:
     return exp(-yp); 
   }
   
-  static double _fy3(double x) { return sqrt(-log10(x)); }
-  static double _fx3(double y) { return pow(10,-y*y); } 
+  static double _fy3(double x) { return std::sqrt(-log10(x)); }
+  static double _fx3(double y) { return std::pow(10,-y*y); } 
 
   // fastnlo dis transform
-  static double _fy4(double x) { return -log10(x); }
-  static double _fx4(double y) { return pow(10,-y); } 
+  static double _fy4(double x) { return -std::log10(x); }
+  static double _fx4(double y) { return std::pow(10,-y); } 
 
 
   // pdf weight function
@@ -218,7 +218,7 @@ public:
   // double _fun(double x) { return 1; } 
   
   // this is significantly quicker than pow(x,1.5)*pow(1-0.99*x,3) 
-  static double _fun(double x)      { double n=(1-0.99*x); return sqrt(x*x*x)/(n*n*n); } 
+  static double _fun(double x)      { double n=(1-0.99*x); return std::sqrt(x*x*x)/(n*n*n); } 
   static double weightfun(double x) { return _fun(x); }
   
 
@@ -469,8 +469,8 @@ private:
   // are not yet defined at the time of evaluation.
   static double fI(int i, int n, double u) {
     if ( n==0 && i==0 )     return 1.0;
-    if ( fabs(u-i)<1e-8 ) return 1.0;
-    //    if ( fabs(u-n)<u*1e-8 ) return 1.0;
+    if ( std::fabs(u-i)<1e-8 ) return 1.0;
+    //    if ( std::fabs(u-n)<u*1e-8 ) return 1.0;
     double product = pow1(n-i) / ( fac(i)*fac(n-i)*(u-i) );
     for( int z=0 ; z<=n ; z++ )  product *= (u-z);
     return product;

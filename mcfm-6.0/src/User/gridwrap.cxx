@@ -29,9 +29,9 @@ using std::string;
 #include "TMatrixT.h"
 #include "TVectorT.h"
 
-#include "appl_grid/appl_grid.h"
-using appl::grid;
-using appl::igrid;
+#include "mcfm_grid.h"
+// using appl::mcfm_grid;
+// using appl::igrid;
 
 // #include "appl_grid/appl_pdf.h"
 
@@ -70,7 +70,7 @@ static const int mxpart = 12;        // mcfm parameter : max number of partons i
 
 static const int _Ngrids = 4;
 static const int  Ngrids = _Ngrids;
-appl::grid* mygrid[_Ngrids];
+appl::mcfm_grid* mygrid[_Ngrids];
 static const char* gridFiles[_Ngrids] = 
   {
     "_eta3.root",
@@ -190,10 +190,10 @@ extern "C" void book_grid_()  // inital grid booking
 	{ 
 	  cout<<"Creating NEW grid... "<<endl;
 	  
-	  mygrid[igrid] = new appl::grid( nObsBins[igrid], obsBins[igrid],      // obs bins
-					  nQ2bins, q2Low, q2Up, qorder,         // Q2 bins and interpolation order
-					  nXbins,   xLow,  xUp, xorder,         // x bins and interpolation order
-					  pdf_function, lowest_order, nloops ); 
+	  mygrid[igrid] = new appl::mcfm_grid( nObsBins[igrid], obsBins[igrid],      // obs bins
+					       nQ2bins, q2Low, q2Up, qorder,         // Q2 bins and interpolation order
+					       nXbins,   xLow,  xUp, xorder,         // x bins and interpolation order
+					       pdf_function, lowest_order, nloops ); 
 	  
 	  mygrid[igrid]->setCMSScale( energy_.sqrts );
 	  grid_.nSubProcess = mygrid[igrid]->subProcesses();
@@ -207,7 +207,7 @@ extern "C" void book_grid_()  // inital grid booking
 	{
 	  std::cout << "Using existing grid file " << (glabel+gridFiles[igrid]) << std::endl;
 	  
-	  mygrid[igrid] = new appl::grid(glabel+gridFiles[igrid]); //optimise grid x,Q2 bins
+	  mygrid[igrid] = new appl::mcfm_grid(glabel+gridFiles[igrid]); //optimise grid x,Q2 bins
 	  grid_.nSubProcess = mygrid[igrid]->subProcesses();
 	  mygrid[igrid]->getReference()->Reset();
 	  mygrid[igrid]->optimise(nQ2bins, nXbins);

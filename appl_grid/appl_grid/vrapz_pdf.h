@@ -92,7 +92,7 @@ inline void  vrapzNLO_pdf::evaluate(const double* fA, const double* fB, double* 
   H[0] =  D ;  
   H[1] =  U ;  
 
-  /// qqbar_ax_lumi same as for qqbar_lumi on multiplied by aaf_d, aadf_u rather 
+  /// qqbar_ax_lumi same as for qqbar_lumi only multiplied by aaf_d, aadf_u rather 
   /// than qpref_d and qpref_u
 
   /// for gq_lumi
@@ -157,7 +157,7 @@ inline void  vrapzNNLO_pdf::evaluate(const double* fA, const double* fB, double*
   H[0] =  D ;  
   H[1] =  U ;  
 
-  /// qqbar_ax_lumi same as for qqbar_lumi on multiplied by aaf_d, aadf_u rather 
+  /// qqbar_ax_lumi same as for qqbar_lumi only multiplied by aaf_d, aadf_u rather 
   /// than qpref_d and qpref_u
 
   /// for gq_lumi

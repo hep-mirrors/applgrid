@@ -102,7 +102,7 @@ public:
   // add an igrid for a given bin and a given order 
   void add_igrid(int bin, int order, igrid* g);
 
-  ~grid();
+  virtual ~grid();
   
   // update grid with one set of event weights
   void fill(const double x1, const double x2, const double Q2, 
@@ -118,10 +118,12 @@ public:
 		  const int iobs, 
 		  const double* weight, const int iorder);
 
+#if 0
   //  fill weight from MCFM common block  
   void fillMCFM( double obs);
   void collectWeight   ( const int&, const int&, double* wt);
   void decideSubProcess( const int&, const int& , int&, double& );
+#endif
 
   // trim/untrim the grid to reduce memory footprint
   void trim();
@@ -393,7 +395,45 @@ private:
 		 int order=2, 
 		 string transform="f" );
   
+
 private:
+
+  /// string manipulators to parse the pdf names 
+
+  /// return chomped string
+  std::string chomptoken(std::string& s1, const std::string& s2)
+  {
+    std::string s3 = "";
+    std::string::size_type pos = s1.find(s2);
+    if ( pos != std::string::npos ) {
+      s3 = s1.substr(0, pos);
+      s1.erase(0, pos+1);
+    }
+    else { 
+      s3 = s1.substr(0, s1.size());
+      s1.erase(0, s1.size()+1);
+    }
+    return s3;
+  } 
+ 
+  std::vector<std::string> parse(std::string s, const std::string& key) {
+    std::vector<std::string> clauses;
+    while ( s.size() ) clauses.push_back( chomptoken(s, key) );
+    return clauses;
+  }
+  
+  /// get the required pdf combinations from those registered   
+  void findgenpdf( std::string s ) { 
+    std::vector<std::string> names = parse( s, ":" );
+    if ( names.size()==unsigned(m_order) ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[i] );
+    else  if ( names.size()==1 )           m_genpdf[0] = m_genpdf[1] = m_genpdf[2] = appl_pdf::getpdf( names[0] );
+    else  { 
+      throw exception( std::cerr << "requested " << m_order << " pdf combination but given " << names.size() << std::endl );
+    }
+  }
+
+
+protected:
 
   // histograms for saving the grid:  TH3D* m_weight[iorder][iinitial][iobs]
   TH1D*  m_obs_bins;

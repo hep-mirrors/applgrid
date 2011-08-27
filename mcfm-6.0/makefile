@@ -781,6 +781,7 @@ wbfcuts.o \
 wbfcuts_jeppe.o \
 wconstruct.o \
 gridwrap.o \
+mcfm_grid.o \
 main.o
 
 

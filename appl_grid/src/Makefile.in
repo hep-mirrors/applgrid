@@ -72,7 +72,8 @@ libAPPLgrid_la_LIBADD =
 am_libAPPLgrid_la_OBJECTS = appl_grid.lo appl_igrid.lo appl_pdf.lo \
 	appl_timer.lo fastnlo.lo SparseMatrix3d.lo hoppet_init.lo \
 	nlojet_pdf.lo nlojetpp_pdf.lo mcfmz_pdf.lo mcfmw_pdf.lo \
-	jetrad_pdf.lo dis_pdf.lo TFileString.lo TFileStringDict.lo
+	jetrad_pdf.lo dis_pdf.lo vrapz_pdf.lo TFileString.lo \
+	TFileStringDict.lo
 libAPPLgrid_la_OBJECTS = $(am_libAPPLgrid_la_OBJECTS)
 libfAPPLgrid_la_LIBADD =
 am_libfAPPLgrid_la_OBJECTS = fappl_grid.lo
@@ -209,7 +210,8 @@ libAPPLgrid_la_SOURCES = \
 	appl_grid.cxx		appl_igrid.cxx  	appl_pdf.cxx 		appl_timer.cxx \
 	fastnlo.cxx 		SparseMatrix3d.cxx	hoppet_init.cxx	\
 	nlojet_pdf.cxx		nlojetpp_pdf.cxx 	mcfmz_pdf.cxx 		mcfmw_pdf.cxx  \
-	jetrad_pdf.cxx		dis_pdf.cxx		TFileString.cxx		TFileStringDict.cxx
+	jetrad_pdf.cxx		dis_pdf.cxx	        vrapz_pdf.cxx \
+	TFileString.cxx		TFileStringDict.cxx
 
 
 #	fappl_grid.cxx
@@ -255,9 +257,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  src/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  src/Makefile
+	  $(AUTOMAKE) --foreign  src/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -329,6 +331,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcfmz_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nlojet_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nlojetpp_pdf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vrapz_pdf.Plo@am__quote@
 
 .cxx.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

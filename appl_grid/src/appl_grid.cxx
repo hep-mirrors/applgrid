@@ -1039,14 +1039,16 @@ void grid::setRange(double lower, double upper) {
 
 
 
+
 ostream& operator<<(ostream& s, const appl::grid& g) {
   s << "==================================================" << endl;
   //  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses(0) << " initial states, " << g.Nobs() << " observable bins)" << endl;
-  s << "appl::grid version " << g.version() << "\t(" 
-    << g.subProcesses(0) << " LO, " 
-    << g.subProcesses(1) << " NLO, " 
-    << g.subProcesses(2) << " NNLO "  
-    << "initial states, " << g.Nobs() << " observable bins)" << endl;
+
+  std::string order[3] = {  "-LO, ",  "-NLO, ",  "-NNLO, " };  
+
+  s << "appl::grid version " << g.version() << "\t( "; 
+  for ( int i=0 ; i<g.nloops()+1 ; i++ ) s << g.subProcesses(i) << order[i];
+  s << "initial states, " << g.Nobs() << " observable bins )" << endl;
   if ( g.isOptimised() ) s << "Optimised grid" << endl;
   if ( g.isSymmetric() ) s << "Symmetrised in x1, x2" << endl;
   else                   s << "Unsymmetrised in x1, x2" << endl;
@@ -1066,6 +1068,7 @@ ostream& operator<<(ostream& s, const appl::grid& g) {
     s << "   " << *(g.weightgrid(0,iobs)) << endl;
   }
   //  }
+
   s << endl;
   
   return s;

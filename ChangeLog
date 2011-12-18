@@ -1,3 +1,7 @@
+2011-12-15 sutt -at- cern.ch
+	* fix multiple scaleing of cross section with Escale for
+	  subprocess contributions
+
 2011-08-26 sutt -at- cern.ch
 	* move mcfm customaisations from grid
 

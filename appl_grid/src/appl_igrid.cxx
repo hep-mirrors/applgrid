@@ -1105,7 +1105,10 @@ double igrid::convolute_subproc(int subproc,
   
   deletepdftable();
   
-  return dsigma*Escale*Escale;
+  // NB!!! the return value dsigma must be scaled by Escale*Escale which 
+  // is done in grid::vconvolute. It would be better here, but is reduces 
+  // the number of operations if in grid. 
+  return dsigma;
 }
 
 

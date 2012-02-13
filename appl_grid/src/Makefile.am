@@ -21,7 +21,8 @@ libAPPLgrid_la_SOURCES = \
 	fastnlo.cxx 		SparseMatrix3d.cxx	hoppet_init.cxx	\
 	nlojet_pdf.cxx		nlojetpp_pdf.cxx 	mcfmz_pdf.cxx 		mcfmw_pdf.cxx  \
 	jetrad_pdf.cxx		dis_pdf.cxx	        vrapz_pdf.cxx \
-	TFileString.cxx		TFileStringDict.cxx     TFileVectorTH1D.cxx     TFileVectorTH1DDict.cxx
+	TFileString.cxx		TFileStringDict.cxx     \
+	TFileVector.cxx         TFileVectorDict.cxx
 
 #	fappl_grid.cxx
 

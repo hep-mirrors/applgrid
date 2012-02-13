@@ -30,7 +30,7 @@ using std::setw;
 #include "appl_grid/Directory.h"
 #include "appl_grid/appl_grid.h"
 #include "appl_grid/TFileString.h"
-#include "appl_grid/TFileVectorTH1D.h"
+#include "appl_grid/TFileVector.h"
 using appl::grid;
 
 
@@ -328,7 +328,7 @@ grid::grid(const string& filename, const string& dirname)  :
   }
 
   /// bin-by-bin correction values
-  TFileVectorTH1D* corrections = (TFileVectorTH1D*)gridfilep->Get((dirname+"/Corrections").c_str());  
+  TFileVector* corrections = (TFileVector*)gridfilep->Get((dirname+"/Corrections").c_str());  
   if ( corrections ) { 
     for ( unsigned i=0 ; i<corrections->size() ; i++ ) {
       m_corrections.push_back( (*corrections)[i] ); // copy the correction histograms
@@ -669,7 +669,7 @@ void grid::Write(const string& filename, const string& dirname) {
 
     /// Fixme: should add the labels to the actual corrections rather than save separately
     /// write labels
-    TFileVectorTH1D* corrections = new TFileVectorTH1D("Corrections");
+    TFileVector* corrections = new TFileVector("Corrections");
     for ( unsigned i=0 ; i<m_corrections.size() ; i++ )  corrections->add( m_corrections[i] );    
     corrections->Write("Corrections");
 

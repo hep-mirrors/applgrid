@@ -73,7 +73,7 @@ am_libAPPLgrid_la_OBJECTS = appl_grid.lo appl_igrid.lo appl_pdf.lo \
 	appl_timer.lo fastnlo.lo SparseMatrix3d.lo hoppet_init.lo \
 	nlojet_pdf.lo nlojetpp_pdf.lo mcfmz_pdf.lo mcfmw_pdf.lo \
 	jetrad_pdf.lo dis_pdf.lo vrapz_pdf.lo TFileString.lo \
-	TFileStringDict.lo TFileVectorTH1D.lo TFileVectorTH1DDict.lo
+	TFileStringDict.lo TFileVector.lo TFileVectorDict.lo
 libAPPLgrid_la_OBJECTS = $(am_libAPPLgrid_la_OBJECTS)
 libfAPPLgrid_la_LIBADD =
 am_libfAPPLgrid_la_OBJECTS = fappl_grid.lo
@@ -219,7 +219,8 @@ libAPPLgrid_la_SOURCES = \
 	fastnlo.cxx 		SparseMatrix3d.cxx	hoppet_init.cxx	\
 	nlojet_pdf.cxx		nlojetpp_pdf.cxx 	mcfmz_pdf.cxx 		mcfmw_pdf.cxx  \
 	jetrad_pdf.cxx		dis_pdf.cxx	        vrapz_pdf.cxx \
-	TFileString.cxx		TFileStringDict.cxx     TFileVectorTH1D.cxx     TFileVectorTH1DDict.cxx
+	TFileString.cxx		TFileStringDict.cxx     \
+	TFileVector.cxx         TFileVectorDict.cxx
 
 
 #	fappl_grid.cxx
@@ -326,8 +327,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SparseMatrix3d.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileString.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileStringDict.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileVectorTH1D.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileVectorTH1DDict.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileVector.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileVectorDict.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appl_grid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appl_igrid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appl_pdf.Plo@am__quote@

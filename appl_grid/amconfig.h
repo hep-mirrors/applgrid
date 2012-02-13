@@ -43,6 +43,10 @@
 /* Define to 1 if `utime(file, NULL)' sets file's timestamp to the present. */
 #define HAVE_UTIME_NULL 1
 
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#define LT_OBJDIR ".libs/"
+
 /* Name of package */
 #define PACKAGE "applgrid"
 
@@ -53,16 +57,16 @@
 #define PACKAGE_NAME "APPLgrid"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "APPLgrid 1.2.2"
+#define PACKAGE_STRING "APPLgrid 1.2.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "applgrid"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.2.2"
+#define PACKAGE_VERSION "1.2.4"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.2.2"
+#define VERSION "1.2.4"

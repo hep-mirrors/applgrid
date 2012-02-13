@@ -3,7 +3,7 @@
 //  appl_grid.h       
 
 //  grid class header - all the functions needed to create and 
-//  fill the grid from an NLO calculation program, decreasing 
+//  fill the grid from an NLO calculation program, decreasingly 
 //  based on the class from D.Clements.
 //  
 //  Copyright (C) 2007 Mark Sutton (sutt@hep.ucl.ac.uk)    
@@ -62,8 +62,8 @@ public:
   // grid error exception
   class exception { 
   public:
-    exception(const string& s) { cerr << s << endl; }; 
-    exception(ostream& s) { cerr << s << endl; }; 
+    exception(const string& s) { std::cerr << s << std::endl; }; 
+    exception(ostream& s)      { std::cerr << s << std::endl; }; 
   };
 
 public:
@@ -95,8 +95,10 @@ public:
 	int leading_order=0, int nloops=1, 
 	string transform="f2" );
 
+  // copy constructor
   grid(const grid& g);
 
+  // read from a file
   grid(const string& filename="./grid.root", const string& dirname="grid");
 
   // add an igrid for a given bin and a given order 
@@ -118,12 +120,6 @@ public:
 		  const int iobs, 
 		  const double* weight, const int iorder);
 
-#if 0
-  //  fill weight from MCFM common block  
-  void fillMCFM( double obs);
-  void collectWeight   ( const int&, const int&, double* wt);
-  void decideSubProcess( const int&, const int& , int&, double& );
-#endif
 
   // trim/untrim the grid to reduce memory footprint
   void trim();
@@ -181,6 +177,14 @@ public:
 					 double (*alphas)(const double& ), 
 					 int     nloops, 
 					 double  rscale_factor=1, double Escale=1 ); 
+#if 0
+  double  convolute_bin(int bin,
+			void   (*pdf)(const double& , const double&, double* ), 
+			double (*alphas)(const double& ), 
+			int     nloops, 
+			double  rscale_factor=1, double Escale=1 ); 
+#endif  
+
 
   // perform the convolution to a specified number of loops 
   // for a single sub process, nloops=-1 gives the nlo part only
@@ -386,6 +390,41 @@ public:
 
   void setRange(double lower, double upper);
 
+
+  /// add a correction as a vector
+  void addCorrection( std::vector<double>& v, const std::string& label="" );
+
+
+  /// add a correction by histogram
+  void addCorrection(TH1D* h, const std::string& label="");
+
+  
+  /// access the corrections
+  const std::vector<std::vector<double> >& corrections() const { 
+    return m_corrections;
+  }
+
+  /// get the correction labels
+  const std::vector<std::string >& correctionLabels() const { 
+    return m_correctionLabels;
+  }
+  
+  /// access a specific correction by index
+  //  TH1D* correction(int i) const;
+
+
+  /// shoule the corrections be applied?
+  bool getApplyCorrections() const { return m_applyCorrections; } 
+  bool setApplyCorrections(bool b) { 
+    std::cout << "appl::grid bin-by-bin corrections will " 
+	      << ( b ? "" : "not " ) << "be applied" << std::endl;
+    return m_applyCorrections=b; 
+  } 
+
+  /// apply corrections to a vector
+  void applyCorrections(std::vector<double>& v);
+
+
 private:
 
   // internal common construct for the different types of constructor
@@ -432,7 +471,6 @@ private:
     }
   }
 
-
 protected:
 
   // histograms for saving the grid:  TH3D* m_weight[iorder][iinitial][iobs]
@@ -472,6 +510,14 @@ protected:
   double m_cmsScale;
 
   std::string m_documentation;
+
+  /// bin by bin correction factors 
+  std::vector<std::vector<double> > m_corrections;
+  std::vector<string>               m_correctionLabels;
+  
+
+  /// should we apply the corrections?
+  bool m_applyCorrections;
   
 };
 

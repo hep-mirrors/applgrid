@@ -73,7 +73,7 @@ am_libAPPLgrid_la_OBJECTS = appl_grid.lo appl_igrid.lo appl_pdf.lo \
 	appl_timer.lo fastnlo.lo SparseMatrix3d.lo hoppet_init.lo \
 	nlojet_pdf.lo nlojetpp_pdf.lo mcfmz_pdf.lo mcfmw_pdf.lo \
 	jetrad_pdf.lo dis_pdf.lo vrapz_pdf.lo TFileString.lo \
-	TFileStringDict.lo
+	TFileStringDict.lo TFileVectorTH1D.lo TFileVectorTH1DDict.lo
 libAPPLgrid_la_OBJECTS = $(am_libAPPLgrid_la_OBJECTS)
 libfAPPLgrid_la_LIBADD =
 am_libfAPPLgrid_la_OBJECTS = fappl_grid.lo
@@ -116,14 +116,14 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
-ECHO = @ECHO@
+DSYMUTIL = @DSYMUTIL@
+DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-F77 = @F77@
-FFLAGS = @FFLAGS@
+FGREP = @FGREP@
 GREP = @GREP@
 HOPPETPATH = @HOPPETPATH@
 INSTALL = @INSTALL@
@@ -131,15 +131,22 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
+NM = @NM@
+NMEDIT = @NMEDIT@
+OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OTOOL = @OTOOL@
+OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -149,6 +156,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 ROOTPATH = @ROOTPATH@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -159,7 +167,7 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
-ac_ct_F77 = @ac_ct_F77@
+ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__include = @am__include@
 am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
@@ -211,7 +219,7 @@ libAPPLgrid_la_SOURCES = \
 	fastnlo.cxx 		SparseMatrix3d.cxx	hoppet_init.cxx	\
 	nlojet_pdf.cxx		nlojetpp_pdf.cxx 	mcfmz_pdf.cxx 		mcfmw_pdf.cxx  \
 	jetrad_pdf.cxx		dis_pdf.cxx	        vrapz_pdf.cxx \
-	TFileString.cxx		TFileStringDict.cxx
+	TFileString.cxx		TFileStringDict.cxx     TFileVectorTH1D.cxx     TFileVectorTH1DDict.cxx
 
 
 #	fappl_grid.cxx
@@ -257,9 +265,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  src/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  src/Makefile
+	  $(AUTOMAKE) --gnu  src/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -318,6 +326,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SparseMatrix3d.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileString.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileStringDict.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileVectorTH1D.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TFileVectorTH1DDict.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appl_grid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appl_igrid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appl_pdf.Plo@am__quote@

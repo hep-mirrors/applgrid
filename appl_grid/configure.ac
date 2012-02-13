@@ -1,4 +1,4 @@
-AC_INIT(APPLgrid, 1.2.2, sutt@cern.ch)
+AC_INIT(APPLgrid, 1.2.4, sutt@cern.ch)
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(amconfig.h:amconfig.in)
 #AC_PROG_FC
@@ -16,6 +16,7 @@ AC_PROG_CXX
 AM_PROG_LIBTOOL
 AC_HEADER_STDC
 AC_FUNC_UTIME_NULL
+AC_CONFIG_MACRO_DIR([m4])
 ## Set Fortran compiler behaviour
 #if test "x$FCFLAGS" == "x"; then 
 #  FCFLAGS="-O2"

@@ -30,6 +30,7 @@ using std::setw;
 #include "appl_grid/Directory.h"
 #include "appl_grid/appl_grid.h"
 #include "appl_grid/TFileString.h"
+#include "appl_grid/TFileVectorTH1D.h"
 using appl::grid;
 
 
@@ -109,7 +110,8 @@ grid::grid(int Nobs, const double* obsbins,
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false),  m_normalised(false), m_symmetrise(false),
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
-  m_documentation("") {
+  m_documentation(""),
+  m_applyCorrections(false) {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
@@ -132,8 +134,9 @@ grid::grid(const vector<double> obs,
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
-  m_documentation("") {
- 
+  m_documentation(""),
+  m_applyCorrections(false) {
+  
   if ( obs.size()==0 ) { 
     cerr << "grid::not enough bins in observable" << endl;
     exit(0);
@@ -162,7 +165,8 @@ grid::grid(const vector<double> obs,
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
-  m_documentation("")  
+  m_documentation(""),
+  m_applyCorrections(false)  
 { 
 
   if ( obs.size()==0 ) { 
@@ -192,11 +196,12 @@ grid::grid(const string& filename, const string& dirname)  :
   m_optimised(false),  m_trimmed(false), 
   m_normalised(false),
   m_symmetrise(false), m_transform(""), 
-  m_documentation("") 
+  m_documentation(""),
+  m_applyCorrections(false) 
 {
 
   struct stat stfileinfo;
-  if ( stat(filename.c_str(),&stfileinfo) )   {
+  if ( stat(filename.c_str(),&stfileinfo) )   {    
     throw exception(std::cerr << "grid::grid() cannot open file " << filename << std::endl ); 
   }
 
@@ -273,6 +278,10 @@ grid::grid(const string& filename, const string& dirname)  :
  
   if ( setup->GetNoElements()>6 ) m_normalised = ( (*setup)(6)!=0 ? true : false );
   else                            m_normalised = true;
+
+  if ( setup->GetNoElements()>7 ) m_applyCorrections = ( (*setup)(7)!=0 ? true : false );
+  else                            m_applyCorrections = false;
+
  
   //  std::cout << "grid::grid()::m_cmsScale "   << m_cmsScale   << std::endl;
   //  std::cout << "grid::grid()::m_symmetrise=" << m_symmetrise << std::endl; 
@@ -310,6 +319,22 @@ grid::grid(const string& filename, const string& dirname)  :
 
   //  cout << "grid::grid() read from file" << endl;
 
+  /// bin-by-bin correction labels                                       
+  TFileString* correctionLabels = (TFileString*)gridfilep->Get((dirname+"/CorrectionLabels").c_str());  
+  if ( correctionLabels ) { 
+    for ( unsigned i=0 ; i<correctionLabels->size() ; i++ ) {
+      m_correctionLabels.push_back( (*correctionLabels)[i] ); // copy the correction label
+    }
+  }
+
+  /// bin-by-bin correction values
+  TFileVectorTH1D* corrections = (TFileVectorTH1D*)gridfilep->Get((dirname+"/Corrections").c_str());  
+  if ( corrections ) { 
+    for ( unsigned i=0 ; i<corrections->size() ; i++ ) {
+      m_corrections.push_back( (*corrections)[i] ); // copy the correction histograms
+    }
+  }
+
   delete gridfilep;
 }
 
@@ -323,7 +348,8 @@ grid::grid(const grid& g) :
   m_transform(g.m_transform),
   m_genpdfname(g.m_genpdfname), 
   m_cmsScale(g.m_cmsScale),
-  m_documentation("") 
+  m_documentation(""),
+  m_applyCorrections(g.m_applyCorrections) 
 {
   findgenpdf( m_genpdfname );
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
@@ -609,6 +635,7 @@ void grid::Write(const string& filename, const string& dirname) {
   (*setup)(4) =   m_order ;
   (*setup)(5) =   m_cmsScale ;
   (*setup)(6) = ( m_normalised ? 1 : 0 );
+  (*setup)(7) = ( m_applyCorrections ? 1 : 0 );
   setup->Write("State");
   
   //  int _size     = 0;
@@ -635,6 +662,24 @@ void grid::Write(const string& filename, const string& dirname) {
   
   reference->Write();
   delete reference;
+
+  /// correction histograms
+
+  if ( m_corrections.size()>0 ) {
+
+    /// Fixme: should add the labels to the actual corrections rather than save separately
+    /// write labels
+    TFileVectorTH1D* corrections = new TFileVectorTH1D("Corrections");
+    for ( unsigned i=0 ; i<m_corrections.size() ; i++ )  corrections->add( m_corrections[i] );    
+    corrections->Write("Corrections");
+
+    /// write actual corrections
+    TFileString correctionLabels("CorrectionLabels");
+    for ( unsigned i=0 ; i<m_correctionLabels.size() ; i++ )  correctionLabels.add( m_correctionLabels[i] );
+    correctionLabels.Write("CorrectionLabels");
+
+  }
+
   rootfile.Close();
   d.pop();
 }
@@ -749,10 +794,25 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
   //  double _ctime = appl_timer_stop(_ctimer);
   //  cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << endl;
 
+  if ( getApplyCorrections() ) applyCorrections(hvec);
+
   return hvec;
 }
 
 
+
+#if 0
+double grid::vconvolute(void (*pdf)(const double& , const double&, double* ), 
+			double (*alphas)(const double& ), 
+			int     nloops, 
+			double  rscale_factor,
+			double  fscale_factor,
+			double Escale )
+{ 
+  
+  
+}
+#endif
 
 
 std::vector<double> grid::vconvolute_subproc(int subproc,
@@ -856,6 +916,8 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
 
   //  double _ctime = appl_timer_stop(_ctimer);
   //  cout << "grid::convolute_subproc(" << subproc << ") " << label << " convolution time=" << _ctime << " ms" << endl;
+
+  if ( getApplyCorrections() ) applyCorrections(hvec);
 
   return hvec;
 }
@@ -1039,6 +1101,49 @@ void grid::setRange(double lower, double upper) {
 
 
 
+/// methods to handle bin-by-bin corrections
+
+/// add a correction as a vector
+void grid::addCorrection( std::vector<double>& v, const std::string& label) {
+  //  std::cout << "addCorrections(vector) " << v.size() << " " << m_obs_bins->GetNbinsX() << std::endl;
+  if ( v.size()==unsigned(m_obs_bins->GetNbinsX()) ) {
+    m_corrections.push_back(v);
+    m_correctionLabels.push_back(label);
+    //  std::cout << "appl::grid::addCorrection(vector) now " << m_corrections.size() << " corrections" << std::endl;
+  }
+}
+
+
+/// add a correction by histogram
+void grid::addCorrection(TH1D* h, const std::string& label) {
+  //  std::cout << "addCorrections(TH1D*) " << h->GetNbinsX() << " " << m_obs_bins->GetNbinsX() << std::endl;
+  if ( h->GetNbinsX()==m_obs_bins->GetNbinsX() ) {
+    bool add = true;
+    for ( int i=1 ; i<=h->GetNbinsX()+1 ; i++ ) { 
+      if ( h->GetBinLowEdge(i+1)!=m_obs_bins->GetBinLowEdge(i+1) ) add = false;
+    }
+    if ( add ) { 
+      std::vector<double> v(h->GetNbinsX());
+      for ( int i=0 ; i<h->GetNbinsX() ; i++ ) v[i] = h->GetBinContent(i+1);
+      if ( label=="" ) addCorrection(v, h->GetName());
+      else             addCorrection(v, label);
+    }
+  }
+}
+
+
+
+
+/// apply corrections to a vector
+void grid::applyCorrections(std::vector<double>& v) {
+  for ( unsigned i=0 ; i<m_corrections.size() ; i++ ) { 
+    std::vector<double>& correction = m_corrections[i];
+    //      TH1D* hc = m_corrections[i];
+    for ( unsigned j=0 ; j<v.size() ; j++ ) v[j] *= correction[j];
+  }
+}
+
+
 
 ostream& operator<<(ostream& s, const appl::grid& g) {
   s << "==================================================" << endl;
@@ -1073,5 +1178,4 @@ ostream& operator<<(ostream& s, const appl::grid& g) {
   
   return s;
 }
-
 

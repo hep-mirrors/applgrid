@@ -42,6 +42,10 @@
 /* Define to 1 if `utime(file, NULL)' sets file's timestamp to the present. */
 #undef HAVE_UTIME_NULL
 
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#undef LT_OBJDIR
+
 /* Name of package */
 #undef PACKAGE
 

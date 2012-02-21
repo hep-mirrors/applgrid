@@ -200,7 +200,8 @@ public:
       yp  -= delta/deriv;
     }
     // exceeded maximum iterations 
-    cerr << "_fx2() iteration limit reached" << endl; 
+    cerr << "_fx2() iteration limit reached y=" << y << endl; 
+    cout << "_fx2() iteration limit reached y=" << y << endl; 
     return exp(-yp); 
   }
   

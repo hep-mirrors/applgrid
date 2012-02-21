@@ -382,12 +382,15 @@ public:
   // grid operator*(const double& d) const { return grid(*this)*=d; }
   // grid operator+(const grid& g)   const { return grid(*this)+=g; }
   
-  void setDocumentation(const std::string& s) { m_documentation  = s; }
-  void addDocumentation(const std::string& s) { m_documentation += s; }
+  void setDocumentation(const std::string& s);
+  void addDocumentation(const std::string& s);
 
   std::string  getDocumentation() const { return m_documentation; }
   std::string& getDocumentation()       { return m_documentation; }
 
+
+  /// set the range of the observable bins
+  void setRange(int ilower, int iupper);
   void setRange(double lower, double upper);
 
 
@@ -434,7 +437,6 @@ private:
 		 int order=2, 
 		 string transform="f" );
   
-
 private:
 
   /// string manipulators to parse the pdf names 
@@ -509,8 +511,6 @@ protected:
 
   double m_cmsScale;
 
-  std::string m_documentation;
-
   /// bin by bin correction factors 
   std::vector<std::vector<double> > m_corrections;
   std::vector<string>               m_correctionLabels;
@@ -518,6 +518,8 @@ protected:
 
   /// should we apply the corrections?
   bool m_applyCorrections;
+
+  std::string m_documentation;
   
 };
 

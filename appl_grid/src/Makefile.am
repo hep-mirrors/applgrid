@@ -7,7 +7,7 @@
 #   Description:  generate the Makefile for the appl_grid project
 #                 
 #
-#   Created:    M.Sutton (sutt@hep.ucl.ac.uk) Fri  5 Nov 2010 00:05:29 GMT
+#   Created:    M.Sutton (sutt@cern.ch) Fri  5 Nov 2010 00:05:29 GMT
 #   
 #   $Id: makefile 20 2008-05-05 01:55:42Z sutt $                
 #                   
@@ -42,15 +42,10 @@ HOPPETLIBS= $(shell hoppet-config --libs)
 
 ROOTARCH = $(findstring -m64, $(ROOTCFLAGS) )
 
-# GSLLIBS=$(shell gsl-config --libs)
-# WDIR = $(shell pwd)
 ROOTCINT=rootcint
-# AM_CXXFLAGS= $(ROOTARCH) -O2 -Wall -fPIC  -I../appl_grid $(ROOTCFLAGS) -I$(LHAPDFDIR)/include $(HOPPETCFLAGS) 
-# AM_CFLAGS=   $(ROOTARCH) -O2 -Wall -fPIC  -I../appl_grid $(ROOTCFLAGS) -I$(LHAPDFDIR)/include $(HOPPETCFLAGS) 
 AM_CXXFLAGS= $(ROOTARCH) -O2 -Wall -fPIC  -I.. $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
 AM_CFLAGS=   $(ROOTARCH) -O2 -Wall -fPIC  -I.. $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
-#INCLUDES=-I$(LHAPDFDIR)/include
-# AM_LDFLAGS= -O -L$(LHAPDFDIR)/lib -lLHAPDF  $(ROOTLIBS) $(GSLLIBS) $(FCLIBS)
+
 AM_LDFLAGS= $(ROOTARCH) -O  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS)
 # program_LDFLAGS= $(AM_LDFLAGS) 
 AM_FCFLAGS= -c

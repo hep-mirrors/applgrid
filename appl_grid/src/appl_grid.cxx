@@ -46,7 +46,7 @@ using appl::grid;
 /// NB: ONLY change this if the persistent class
 ///     changes in a non-backwards compatible way.
 
-const string grid::m_version = "version-1.0";
+const string grid::m_version = "version-3.0";
 
 /// check if we have hoppet included 
 #include "amconfig.h"
@@ -88,6 +88,7 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false), 
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_applyCorrections(false),
   m_documentation("") {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
@@ -110,8 +111,8 @@ grid::grid(int Nobs, const double* obsbins,
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false),  m_normalised(false), m_symmetrise(false),
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
-  m_documentation(""),
-  m_applyCorrections(false) {
+  m_applyCorrections(false),
+  m_documentation("") {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
@@ -134,8 +135,8 @@ grid::grid(const vector<double> obs,
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
-  m_documentation(""),
-  m_applyCorrections(false) {
+  m_applyCorrections(false),
+  m_documentation("") {
   
   if ( obs.size()==0 ) { 
     cerr << "grid::not enough bins in observable" << endl;
@@ -165,8 +166,8 @@ grid::grid(const vector<double> obs,
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
-  m_documentation(""),
-  m_applyCorrections(false)  
+  m_applyCorrections(false),  
+  m_documentation("")
 { 
 
   if ( obs.size()==0 ) { 
@@ -196,8 +197,8 @@ grid::grid(const string& filename, const string& dirname)  :
   m_optimised(false),  m_trimmed(false), 
   m_normalised(false),
   m_symmetrise(false), m_transform(""), 
-  m_documentation(""),
-  m_applyCorrections(false) 
+  m_applyCorrections(false),
+  m_documentation("") 
 {
 
   struct stat stfileinfo;
@@ -227,20 +228,6 @@ grid::grid(const string& filename, const string& dirname)  :
   //  Directory d(dirname);
   //  d.push();
 
-
-  // using the title of a TH1D because I don't know 
-  // how else to save a string in a root file 
-  // TH1D* _transform = (TH1D*)gridfile.Get("Transform");
-  // m_transform = string(_transform->GetTitle());
-  // delete _transform;
-
-  //  TH1D* _genpdfname = (TH1D*)gridfile.Get("GenPDF");
-  //  m_genpdfname = string(_genpdfname->GetTitle());
-  //  delete _genpdfname;
-
-  // get the name of the transform pair and the
-  // generalised pdf
-
   TFileString _tags = *(TFileString*)gridfilep->Get((dirname+"/Tags").c_str());  
   // TFileString _tags = *(TFileString*)gridfile.Get("Tags");  
   m_transform  = _tags[0];
@@ -251,10 +238,11 @@ grid::grid(const string& filename, const string& dirname)  :
   if ( _tags.size()>3 ) m_documentation = _tags[3];
 
   // check it has the correct version
-  if ( _version != m_version ) { 
-    throw exception(cerr << "incorrect version " << _version << " expected " << m_version ); 
-  }
-
+  // if ( _version > m_version ) { 
+  //      throw exception(cerr << "incorrect version " << _version << " expected " << m_version ); 
+  // }
+  //  m_version = _version;
+  
   std::cout << "appl::grid " << m_version << "\t" << m_documentation << std::endl; 
   
   //  cout << "Tags=" << _tags << endl;
@@ -317,8 +305,6 @@ grid::grid(const string& filename, const string& dirname)  :
 
   //  d.pop();
 
-  //  cout << "grid::grid() read from file" << endl;
-
   /// bin-by-bin correction labels                                       
   TFileString* correctionLabels = (TFileString*)gridfilep->Get((dirname+"/CorrectionLabels").c_str());  
   if ( correctionLabels ) { 
@@ -335,6 +321,10 @@ grid::grid(const string& filename, const string& dirname)  :
     }
   }
 
+  //  cout << "grid::grid() read from file Nobs = " << Nobs() << endl;
+
+  //  std::cout << "read grid" << std::endl;
+
   delete gridfilep;
 }
 
@@ -348,8 +338,8 @@ grid::grid(const grid& g) :
   m_transform(g.m_transform),
   m_genpdfname(g.m_genpdfname), 
   m_cmsScale(g.m_cmsScale),
-  m_documentation(""),
-  m_applyCorrections(g.m_applyCorrections) 
+  m_applyCorrections(g.m_applyCorrections), 
+  m_documentation(g.m_documentation)
 {
   findgenpdf( m_genpdfname );
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
@@ -406,20 +396,21 @@ void grid::add_igrid(int bin, int order, igrid* g) {
 
 
 grid::~grid() {
-  // cout << "~grid() deleting grid" << endl;
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {  
     if( m_grids[iorder] ) { 
-      for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  delete m_grids[iorder][iobs];
+      for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) { 
+	delete m_grids[iorder][iobs];
+      }
       delete[] m_grids[iorder];
-      m_grids[iorder] = NULL;
+      m_grids[iorder] = 0;
     }
   }
   if(m_obs_bins) delete m_obs_bins;
-  m_obs_bins=NULL;
+  m_obs_bins=0;
 
 #ifdef HAVE_HOPPET
   if ( hoppet ) delete hoppet; 
-  hoppet=NULL; 
+  hoppet=0; 
 #endif
 
 }
@@ -585,8 +576,8 @@ bool grid::reweight(bool t) {
 }
 
 // dump to file
-void grid::Write(const string& filename, const string& dirname) {
-  
+void grid::Write(const string& filename, const string& dirname) { 
+ 
   string _filename(filename);
 
   if ( FILE* f=fopen(_filename.c_str(), "r") ) { 
@@ -600,7 +591,7 @@ void grid::Write(const string& filename, const string& dirname) {
   //  cout << "grid::Write() writing to file " << _filename << endl;
   //  TFile rootfile(_filename.c_str(),"recreate");
 
-  cout << "grid::Write() writing to file " << filename << endl;
+  //  cout << "grid::Write() writing to file " << filename << endl;
   TFile rootfile(filename.c_str(),"recreate");
 
   //  cout << "pwd=" << gDirectory->GetName() << endl;
@@ -626,6 +617,8 @@ void grid::Write(const string& filename, const string& dirname) {
   //  _genpdfname->Write();
 
 
+  //  cout << "state vector=" << endl;
+
   // state information
   TVectorT<double>* setup=new TVectorT<double>(10); // add a few extra just in case 
   (*setup)(0) = m_run;
@@ -641,6 +634,8 @@ void grid::Write(const string& filename, const string& dirname) {
   //  int _size     = 0;
   //  int trim_size = 0;
 
+  //  cout << "grids Nobs = " << Nobs() << endl;
+
   // internal grids
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {
@@ -655,6 +650,8 @@ void grid::Write(const string& filename, const string& dirname) {
   //     << "\tsize(trimmed)="              << trim_size << endl;
   //  d.pop();
 
+  //  cout << "reference" << endl;
+  
   TH1D* reference = (TH1D*)m_obs_bins->Clone("reference");
   
   if ( !getNormalised() )
@@ -662,6 +659,8 @@ void grid::Write(const string& filename, const string& dirname) {
   
   reference->Write();
   delete reference;
+
+  //  cout << "corrections" << endl;
 
   /// correction histograms
 
@@ -680,8 +679,12 @@ void grid::Write(const string& filename, const string& dirname) {
 
   }
 
+  //  std::cout << "close file" << std::endl;
+
   rootfile.Close();
   d.pop();
+
+  //  std::cout << "written" << std::endl;
 }
 
 
@@ -1033,6 +1036,14 @@ void grid::redefine(int iobs, int iorder,
   
 
 
+void grid::setRange(int ilower, int iupper) { 
+  if ( ilower>=0 && iupper <Nobs() ) {  
+    double lower = getReference()->GetBinLowEdge(ilower+1);
+    double upper = getReference()->GetBinLowEdge(iupper+2); 
+    setRange( lower, upper );
+  }
+}
+
 
 void grid::setRange(double lower, double upper) { 
   
@@ -1100,6 +1111,17 @@ void grid::setRange(double lower, double upper) {
 }
 
 
+/// methods to handle the documentation
+void grid::setDocumentation(const std::string& s) { m_documentation = s; }
+void grid::addDocumentation(const std::string& s) {   
+  if ( m_documentation.size() ) m_documentation += s;
+  else                          setDocumentation(s);    
+}
+
+
+
+
+
 
 /// methods to handle bin-by-bin corrections
 
@@ -1136,12 +1158,15 @@ void grid::addCorrection(TH1D* h, const std::string& label) {
 
 /// apply corrections to a vector
 void grid::applyCorrections(std::vector<double>& v) {
+  //  std::cout << "grid::applyCorrections(vector) " << m_corrections.size() << std::endl;
   for ( unsigned i=0 ; i<m_corrections.size() ; i++ ) { 
     std::vector<double>& correction = m_corrections[i];
     //      TH1D* hc = m_corrections[i];
     for ( unsigned j=0 ; j<v.size() ; j++ ) v[j] *= correction[j];
   }
+  //  std::cout << "grid::applyCorrections(vector) done" << std::endl;
 }
+
 
 
 

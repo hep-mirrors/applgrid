@@ -1138,19 +1138,25 @@ void grid::addCorrection( std::vector<double>& v, const std::string& label) {
 
 /// add a correction by histogram
 void grid::addCorrection(TH1D* h, const std::string& label) {
-  //  std::cout << "addCorrections(TH1D*) " << h->GetNbinsX() << " " << m_obs_bins->GetNbinsX() << std::endl;
+  // std::cout << "addCorrections(TH1D*) " << h->GetNbinsX() << " " << m_obs_bins->GetNbinsX() << std::endl;
   if ( h->GetNbinsX()==m_obs_bins->GetNbinsX() ) {
     bool add = true;
     for ( int i=1 ; i<=h->GetNbinsX()+1 ; i++ ) { 
-      if ( h->GetBinLowEdge(i+1)!=m_obs_bins->GetBinLowEdge(i+1) ) add = false;
+      if ( std::fabs(h->GetBinLowEdge(i+1)-m_obs_bins->GetBinLowEdge(i+1))>1e-10 ) { 
+	std::cerr << "grid::addCorrection(TH1D* h): bin mismatch, not adding correction" << std::endl;
+	return;
+      }
     }
-    if ( add ) { 
-      std::vector<double> v(h->GetNbinsX());
-      for ( int i=0 ; i<h->GetNbinsX() ; i++ ) v[i] = h->GetBinContent(i+1);
-      if ( label=="" ) addCorrection(v, h->GetName());
-      else             addCorrection(v, label);
-    }
+
+    std::vector<double> v(h->GetNbinsX());
+    for ( int i=0 ; i<h->GetNbinsX() ; i++ ) v[i] = h->GetBinContent(i+1);
+    if ( label=="" ) addCorrection(v, h->GetName());
+    else             addCorrection(v, label);
   }
+  else { 
+    std::cerr << "grid::addCorrection(TH1D* h): bin mismatch, not adding correction" << std::endl;
+  }
+  
 }
 
 

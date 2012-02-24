@@ -177,7 +177,8 @@ fi
 
 #  use root-config to decide what architecture root libraries will be used
  
-export ARCH=`rootarch.sh`
+# export ARCH=`rootarch.sh`
+export ARCH=`root-config --ldflags`
 export SYSARCH=`setarch.sh`
 
 export CXXFLAGS=$ARCH

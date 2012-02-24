@@ -358,6 +358,10 @@ void grid::construct(int Nobs,
 		     int order, 
 		     string transform ) { 
 
+  //  std::cout << "appl::grid::construct() m_order " << m_order << "\tNobs " << Nobs << std::endl; 
+
+  for ( int iorder=0 ; iorder<3 ; iorder++ ) m_grids[iorder] = 0;
+
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     m_grids[iorder] = new igrid*[Nobs];
     for ( int iobs=0 ; iobs<Nobs ; iobs++ ) {
@@ -366,8 +370,19 @@ void grid::construct(int Nobs,
 					transform, m_genpdf[iorder]->Nproc());
     }
   }
-
+  //  std::cout << "appl::grid::construct() return" << std::endl; 
 }
+
+
+
+
+  // number of subprocesses 
+int grid::subProcesses(int i) const { 
+  if ( i<0 || i>=m_order ) throw exception( std::cerr << "grid::subProcess(int i) " << i << " out or range [0-" << m_order-1 << "]" << std::endl );
+  return m_grids[i][0]->SubProcesses();     
+}  
+
+
 
 
 // add a single grid
@@ -1036,16 +1051,16 @@ void grid::redefine(int iobs, int iorder,
   
 
 
-void grid::setRange(int ilower, int iupper) { 
+void grid::setRange(int ilower, int iupper, double xScaleFactor) { 
   if ( ilower>=0 && iupper <Nobs() ) {  
     double lower = getReference()->GetBinLowEdge(ilower+1);
     double upper = getReference()->GetBinLowEdge(iupper+2); 
-    setRange( lower, upper );
+    setRange( lower, upper, xScaleFactor );
   }
 }
 
 
-void grid::setRange(double lower, double upper) { 
+void grid::setRange(double lower, double upper, double xScaleFactor) { 
   
   std::cout << "grid::SetRange() " << lower << " " << upper << std::endl; 
 
@@ -1076,6 +1091,10 @@ void grid::setRange(double lower, double upper) {
   if ( limits.size()>0 ) limits.push_back( last );
   else { 
     throw grid::exception( std::cerr << "new range does not include any bins"  ); 
+  }
+
+  if ( xScaleFactor!=1 ) { 
+    for ( unsigned i=0 ; i<limits.size(); i++ ) limits[i] *= xScaleFactor;
   }
 
   /// save bins somewhere so can overwrite them 
@@ -1140,7 +1159,6 @@ void grid::addCorrection( std::vector<double>& v, const std::string& label) {
 void grid::addCorrection(TH1D* h, const std::string& label) {
   // std::cout << "addCorrections(TH1D*) " << h->GetNbinsX() << " " << m_obs_bins->GetNbinsX() << std::endl;
   if ( h->GetNbinsX()==m_obs_bins->GetNbinsX() ) {
-    bool add = true;
     for ( int i=1 ; i<=h->GetNbinsX()+1 ; i++ ) { 
       if ( std::fabs(h->GetBinLowEdge(i+1)-m_obs_bins->GetBinLowEdge(i+1))>1e-10 ) { 
 	std::cerr << "grid::addCorrection(TH1D* h): bin mismatch, not adding correction" << std::endl;

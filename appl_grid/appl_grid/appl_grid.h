@@ -323,7 +323,7 @@ public:
   const TH1D* getReference()  const { return m_obs_bins; } 
 
   // number of subprocesses 
-  int subProcesses(int i=0) const { return m_grids[i][0]->SubProcesses(); }  
+  int subProcesses(int i=0) const;
 
   // general status accessors
   double& run() { return m_run; }
@@ -389,9 +389,10 @@ public:
   std::string& getDocumentation()       { return m_documentation; }
 
 
-  /// set the range of the observable bins
-  void setRange(int ilower, int iupper);
-  void setRange(double lower, double upper);
+  /// set the range of the observable bins, with an optional
+  /// scaling of the observable valuesfor channging units
+  void setRange(int ilower, int iupper, double xScaleFactor=1);
+  void setRange(double lower, double upper, double xScaleFactor=1);
 
 
   /// add a correction as a vector
@@ -428,7 +429,7 @@ public:
   void applyCorrections(std::vector<double>& v);
 
 
-private:
+protected:
 
   // internal common construct for the different types of constructor
   void construct(int Nobs,
@@ -437,7 +438,7 @@ private:
 		 int order=2, 
 		 string transform="f" );
   
-private:
+protected:
 
   /// string manipulators to parse the pdf names 
 

@@ -170,14 +170,18 @@ void appl::mcfm_grid::fillMCFM(double obs)
 }
 
 
-void appl::mcfm_grid::collectWeight(const int& order, const int& id, double* wt)
+void appl::mcfm_grid::collectWeight(const int& contribution, const int& id, double* wt)
 {
   double factor = 1.0;
   int iproc = -1;
-  for ( int i = 0 ;i <subProcesses(order); i++ ) wt[i] =  0.0;
+
+  ///  should really have an order dependent subProcess() multiplicity
+  ///  this will just use the number of sub processes from the lowest 
+  ///  order, which may not be the same
+  for ( int i=0 ; i<subProcesses(); i++ ) wt[i] =  0.0;
 
   //   std::cout<<" \n( ";
-  //   for (int jj =  0 ; jj < subProcesses(order);jj++) std::cout << wt[jj] <<" , ";
+  //   for (int jj =  0 ; jj < subProcesses();jj++) std::cout << wt[jj] <<" , ";
   //   std::cout<<")\n";
   
   for ( int iflav = -nflav_.nflav; iflav <= nflav_.nflav; iflav++)
@@ -187,9 +191,9 @@ void appl::mcfm_grid::collectWeight(const int& order, const int& id, double* wt)
 	decideSubProcess( iflav, jflav, iproc, factor);
 	if ( iproc < 0 ) continue;
 	
-	if ( order == 100 ) 
+	if ( contribution == 100 ) 
 	  wt[ iproc ] +=  factor * gridweight_.weightb[ __nf__ + jflav ][ __nf__ + iflav ];
-	if ( order == 200 ) 
+	if ( contribution == 200 ) 
 	  wt[ iproc ] +=  factor * gridweight_.weightr[ __nf__ + jflav ][ __nf__ + iflav ][ id ];
 
 	
@@ -205,7 +209,7 @@ void appl::mcfm_grid::collectWeight(const int& order, const int& id, double* wt)
 	
 	// 	  }
 
-	if ( order == 300 )
+	if ( contribution == 300 )
 	  {
 	    if      ( id ==  0 )
 	      wt[ iproc ] +=  factor * gridweight_.weightb [ __nf__ + jflav ][ __nf__ + iflav ];
@@ -220,12 +224,12 @@ void appl::mcfm_grid::collectWeight(const int& order, const int& id, double* wt)
 
       }
 
-  for (int jj=0 ; jj<subProcesses(order) ; jj++ )  wt[jj] *= gridweight_.weightfactor ;
+  for (int jj=0 ; jj<subProcesses() ; jj++ )  wt[jj] *= gridweight_.weightfactor ;
 
   //   std::cout<<" factor = "<< gridweight_.weightfactor<<std::endl;
   
   //   std::cout << "PROC = " << nproc_.nproc <<" W = ( dip = "<<id<<" , ";
-  //   for (int jj =  0 ; jj < subProcesses(order);jj++) std::cout << wt[jj] <<" , ";
+  //   for (int jj =  0 ; jj < subProcesses();jj++) std::cout << wt[jj] <<" , ";
   //   std::cout <<" ) if = "<<factor<<" psw = "<< gridweight_.weightfactor <<" refwt = "<<gridevent_.refwt  << std::endl;
   //   std::cout <<" me(2,-1,0)"<< gridweight_.weightr[ __nf__ - 1][ __nf__ + 2][0] <<std::endl;
   //   std::cout <<" me(2,-1,1)"<< gridweight_.weightr[ __nf__ - 1][ __nf__ + 2][1] <<std::endl;
@@ -234,103 +238,88 @@ void appl::mcfm_grid::collectWeight(const int& order, const int& id, double* wt)
 }
 
 
-void appl::mcfm_grid::decideSubProcess(const int& iflav1, const int& iflav2, int & iProcess , double &factor )
+void appl::mcfm_grid::decideSubProcess(const int& iflav1, const int& iflav2, int& iProcess , double& factor )
 {
   iProcess = -1;
   factor   = 0.;
 
-  if ( nproc_.nproc == 1 )
-    {
-      if( (iflav1 == 0) && (iflav2 ==  2) ) 
-	{
-	  factor = 1.0/ckm_.vsum[ __nf__ + iflav2];
-	  iProcess = 5;
-	}        
-      else if( (iflav1 == 0) && (iflav2 == -1) )
-	{
-	  factor = 1.0/ckm_.vsum[ __nf__ + iflav2];
-	  iProcess = 4;
-	}
-      else if( (iflav2 == 0) && (iflav1 == 2) )
-	{
-	  factor = 1.0/ckm_.vsum[ __nf__ + iflav1];
-	  iProcess = 3;
-	}
-      else if( (iflav2 == 0) && (iflav1 == -1) )
-	{
-	  factor = 1.0/ckm_.vsum[ __nf__ + iflav1];
-	  iProcess = 2;
-	}
-      else if( (iflav1 == 2) && (iflav2 == -1) )
-	{
-	  factor = 1.0/ckm_.vsq[ __nf__ + iflav2][ __nf__ + iflav1];
-	  iProcess = 1;
-	}
-      else if( (iflav1 == -1) && (iflav2 == 2) )
-	{
-	  factor = 1.0/ckm_.vsq[ __nf__ + iflav2][ __nf__ + iflav1];
-	  iProcess = 0;
-	}
+  if ( nproc_.nproc == 1 )  {
+ 
+    if( (iflav1 == 0) && (iflav2 ==  2) )  {
+      factor = 1.0/ckm_.vsum[ __nf__ + iflav2];
+      iProcess = 5;
+    }        
+    else if( (iflav1 == 0) && (iflav2 == -1) )	{
+      factor = 1.0/ckm_.vsum[ __nf__ + iflav2];
+      iProcess = 4;
     }
-  else if ( nproc_.nproc == 6 )
-    {
+    else if( (iflav2 == 0) && (iflav1 == 2) )  {
+      factor = 1.0/ckm_.vsum[ __nf__ + iflav1];
+      iProcess = 3;
+    }
+    else if( (iflav2 == 0) && (iflav1 == -1) )  {
+      factor = 1.0/ckm_.vsum[ __nf__ + iflav1];
+      iProcess = 2;
+    }
+    else if( (iflav1 == 2) && (iflav2 == -1) )  {
+      factor = 1.0/ckm_.vsq[ __nf__ + iflav2][ __nf__ + iflav1];
+      iProcess = 1;
+    }
+    else if( (iflav1 == -1) && (iflav2 == 2) )  {
+      factor = 1.0/ckm_.vsq[ __nf__ + iflav2][ __nf__ + iflav1];
+      iProcess = 0;
+    }
 
-      if((iflav1 == 0) && (iflav2 == -2))
-	{
-	  factor = 1.0/ckm_.vsum[__nf__ + iflav2];
-	  iProcess = 5;
-	}
-      else if((iflav1 == 0) && (iflav2 == 1))
-	{
-	  factor = 1.0/ckm_.vsum[__nf__ + iflav2];
-	  iProcess = 4;
-	}
-      else if((iflav2 == 0) && (iflav1 == -2))
-	{
-	  factor = 1.0/ckm_.vsum[__nf__ + iflav1];
-	  iProcess = 3;
-	}
-      else if((iflav2 == 0) && (iflav1 == 1))
-	{
-	  factor = 1.0/ckm_.vsum[__nf__ + iflav1];
-	  iProcess = 2;
-	}
-      else if ((iflav1 == -2) && (iflav2 == 1))
-	{
-	  factor = 1.0/ckm_.vsq[__nf__ + iflav2][__nf__ + iflav1];
-	  iProcess = 1;
-	}
-      else if ((iflav1 == 1) && (iflav2 == -2))
-	{
-	  factor = 1.0/ckm_.vsq[__nf__ + iflav1][ __nf__ + iflav2];
-	  iProcess = 0;
-	}
+  }
+  else if ( nproc_.nproc == 6 ) {
+    
+    if((iflav1 == 0) && (iflav2 == -2))  {
+      factor = 1.0/ckm_.vsum[__nf__ + iflav2];
+      iProcess = 5;
     }
-  else if ( nproc_.nproc == 31 )
-    {
-      if      ( iflav2 == 0 )
-	{
-	  if      (iflav1 == -1) {iProcess = 11;}
-	  else if (iflav1 ==  1) {iProcess = 10;}
-	  else if (iflav1 == -2) {iProcess = 9;}
-	  else if (iflav1 ==  2) {iProcess = 8;}
-	}
-      else if ( iflav1 == 0 )
-	{
-	  if      (iflav2 == -1) iProcess = 7;
-	  else if (iflav2 ==  1) iProcess = 6;
-	  else if (iflav2 == -2) iProcess = 5;
-	  else if (iflav2 ==  2) iProcess = 4;
-	}
-      else if ( (iflav1 != 0 ) && ( iflav2 != 0 ) )
-	{
-	  if      (iflav1 == -1) iProcess = 3;
-	  else if (iflav1 == -2) iProcess = 2;
-	  else if (iflav1 ==  1) iProcess = 1;
-	  else if (iflav1 ==  2) iProcess = 0;
-	}
-      factor = 1.0;
+    else if((iflav1 == 0) && (iflav2 == 1))  {
+      factor = 1.0/ckm_.vsum[__nf__ + iflav2];
+      iProcess = 4;
     }
+    else if((iflav2 == 0) && (iflav1 == -2)) { 
+      factor = 1.0/ckm_.vsum[__nf__ + iflav1];
+      iProcess = 3;
+    }
+    else if((iflav2 == 0) && (iflav1 == 1)) { 
+      factor = 1.0/ckm_.vsum[__nf__ + iflav1];
+      iProcess = 2;
+    }
+    else if ((iflav1 == -2) && (iflav2 == 1)) { 
+      factor = 1.0/ckm_.vsq[__nf__ + iflav2][__nf__ + iflav1];
+      iProcess = 1;
+    }
+    else if ((iflav1 == 1) && (iflav2 == -2)) { 
+      factor = 1.0/ckm_.vsq[__nf__ + iflav1][ __nf__ + iflav2];
+      iProcess = 0;
+    }
+
+  }
+  else if ( nproc_.nproc == 31 )    {
+    if ( iflav2 == 0 )	{
+      if      (iflav1 == -1) {iProcess = 11;}
+      else if (iflav1 ==  1) {iProcess = 10;}
+      else if (iflav1 == -2) {iProcess = 9;}
+      else if (iflav1 ==  2) {iProcess = 8;}
+    }
+    else if ( iflav1 == 0 )	{
+      if      (iflav2 == -1) iProcess = 7;
+      else if (iflav2 ==  1) iProcess = 6;
+      else if (iflav2 == -2) iProcess = 5;
+      else if (iflav2 ==  2) iProcess = 4;
+    }
+    else if ( (iflav1 != 0 ) && ( iflav2 != 0 ) )  {
+      if      (iflav1 == -1) iProcess = 3;
+      else if (iflav1 == -2) iProcess = 2;
+      else if (iflav1 ==  1) iProcess = 1;
+      else if (iflav1 ==  2) iProcess = 0;
+    }
+    factor = 1.0;
+  }
   //   else
   //     {
   //       iProcess = -1;

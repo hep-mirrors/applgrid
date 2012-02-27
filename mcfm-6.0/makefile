@@ -3,10 +3,10 @@
 # Replace this with the location of Cernlib on your system (if desired)
 CERNLIB     = 
 # Replace this with the location of LHAPDF on your system (if desired)
-LHAPDFLIB   =   $(shell lhapdf-config --prefix)/lib
-LHAPDFINC   = -I$(shell lhapdf-config --prefix)/include
+LHAPDFLIB   = /home/pavel/lib
 
-LHAPDFLLIB = -L$(LHAPDFLIB) -lLHAPDF 
+MCFMHOME        = /home/pavel/work/applgridNew/applgrid-full-installation-01-02-04/mcfm-6.0
+SOURCEDIR       = /home/pavel/work/applgridNew/applgrid-full-installation-01-02-04/mcfm-6.0/src
 
 MCFMHOME        = .
 SOURCEDIR       = $(MCFMHOME)/src
@@ -1280,10 +1280,10 @@ ALLMCFM = $(OTHER) $(OURCODE)
 
 MCFMOBJS = $(patsubst %,obj/%,$(ALLMCFM))
 
-.PHONY: qcdloop doc stand
+.PHONY: qcdloop doc standSimple
 
 
-install: doc dirs mcfm stand 
+install: doc dirs mcfm standSimple 
 
 mcfm: qcdloop $(MCFMOBJS) 
 	$(CXX) $(ROOTARCH) $(LDFLAGS) $(FFLAGS) -o $@  $(MCFMOBJS) -L$(LIBDIR) $(LIBFLAGS) $(GRIDLIB) $(ROOTLIBS) $(FRTLLIB) 
@@ -1292,11 +1292,11 @@ mcfm: qcdloop $(MCFMOBJS)
 	@echo $(NTUPMSG)
 
 
-SOBJECTS = obj/stand.o  
+SOBJECTS = obj/standSimple.o  
 
-stand: $(BIN)/stand
-$(BIN)/stand : $(SOBJECTS) 
-	$(CXX) $(ROOTARCH) $(LDFLAGS) -o $@  $(SOBJECTS) $(LHAPDFLLIB) $(PDFCONVLIBS) $(GRIDLIB) $(ROOTLIBS)
+standSimple: $(BIN)/standSimple
+$(BIN)/standSimple : $(SOBJECTS) 
+	$(CXX) $(ROOTARCH) $(LDFLAGS) -o $@ $(SOBJECTS) src/User/lhapdf_string_interface.f  -L`lhapdf-config --libdir` -lLHAPDF $(PDFCONVLIBS) $(GRIDLIB) $(ROOTLIBS)
 
 
 # for c++ tagrets

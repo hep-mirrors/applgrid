@@ -1089,9 +1089,13 @@ c --- Histograms to monitor exclusive/inclusive cross-sections:
       if (nodecay .eqv. .false.) then
       call bookplot(n,tag,'eta3',eta3,wt,wt2,-4d0,4d0,0.2d0,'lin')
       n=n+1
+      call bookplot(n,tag,'y3ps',y3,wt,wt2,-4d0,4d0,0.1d0,'lin')
+      n=n+1
       call bookplot(n,tag,'y3',y3,wt,wt2,-4d0,4d0,0.2d0,'lin')
       n=n+1
       call bookplot(n,tag,ptet//'3',pt3,wt,wt2,0d0,150d0,5d0,'log')
+      n=n+1      
+      call bookplot(n,tag,ptet//'3ps',pt3,wt,wt2,0d0,100d0,2d0,'log')
       n=n+1      
       call bookplot(n,tag,'eta4',eta4,wt,wt2,-4d0,4d0,0.2d0,'lin')
       n=n+1

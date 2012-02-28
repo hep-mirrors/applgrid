@@ -346,6 +346,12 @@ public:
   double getCMSScale()          const { return m_cmsScale; }
   void   setCMSScale(double cmsScale) { m_cmsScale=cmsScale; }
 
+  //  fill weight from MCFM common block  
+  void fillMCFM( double obs);
+  void collectWeight   ( const int&, const int&, double* wt);
+  void decideSubProcess( const int&, const int& , int&, double& );
+
+
   // set optimise flag on all sub grids
   bool setOptimised(bool t=true) { 
     return m_optimised=t;

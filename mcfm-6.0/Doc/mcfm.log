@@ -1,17 +1,21 @@
-This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2008.11.14)  8 JUN 2011 21:03
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=latex 2011.10.20)  28 FEB 2012 11:57
 entering extended mode
-**mcfm.tex
+ %&-line parsing enabled.
+**mcfm
 (./mcfm.tex
-LaTeX2e <2003/12/01>
-Babel <v3.8d> and hyphenation patterns for american, french, german, ngerman, b
-ahasa, basque, bulgarian, catalan, croatian, czech, danish, dutch, esperanto, e
-stonian, finnish, greek, icelandic, irish, italian, latin, magyar, norsk, polis
-h, portuges, romanian, russian, serbian, slovak, slovene, spanish, swedish, tur
-kish, ukrainian, nohyphenation, loaded.
-(/sw/share/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2004/02/16 v1.4f Standard LaTeX document class
-(/sw/share/texmf-dist/tex/latex/base/size12.clo
-File: size12.clo 2004/02/16 v1.4f Standard LaTeX file (size option)
+LaTeX2e <2009/09/24>
+Babel <v3.8l> and hyphenation patterns for english, usenglishmax, dumylang, noh
+yphenation, farsi, arabic, croatian, bulgarian, ukrainian, russian, czech, slov
+ak, danish, dutch, finnish, french, basque, ngerman, german, german-x-2009-06-1
+9, ngerman-x-2009-06-19, ibycus, monogreek, greek, ancientgreek, hungarian, san
+skrit, italian, latin, latvian, lithuanian, mongolian2a, mongolian, bokmal, nyn
+orsk, romanian, irish, coptic, serbian, turkish, welsh, esperanto, uppersorbian
+, estonian, indonesian, interlingua, icelandic, kurmanji, slovenian, polish, po
+rtuguese, spanish, galician, catalan, swedish, ukenglish, pinyin, loaded.
+(/usr/share/texmf-texlive/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texmf-texlive/tex/latex/base/size12.clo
+File: size12.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
 )
 \c@part=\count79
 \c@section=\count80
@@ -41,26 +45,27 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 3.
 LaTeX Font Info:    ... okay on input line 3.
  [1
 
-] (./mcfm.toc
+]
+(./mcfm.toc
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <12> on input line 4.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <8> on input line 4.
 LaTeX Font Info:    External font `cmex10' loaded for size
 (Font)              <6> on input line 4.
-
-[2])
+ [2])
 \tf@toc=\write3
 \openout3 = `mcfm.toc'.
 
  [3]
 LaTeX Font Info:    Try loading font information for OMS+cmr on input line 51.
- (/sw/share/texmf-dist/tex/latex/base/omscmr.fd
+ (/usr/share/texmf-texlive/tex/latex/base/omscmr.fd
 File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
 (Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 51.
- [4] [5] [6]
+
+[4] [5] [6]
 Overfull \hbox (56.70538pt too wide) in paragraph at lines 186--207
  [] 
  []
@@ -162,12 +167,12 @@ r/m/n/12 , 027 (2003) [arXiv:hep-
 
 [55] [56] [57] (./mcfm.aux) ) 
 Here is how much of TeX's memory you used:
- 369 strings out of 94501
- 4294 string characters out of 1176136
- 93348 words of memory out of 1500000
- 3603 multiletter control sequences out of 10000+50000
- 11195 words of font info for 42 fonts, out of 1200000 for 2000
- 580 hyphenation exceptions out of 8191
- 23i,10n,19p,392b,294s stack positions out of 5000i,500n,6000p,200000b,5000s
+ 369 strings out of 493849
+ 4329 string characters out of 1152845
+ 110808 words of memory out of 3000000
+ 3711 multiletter control sequences out of 15000+50000
+ 11195 words of font info for 42 fonts, out of 3000000 for 9000
+ 714 hyphenation exceptions out of 8191
+ 23i,10n,19p,388b,294s stack positions out of 5000i,500n,10000p,200000b,50000s
 
 Output written on mcfm.dvi (57 pages, 205872 bytes).

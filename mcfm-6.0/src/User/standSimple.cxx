@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
   
   // now calculate all the cross sections
 
-  const string _pdfname = "PDFsets/cteq66.LHgrid";  
+  const string _pdfname = "PDFsets/CT10.LHgrid";  
   int Npdf = 0;
   // setup gavins code
   initPDFset(_pdfname.c_str());

@@ -3,10 +3,10 @@
 # Replace this with the location of Cernlib on your system (if desired)
 CERNLIB     = 
 # Replace this with the location of LHAPDF on your system (if desired)
-LHAPDFLIB   = /home/pavel/lib
+LHAPDFLIB   = $(shell lhapdf-config --libdir)
 
-MCFMHOME        = /home/pavel/work/applgridNew/versionSVN/trunk/mcfm-6.0
-SOURCEDIR       = /home/pavel/work/applgridNew/versionSVN/trunk/mcfm-6.0/src
+MCFMHOME        = ./
+SOURCEDIR       = ./src
 
 MCFMHOME        = .
 SOURCEDIR       = $(MCFMHOME)/src
@@ -781,6 +781,7 @@ wbfcuts.o \
 wbfcuts_jeppe.o \
 wconstruct.o \
 gridwrap.o \
+mcfm_grid.o \
 main.o
 
 

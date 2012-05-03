@@ -782,6 +782,7 @@ wbfcuts_jeppe.o \
 wconstruct.o \
 gridwrap.o \
 mcfm_grid.o \
+lhapdf_string_interface.o \
 main.o
 
 

@@ -1293,11 +1293,12 @@ mcfm: qcdloop $(MCFMOBJS)
 	@echo $(NTUPMSG)
 
 
-SOBJECTS = obj/standSimple.o  
+SOBJECTS = obj/standSimple.o  obj/lhapdf_string_interface.o 
+
 
 standSimple: $(BIN)/standSimple
 $(BIN)/standSimple : $(SOBJECTS) 
-	$(CXX) $(ROOTARCH) $(LDFLAGS) -o $@ $(SOBJECTS) src/User/lhapdf_string_interface.f  -L`lhapdf-config --libdir` -lLHAPDF $(PDFCONVLIBS) $(GRIDLIB) $(ROOTLIBS)
+	$(CXX) $(ROOTARCH) $(LDFLAGS) -o $@ $(SOBJECTS)  -L$(LIBDIR) -lLHAPDF $(PDFCONVLIBS) $(GRIDLIB) $(ROOTLIBS) $(FRTLLIB) 
 
 
 # for c++ tagrets

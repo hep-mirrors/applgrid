@@ -1,3 +1,7 @@
+2012-06-14  Gavin Salam  <salam@lpthe.jussieu.fr>
+
+	* changed svn:external for hoppet to point to http://hoppet.hepforge.org/svn/trunk
+
 2011-12-15 sutt -at- cern.ch
 	* fix multiple scaleing of cross section with Escale for
 	  subprocess contributions

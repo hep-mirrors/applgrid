@@ -591,7 +591,7 @@ if [ "$NLO" = 1 ];      then install_nlojet     $ARGS; fi
 
 FASTJETFOUND=`which fastjet-config`
 
-if [ "$FASTJETFOUND" == "" ]; then  
+if [ "$FASTJETFOUND" = "" ]; then  
   if [ "$FASTJET" = 1 ];  then    install_fastjet        $ARGS; fi
  
   if [ -e $INSTALLBASE/bin/fastjet-config ]; then 

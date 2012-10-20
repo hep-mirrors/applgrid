@@ -37,7 +37,7 @@ tmp=$( echo "$*" | egrep -- '--\<libdir\>')
 test -n "$tmp" && OUT="$OUT @exec_prefix@@libdir@"
 
 tmp=$( echo "$*" | egrep -- '--\<ldflags\>')
-test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lAPPLgrid -lfAPPLgrid"
+test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lfAPPLgrid -lAPPLgrid" 
 
 tmp=$( echo "$*" | egrep -- '--\<ldcflags\>')
 test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lAPPLgrid"

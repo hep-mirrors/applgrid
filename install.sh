@@ -44,13 +44,13 @@ export INSTALLBASE=$BASEDIR
 APPLGRID=1
 PDF=1
 MCFM=0
-MCFM60=0
+MCFM60=1
 RMCFM=0
 RMCFM60=0
 NLO=1
 NLOMOD=1
 RNLOMOD=1
-FASTJET=0
+FASTJET=1
 USERJ=1
 
 #   echo "setting everything"
@@ -576,8 +576,8 @@ hash -r
 if [ "$PDF" = 1 ];      then install_pdf        $ARGS; fi
 
 if [ -e $INSTALLBASE/bin/hoppet-config ]; then 
-    export HOPPETLIBS=` $INSTALLBASE/bin/hoppet-config --libs `
-    export HOPPETINCS=` $INSTALLBASE/bin/hoppet-config --cxxflags ` 
+    export HOPPETLIBS="` $INSTALLBASE/bin/hoppet-config --libs `"
+    export HOPPETINCS="` $INSTALLBASE/bin/hoppet-config --cxxflags `" 
     export HOPPETFLAG="  -DHOPPET " 
 fi 
 
@@ -595,14 +595,14 @@ if [ "$FASTJETFOUND" = "" ]; then
   if [ "$FASTJET" = 1 ];  then    install_fastjet        $ARGS; fi
  
   if [ -e $INSTALLBASE/bin/fastjet-config ]; then 
-     export FASTJETLIBS=` $INSTALLBASE/bin/fastjet-config --libs `
-     export FASTJETINCS=` $INSTALLBASE/bin/fastjet-config --cxxflags ` 
+     export FASTJETLIBS="` $INSTALLBASE/bin/fastjet-config --libs `"
+     export FASTJETINCS="` $INSTALLBASE/bin/fastjet-config --cxxflags `" 
      export FASTJETFLAG="  -DFASTJET " 
   fi
 else
   if [ -e $INSTALLBASE/bin/fastjet-config ]; then 
-     export FASTJETLIBS=` fastjet-config --libs `
-     export FASTJETINCS=` fastjet-config --cxxflags ` 
+     export FASTJETLIBS="` fastjet-config --libs `"
+     export FASTJETINCS="` fastjet-config --cxxflags `" 
      export FASTJETFLAG="  -DFASTJET " 
   fi
 fi 

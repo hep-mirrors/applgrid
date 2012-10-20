@@ -1284,7 +1284,10 @@ MCFMOBJS = $(patsubst %,obj/%,$(ALLMCFM))
 .PHONY: qcdloop doc standSimple
 
 
-install: doc dirs mcfm standSimple 
+install: setup doc dirs mcfm standSimple 
+
+setup : 
+	Install
 
 mcfm: qcdloop $(MCFMOBJS) 
 	$(CXX) $(ROOTARCH) $(LDFLAGS) $(FFLAGS) -o $@  $(MCFMOBJS) -L$(LIBDIR) $(LIBFLAGS) $(GRIDLIB) $(ROOTLIBS) $(FRTLLIB) 

@@ -600,7 +600,7 @@ void grid::Write(const string& filename, const string& dirname) {
     _filename += "-save";
     string cmd = "mv " + filename + " " + _filename;
     //    int i = 
-    system(cmd.c_str());
+    int i = system(cmd.c_str());
   } 
 
   //  cout << "grid::Write() writing to file " << _filename << endl;

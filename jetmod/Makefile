@@ -4,7 +4,7 @@
 # GPS alternative for when one has a standard nlojet (v4) installation
 
 # BASE   = $(HOME)
-INSTALLBASE = $(BASEDIR)
+# INSTALLBASE = $(BASEDIR)
 NLODIR = $(INSTALLBASE)
 INSTPATH= `which nlojet++ | sed s:/bin/nlojet\+\+::`
 

@@ -3,10 +3,10 @@
 # Replace this with the location of Cernlib on your system (if desired)
 CERNLIB     = 
 # Replace this with the location of LHAPDF on your system (if desired)
-LHAPDFLIB   = $(shell lhapdf-config --libdir)
+LHAPDFLIB   = /usr/local/lib
 
-MCFMHOME        = ./
-SOURCEDIR       = ./src
+MCFMHOME        = /tmp/applgrid-full/mcfm-6.0
+SOURCEDIR       = /tmp/applgrid-full/mcfm-6.0/src
 
 MCFMHOME        = .
 SOURCEDIR       = $(MCFMHOME)/src
@@ -1287,7 +1287,7 @@ MCFMOBJS = $(patsubst %,obj/%,$(ALLMCFM))
 install: setup doc dirs mcfm standSimple 
 
 setup : 
-	Install
+	./Install
 
 mcfm: qcdloop $(MCFMOBJS) 
 	$(CXX) $(ROOTARCH) $(LDFLAGS) $(FFLAGS) -o $@  $(MCFMOBJS) -L$(LIBDIR) $(LIBFLAGS) $(GRIDLIB) $(ROOTLIBS) $(FRTLLIB) 

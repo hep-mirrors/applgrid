@@ -83,6 +83,23 @@ unsetall() {
     USERJ=0
 }
 
+
+#   echo "setting everything"
+printflags() { 
+    echo "APPLGRID $APPLGRID"
+    echo "PDF     $PDF"
+    echo "MCFM    $MCFM"
+    echo "MCFM60  $MCFM60"
+    echo "RMCFM   $RMCFM"
+    echo "RMCFM60 $RMCFM60"
+    echo "NLO     $NLO"
+    echo "NLOMOD  $NLOMOD"
+    echo "RNLOMOD $RNLOMOD"
+    echo "FASTJET $FASTJET"
+    echo "USERJ   $USERJ"
+}
+
+
 # usage message
 usage() { 
     echo "usage: install.sh [OPTIONS]\n"
@@ -572,6 +589,8 @@ install_fastjet () {
 ###########################
 
 hash -r
+
+printflags
 
 if [ "$PDF" = 1 ];      then install_pdf        $ARGS; fi
 

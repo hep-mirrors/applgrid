@@ -72,8 +72,9 @@ libAPPLgrid_la_LIBADD =
 am_libAPPLgrid_la_OBJECTS = appl_grid.lo appl_igrid.lo appl_pdf.lo \
 	appl_timer.lo fastnlo.lo SparseMatrix3d.lo hoppet_init.lo \
 	nlojet_pdf.lo nlojetpp_pdf.lo mcfmz_pdf.lo mcfmw_pdf.lo \
-	mcfmQQ_pdf.lo jetrad_pdf.lo dis_pdf.lo TFileString.lo \
-	TFileStringDict.lo TFileVector.lo TFileVectorDict.lo
+	mcfmQQ_pdf.lo jetrad_pdf.lo dis_pdf.lo generic_pdf.lo \
+	TFileString.lo TFileStringDict.lo TFileVector.lo \
+	TFileVectorDict.lo
 libAPPLgrid_la_OBJECTS = $(am_libAPPLgrid_la_OBJECTS)
 libfAPPLgrid_la_LIBADD =
 am_libfAPPLgrid_la_OBJECTS = fappl_grid.lo
@@ -217,8 +218,11 @@ lib_LTLIBRARIES = libAPPLgrid.la libfAPPLgrid.la
 libAPPLgrid_la_SOURCES = \
 	appl_grid.cxx		appl_igrid.cxx  	appl_pdf.cxx 		appl_timer.cxx \
 	fastnlo.cxx 		SparseMatrix3d.cxx	hoppet_init.cxx	\
-	nlojet_pdf.cxx		nlojetpp_pdf.cxx 	mcfmz_pdf.cxx 		mcfmw_pdf.cxx		mcfmQQ_pdf.cxx \
-	jetrad_pdf.cxx		dis_pdf.cxx		TFileString.cxx		TFileStringDict.cxx \
+	nlojet_pdf.cxx		nlojetpp_pdf.cxx 	mcfmz_pdf.cxx 		mcfmw_pdf.cxx  \
+	mcfmQQ_pdf.cxx \
+	jetrad_pdf.cxx		dis_pdf.cxx \
+	generic_pdf.cxx \
+	TFileString.cxx		TFileStringDict.cxx \
 	TFileVector.cxx		TFileVectorDict.cxx
 
 
@@ -335,6 +339,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dis_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fappl_grid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fastnlo.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generic_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hoppet_init.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jetrad_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcfmQQ_pdf.Plo@am__quote@

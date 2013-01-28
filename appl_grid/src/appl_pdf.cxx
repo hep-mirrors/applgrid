@@ -20,6 +20,7 @@ using namespace appl;
 #include "appl_grid/nlojetpp_pdf.h"
 #include "appl_grid/dis_pdf.h"
 #include "appl_grid/vrapz_pdf.h"
+#include "appl_grid/generic_pdf.h"
 
 
 namespace appl { 
@@ -44,6 +45,8 @@ dis_pdf       dispdf;
 vrapzLO_pdf   vrapzLOpdf;
 vrapzNLO_pdf  vrapzNLOpdf;
 vrapzNNLO_pdf vrapzNNLOpdf;
+
+generic_pdf   genericpdf;
 
 
 };

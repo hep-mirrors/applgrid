@@ -23,6 +23,9 @@ using std::endl;
 // using std::ostringstream;
 // using std::stringstream;
 
+#include <vector> 
+using std::vector;
+
 #include <map> 
 using std::map;
 
@@ -66,6 +69,14 @@ public:
   int     Nproc() const { return m_Nproc; } 
   string   name() const { return m_name;  }
 
+  string  rename(const std::string& name) { 
+    /// remove my entry from the map, and add me again with my new name
+    m_pdfmap.erase(m_pdfmap.find(m_name));
+    m_name = name;
+    addtopdfmap(m_name, this);
+    return m_name;
+  }
+
   // retrieve an instance from the map 
   static appl_pdf* getpdf(const string& s) { 
     if ( m_pdfmap.find(s)!=m_pdfmap.end() ) return m_pdfmap.find(s)->second;
@@ -81,6 +92,18 @@ public:
     //    exception(stringstream& s)    { cerr << s << endl; }; 
   };
   
+
+
+  /// code to allow optional vector of subprocess contribution names
+
+  const vector<string>& subnames() const { return m_subnames; }
+
+  void addSubnames( const vector<string>& subnames ) { m_subnames = subnames; }
+
+  void  addSubname( const string& subname ) { 
+    if ( int(m_subnames.size())<m_Nproc-1 ) m_subnames.push_back(subname); 
+  }
+
 
 private:
 
@@ -98,6 +121,8 @@ protected:
 
   int    m_Nproc;
   string m_name;
+
+  vector<string> m_subnames;
   
   static pdfmap m_pdfmap;
 

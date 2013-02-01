@@ -29,7 +29,7 @@ class mcfmwp_pdf : public appl_pdf {
 
 public: 
 
-  mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(); make_ckm(); } 
+  mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(m_ckmsum); make_ckm(m_ckm2); } 
 
   ~mcfmwp_pdf() { 
     delete[] m_ckmsum; 
@@ -41,15 +41,14 @@ public:
 
 private:
 
-  // read the ckm matrix related information 
-  // Fixme:  probably better to store internally rather than read from a file
-  void make_ckmsum(); 
-  void make_ckm(); 
-
+  // ckm matrix related information 
   double*  m_ckmsum;
   double** m_ckm2;
 
 };
+
+
+
 //
 //  W-
 //
@@ -57,7 +56,7 @@ class mcfmwm_pdf : public appl_pdf {
 
 public: 
 
-  mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(); make_ckm(); } 
+  mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(m_ckmsum); make_ckm(m_ckm2); } 
 
   ~mcfmwm_pdf() { 
     delete[] m_ckmsum; 
@@ -69,15 +68,12 @@ public:
 
 private:
 
-  // read the ckm matrix related information 
-  // Fixme:  probably better to store internally rather than read from a file
-  void make_ckmsum(); 
-  void make_ckm(); 
-
+  // ckm matrix related information 
   double*  m_ckmsum;
   double** m_ckm2;
 
 };
+
 
 // actual funtion to evaluate the pdf combinations 
 // for the W+

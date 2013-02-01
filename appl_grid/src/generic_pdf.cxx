@@ -20,10 +20,19 @@ using namespace appl;
 #include "appl_grid/generic_pdf.h"
 
 
-extern "C" void fgeneric_pdf__(const double* fA, const double* fB, double* H) { 
-  static generic_pdf pdf;
-  pdf.evaluate(fA, fB, H);
-}
+/// don't want a fortran implementation
+//  extern "C" void fgeneric_pdf__(const double* fA, const double* fB, double* H) { 
+//    static generic_pdf pdf;
+//    pdf.evaluate(fA, fB, H);
+//  }
+
+generic_pdf::generic_pdf(const std::string& s) 
+  : appl_pdf("generic-"+s), m_initialised(false) {
+  /// set up later generic pdf here ...
+  
+  if ( s!="" ) initialise( s );
+  
+} 
 
 
 
@@ -38,7 +47,15 @@ void generic_pdf::initialise(const std::string& file) {
 
   /// add tancredi's code here ...
 
+  std::cout << "generic_pdf::initialise() " << name() << std::endl; 
 
   m_initialised = true;
 } 
+
+
+void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {  
+  ///  fill this in with tancredi's code ...
+  if ( !m_initialised ) return;
+
+}
 

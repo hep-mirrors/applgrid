@@ -20,7 +20,7 @@ using namespace appl;
 #include "appl_grid/nlojetpp_pdf.h"
 #include "appl_grid/dis_pdf.h"
 #include "appl_grid/vrapz_pdf.h"
-#include "appl_grid/generic_pdf.h"
+// #include "appl_grid/generic_pdf.h"
 
 
 namespace appl { 
@@ -46,7 +46,66 @@ vrapzLO_pdf   vrapzLOpdf;
 vrapzNLO_pdf  vrapzNLOpdf;
 vrapzNNLO_pdf vrapzNNLOpdf;
 
-generic_pdf   genericpdf;
+// generic_pdf   genericpdf;
+
+
+
+
+
+
+
+/// get ckm related information - as static methods now 
+/// so that the base class doesn't need to allocate any 
+/// storage or call these methods if they are not needed 
+
+void appl_pdf::make_ckmsum( double*& ckmsum) { 
+  // cout << "make_ckmsum() initialising" << endl;
+  ckmsum = new double[13];
+  
+  double _ckmsum[13] = { 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 
+  }; 
+    
+  for ( int i=0 ; i<13 ; i++ ) ckmsum[i] = _ckmsum[i];
+
+}
+
+
+void appl_pdf::make_ckm( double**& ckm2) {  
+  // cout << "make_ckm() initialising" << endl;
+  ckm2 = new double*[13];
+
+  for ( int i=0 ; i<13 ; i++ ) {
+    ckm2[i] = new double[13]; 
+    for ( int j=0 ; j<13 ; j++ ) ckm2[i][j] = 0;
+  }
+
+  ckm2[3][8]  =   0.049284000000000001417976847051249933 ;
+  ckm2[8][3]  =   0.049284000000000001417976847051249933 ;
+
+  ckm2[5][8]  =   0.950624999999999942268402719491859898 ;
+  ckm2[8][5]  =   0.950624999999999942268402719491859898 ;
+
+  ckm2[5][10] =   0.049284000000000001417976847051249933 ;
+  ckm2[10][5] =   0.049284000000000001417976847051249933 ;
+
+  ckm2[3][10] =   0.950624999999999942268402719491859898 ;
+  ckm2[10][3] =   0.950624999999999942268402719491859898 ;
+
+}
+
 
 
 };

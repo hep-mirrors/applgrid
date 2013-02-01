@@ -27,9 +27,7 @@ class generic_pdf : public appl_pdf {
 
 public:
 
-  generic_pdf() : appl_pdf("generic"), m_initialised(false) {
-    /// set up later generic pdf here ...
-  } 
+  generic_pdf(const std::string& s="");
 
   virtual ~generic_pdf() { } 
 
@@ -52,20 +50,15 @@ private:
 
 
 
-inline void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {  
-  ///  fill this in with tancredi's code ...
-  if ( !m_initialised ) return;
-
-}
-
-
-
 inline std::ostream& operator<<( std::ostream& s, const generic_pdf& _g ) { 
   return s;
 }
 
 
+
 #endif  // GENERIC_PDF_H 
+
+
 
 
 

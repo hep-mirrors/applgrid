@@ -40,6 +40,9 @@ using std::pow;
 #include <string>
 using std::string;
 
+#include <exception>
+
+
 #include "appl_grid/appl_igrid.h"
 using appl::igrid;
 
@@ -60,10 +63,11 @@ class grid {
 public:
 
   // grid error exception
-  class exception { 
+  class exception : public std::exception { 
   public:
-    exception(const string& s) { std::cerr << s << std::endl; }; 
-    exception(ostream& s)      { std::cerr << s << std::endl; }; 
+    exception(const string& s) { std::cerr << what() << " " << s << std::endl; }; 
+    exception(ostream& s)      { std::cerr << what() << " " << s << std::endl; }; 
+    virtual const char* what() const throw() { return "appl::grid::exception"; }
   };
 
 public:

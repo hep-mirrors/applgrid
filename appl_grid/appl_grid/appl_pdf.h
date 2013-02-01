@@ -33,6 +33,9 @@ using std::map;
 using std::string;
 
 
+#include <exception> 
+
+
 namespace appl { 
 
 
@@ -54,14 +57,44 @@ typedef map <const string, appl_pdf*> pdfmap;
 
 class appl_pdf { 
 
+
 public:
-  appl_pdf(string name) : m_Nproc(0), m_name(name) { 
-    addtopdfmap(m_name, this);
+
+  // pdf error exception
+  class exception : public std::exception { 
+  public: 
+    exception(const string& s="") { cerr << what() << " " << s << endl; }; 
+    exception(ostream& s)         { cerr << what() << " " << s << endl; }; 
+    virtual const char* what() const throw() {  return "appl::appl_pdf::exception"; }
+  };
+  
+public:
+
+  // retrieve an instance from the map 
+  static appl_pdf* getpdf(const string& s) { 
+    if ( m_pdfmap.find(s)!=m_pdfmap.end() ) return m_pdfmap.find(s)->second;
+    else  throw exception( cerr << "getpdf() " << s << " not instantiated in map" );
+  }
+
+  
+  static void printmap() {
+    pdfmap::iterator itr = m_pdfmap.begin();
+    while ( itr!=m_pdfmap.end() )  {
+      std::cout << "pdfmap " << itr->first << "\t\t" << itr->second << std::endl;
+      itr++;
+    } 
+  }
+  
+public:
+
+  appl_pdf(const string& name) : m_Nproc(0), m_name(name) { 
+    if ( m_name!="" ) addtopdfmap(m_name, this);
   }
   
   virtual ~appl_pdf() { 
     // when I'm destroyed, remove my entry from the map 
-    m_pdfmap.erase(m_pdfmap.find(m_name));
+    pdfmap::iterator mit = m_pdfmap.find(m_name);
+    if ( mit!=m_pdfmap.end() ) m_pdfmap.erase(mit);
   } 
 
   virtual void evaluate(const double* f1, const double* f2, double* H) = 0; 
@@ -77,22 +110,6 @@ public:
     return m_name;
   }
 
-  // retrieve an instance from the map 
-  static appl_pdf* getpdf(const string& s) { 
-    if ( m_pdfmap.find(s)!=m_pdfmap.end() ) return m_pdfmap.find(s)->second;
-    else  throw exception( cerr << "getpdf() " << s << " not instantiated in map" );
-  }
-
-  // pdf error exception
-  class exception { 
-  public: 
-    exception(const string& s="") { cerr << s << endl; }; 
-    exception(ostream& s)         { cerr << s << endl; }; 
-    //    exception(ostringstream& s)   { cerr << s << endl; }; 
-    //    exception(stringstream& s)    { cerr << s << endl; }; 
-  };
-  
-
 
   /// code to allow optional vector of subprocess contribution names
 
@@ -104,6 +121,10 @@ public:
     if ( int(m_subnames.size())<m_Nproc-1 ) m_subnames.push_back(subname); 
   }
 
+protected:
+
+  static void make_ckmsum( double*& ckmsum );
+  static void make_ckm( double**& ckm2 );
 
 private:
 

@@ -46,6 +46,8 @@ using std::string;
 #include "appl_grid/appl_igrid.h"
 using appl::igrid;
 
+#include "appl_grid/generic_pdf.h"
+
 
 #include "TH1D.h"
 
@@ -470,14 +472,12 @@ protected:
   }
   
   /// get the required pdf combinations from those registered   
-  void findgenpdf( std::string s ) { 
-    std::vector<std::string> names = parse( s, ":" );
-    if ( names.size()==unsigned(m_order) ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[i] );
-    else  if ( names.size()==1 )           m_genpdf[0] = m_genpdf[1] = m_genpdf[2] = appl_pdf::getpdf( names[0] );
-    else  { 
-      throw exception( std::cerr << "requested " << m_order << " pdf combination but given " << names.size() << std::endl );
-    }
-  }
+  void findgenpdf( std::string s );
+
+
+  /// add a generic pdf to the data base of registered pdfs
+  void addpdf( std::string s );
+
 
 protected:
 

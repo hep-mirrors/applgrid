@@ -29,7 +29,7 @@ class mcfmwp_pdf : public appl_pdf {
 
 public: 
 
-  mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(m_ckmsum); make_ckm(m_ckm2); } 
+  mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(m_ckmsum); make_ckm(m_ckm2, true); } 
 
   ~mcfmwp_pdf() { 
     delete[] m_ckmsum; 
@@ -56,7 +56,7 @@ class mcfmwm_pdf : public appl_pdf {
 
 public: 
 
-  mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(m_ckmsum); make_ckm(m_ckm2); } 
+  mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(m_ckmsum); make_ckm(m_ckm2, false); } 
 
   ~mcfmwm_pdf() { 
     delete[] m_ckmsum; 
@@ -119,6 +119,9 @@ inline  void mcfmwp_pdf::evaluate(const double* fA, const double* fB, double* H)
 	}
     }  
 }
+
+
+
 
 //
 // actual funtion to evaluate the pdf combinations 

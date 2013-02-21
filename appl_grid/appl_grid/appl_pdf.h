@@ -65,15 +65,16 @@ public:
   public: 
     exception(const string& s="") { cerr << what() << " " << s << endl; }; 
     exception(ostream& s)         { cerr << what() << " " << s << endl; }; 
-    virtual const char* what() const throw() {  return "appl::appl_pdf::exception"; }
+    virtual const char* what() const throw() {  return "appl::appl_pdf::exception "; }
   };
   
 public:
 
   // retrieve an instance from the map 
-  static appl_pdf* getpdf(const string& s) { 
-    if ( m_pdfmap.find(s)!=m_pdfmap.end() ) return m_pdfmap.find(s)->second;
-    else  throw exception( cerr << "getpdf() " << s << " not instantiated in map" );
+  static appl_pdf* getpdf(const string& s) {
+    pdfmap::iterator itr = m_pdfmap.find(s);
+    if ( itr!=m_pdfmap.end() ) return itr->second;    
+    throw exception( cerr << "getpdf() " << s << " not instantiated in map " );
   }
 
   
@@ -104,7 +105,12 @@ public:
 
   string  rename(const std::string& name) { 
     /// remove my entry from the map, and add me again with my new name
-    m_pdfmap.erase(m_pdfmap.find(m_name));
+    if ( m_pdfmap.find(m_name)!=m_pdfmap.end() ) { 
+      m_pdfmap.erase(m_pdfmap.find(m_name));
+    }
+    else { 
+      std::cout << "appl_pdf::rename() " << m_name << " not in map" << std::endl;
+    }
     m_name = name;
     addtopdfmap(m_name, this);
     return m_name;
@@ -123,8 +129,12 @@ public:
 
 protected:
 
+  /// code to set up the ckm matrices if required - static methods 
+  /// that require the variables that need to be assigned to avoid
+  /// data members in classes when they are not needed  
+
   static void make_ckmsum( double*& ckmsum );
-  static void make_ckm( double**& ckm2 );
+  static void make_ckm( double**& ckm2, bool Wp=true );
 
 private:
 

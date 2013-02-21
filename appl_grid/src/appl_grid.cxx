@@ -94,6 +94,9 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
   m_obs_bins->SetDirectory(0);
 
+  /// check to see if we require a generic pdf from a text file, and 
+  /// and if so, create the required generic pdf
+  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
@@ -118,6 +121,9 @@ grid::grid(int Nobs, const double* obsbins,
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
   m_obs_bins->SetDirectory(0);
 
+  /// check to see if we require a generic pdf from a text file, and 
+  /// and if so, create the required generic pdf
+  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform );
@@ -152,6 +158,9 @@ grid::grid(const vector<double> obs,
   m_obs_bins->SetDirectory(0);
   delete[] obsbins;
 
+  /// check to see if we require a generic pdf from a text file, and 
+  /// and if so, create the required generic pdf
+  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
@@ -184,6 +193,9 @@ grid::grid(const vector<double> obs,
   m_obs_bins->SetDirectory(0);
   delete[] obsbins;
 
+  /// check to see if we require a generic pdf from a text file, and 
+  /// and if so, create the required generic pdf
+  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) m_grids[iorder] = new igrid*[Nobs];
@@ -271,9 +283,9 @@ grid::grid(const string& filename, const string& dirname)  :
   else                            m_applyCorrections = false;
 
  
-  //  std::cout << "grid::grid()::m_cmsScale "   << m_cmsScale   << std::endl;
-  //  std::cout << "grid::grid()::m_symmetrise=" << m_symmetrise << std::endl; 
-
+  /// check to see if we require a generic pdf from a text file, and 
+  /// and if so, create the required generic pdf
+  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   delete setup;
@@ -341,7 +353,11 @@ grid::grid(const grid& g) :
   m_applyCorrections(g.m_applyCorrections), 
   m_documentation(g.m_documentation)
 {
+  /// check to see if we require a generic pdf from a text file, and 
+  /// and if so, create the required generic pdf
+  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
+
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     m_grids[iorder] = new igrid*[Nobs()];
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
@@ -576,6 +592,55 @@ void grid::print() const {
     }
   }
 }
+
+
+
+
+ /// get the required pdf combinations from those registered   
+void grid::findgenpdf( std::string s ) { 
+    std::vector<std::string> names = parse( s, ":" );
+    if ( names.size()==unsigned(m_order) ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[i] );
+    else  if ( names.size()==1 ) m_genpdf[0] = m_genpdf[1] = m_genpdf[2] = appl_pdf::getpdf( names[0] );
+    else  { 
+      throw exception( std::cerr << "requested " << m_order << " pdf combination but given " << names.size() << std::endl );
+    }
+}
+
+
+void grid::addpdf( std::string s ) {
+
+    /// parse names, if they are contain .dat, then create the new generic pdfs
+    /// they will be added to the pdf map automatically 
+    std::vector<std::string> names = parse( s, ":" );
+
+    unsigned imax = unsigned(m_order); 
+
+    /// check to see whether we have a different pdf for each order
+    if ( names.size()!=imax ) { 
+      if ( names.size()==1 ) imax = 1;
+      else { 
+	throw exception( std::cerr << "requested " << m_order << " pdf combination but given " << names.size() << std::endl );
+      }
+    }
+
+    /// loop through all the required pdfs checking whether they exist already,
+    /// if not (from thrown exception) then create it, otherwise, don't need to 
+    /// do anything 
+    for ( unsigned i=0 ; i<imax ; i++ ) { 
+      if ( names[i].find(".dat")!=std::string::npos ) { 
+	try {
+	  appl_pdf::getpdf(names[i]);
+	}
+	catch ( appl_pdf::exception e ) { 
+	  std::cout << "creating new generic_pdf " << names[i] << std::endl;
+	  new generic_pdf(names[i]);
+	}
+      }
+    } 
+
+}
+
+
 
 void grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
 // void grid::pdfinterp(double x, double Q2, double* f) {  }

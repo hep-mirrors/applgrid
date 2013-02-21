@@ -58,8 +58,8 @@ vrapzNNLO_pdf vrapzNNLOpdf;
 /// so that the base class doesn't need to allocate any 
 /// storage or call these methods if they are not needed 
 
-void appl_pdf::make_ckmsum( double*& ckmsum) { 
-  // cout << "make_ckmsum() initialising" << endl;
+void appl_pdf::make_ckmsum( double*& ckmsum ) { 
+  // std::cout << "make_ckmsum() initialising" << std::endl;
   ckmsum = new double[13];
   
   double _ckmsum[13] = { 
@@ -83,7 +83,9 @@ void appl_pdf::make_ckmsum( double*& ckmsum) {
 }
 
 
-void appl_pdf::make_ckm( double**& ckm2) {  
+
+void appl_pdf::make_ckm( double**& ckm2, bool Wp ) {
+  
   // cout << "make_ckm() initialising" << endl;
   ckm2 = new double*[13];
 
@@ -92,18 +94,42 @@ void appl_pdf::make_ckm( double**& ckm2) {
     for ( int j=0 ; j<13 ; j++ ) ckm2[i][j] = 0;
   }
 
-  ckm2[3][8]  =   0.049284000000000001417976847051249933 ;
-  ckm2[8][3]  =   0.049284000000000001417976847051249933 ;
 
-  ckm2[5][8]  =   0.950624999999999942268402719491859898 ;
-  ckm2[8][5]  =   0.950624999999999942268402719491859898 ;
-
-  ckm2[5][10] =   0.049284000000000001417976847051249933 ;
-  ckm2[10][5] =   0.049284000000000001417976847051249933 ;
-
-  ckm2[3][10] =   0.950624999999999942268402719491859898 ;
-  ckm2[10][3] =   0.950624999999999942268402719491859898 ;
-
+  if ( Wp ) { 
+    
+    std::cout << "creating ckm matrix terms for Wminus production" << std::endl;
+    
+    ckm2[3][8]  =   0.049284000000000001417976847051249933 ;
+    ckm2[8][3]  =   0.049284000000000001417976847051249933 ;
+    
+    ckm2[5][8]  =   0.950624999999999942268402719491859898 ;
+    ckm2[8][5]  =   0.950624999999999942268402719491859898 ;
+    
+    ckm2[5][10] =   0.049284000000000001417976847051249933 ;
+    ckm2[10][5] =   0.049284000000000001417976847051249933 ;
+    
+    ckm2[3][10] =   0.950624999999999942268402719491859898 ;
+    ckm2[10][3] =   0.950624999999999942268402719491859898 ;
+    
+  }
+  else { 
+    
+    std::cout << "creating ckm matrix terms for Wplus production" << std::endl;
+    
+    ckm2[4][9] =   0.049284000000000001417976847051249933 ;
+    ckm2[9][4] =   0.049284000000000001417976847051249933 ;
+    
+    ckm2[7][4] =   0.950624999999999942268402719491859898 ;
+    ckm2[4][7] =   0.950624999999999942268402719491859898 ;
+    
+    ckm2[7][2] =   0.049284000000000001417976847051249933 ;
+    ckm2[2][7] =   0.049284000000000001417976847051249933 ;
+    
+    ckm2[9][2] =   0.950624999999999942268402719491859898 ;
+    ckm2[2][9] =   0.950624999999999942268402719491859898 ;
+    
+  }  
+  
 }
 
 

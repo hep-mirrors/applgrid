@@ -13,8 +13,11 @@
 //   $Id: generaic_pdf.cxx, v0.0   Mon 28 Jan 2013 15:40:45 GMT sutt $
 
 
+#include <stdlib.h>
+
 #include <iostream>
 #include <fstream>
+
 
 #include "appl_grid/appl_pdf.h" 
 using namespace appl;

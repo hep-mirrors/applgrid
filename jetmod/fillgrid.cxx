@@ -368,15 +368,15 @@ void UserHHC::clusterJets(const event_hhc& p)
 void UserHHC::userfunc(const event_hhc& p, const amplitude_hhc& amp)
 { 
 #if 0
-  static int cock=0;
+  static int cck=0;
 
-  if ( cock>9900 ) 
+  if ( cck>9900 ) 
     std::cout << "UserHHC::userfunc()" << std::endl;
 
 
-  if ( cock%100==0 ) std::cout << "UserHHC::userfunc() " << cock << std::endl;
+  if ( cck%100==0 ) std::cout << "UserHHC::userfunc() " << cck << std::endl;
  
-  cock++;
+  cck++;
 #endif
 
   int iorder = amp.contrib()==0 ? 0 : 1 ;     // born contrib = 0 ; NLO = 1
@@ -475,7 +475,7 @@ void UserHHC::userfunc(const event_hhc& p, const amplitude_hhc& amp)
     }                 // for (;;iGrid++)
 
 #if 0
-  if ( cock>9900 ) 
+  if ( cck>9900 ) 
     std::cout << "UserHHC::userfunc() returning" << std::endl;
 #endif
 

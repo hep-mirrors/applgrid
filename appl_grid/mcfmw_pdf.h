@@ -31,7 +31,7 @@ public:
 
   mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { 
     m_Nproc = 6; 
-    make_ckmsum(m_ckmsum); 
+    make_ckmsum(m_ckmsum, true); 
     make_ckm(m_ckm2, true); 
   } 
 
@@ -56,7 +56,7 @@ public:
 
   mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { 
     m_Nproc = 6; 
-    make_ckmsum(m_ckmsum); 
+    make_ckmsum(m_ckmsum, false); 
     make_ckm(m_ckm2, false);
   } 
 

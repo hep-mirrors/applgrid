@@ -58,12 +58,12 @@ vrapzNNLO_pdf vrapzNNLOpdf;
 /// so that the base class doesn't need to allocate any 
 /// storage or call these methods if they are not needed 
 
-void appl_pdf::make_ckmsum( std::vector<double>& ckmsum ) { 
+  void appl_pdf::make_ckmsum( std::vector<double>& ckmsum, bool Wp ) { 
 
   // std::cout << "make_ckmsum() initialising" << std::endl;
   ckmsum = std::vector<double>(13);
   
-  double _ckmsum[13] = { 
+  double ckmsum_plus[13] = { 
     0.000000000000000000000000000000000000 , 
     0.000000000000000000000000000000000000 , 
     0.000000000000000000000000000000000000 , 
@@ -79,6 +79,28 @@ void appl_pdf::make_ckmsum( std::vector<double>& ckmsum ) {
     0.000000000000000000000000000000000000 
   }; 
     
+
+  double ckmsum_minus[13] = { 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.999908999999999936747485662635881454 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 , 
+    0.000000000000000000000000000000000000 
+  }; 
+    
+  double* _ckmsum = 0;
+  
+  if   ( Wp ) _ckmsum = ckmsum_minus; 
+  else        _ckmsum = ckmsum_plus; 
+
   for ( int i=0 ; i<13 ; i++ ) ckmsum[i] = _ckmsum[i];
 
 }

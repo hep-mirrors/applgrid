@@ -140,7 +140,7 @@ public:
   /// that require the variables that need to be assigned to avoid
   /// data members in classes when they are not needed  
 
-  static void make_ckmsum( std::vector<double>& ckmsum );
+  static void make_ckmsum( std::vector<double>& ckmsum, bool Wp=true );
   static void make_ckm( std::vector<std::vector<double> >& ckm2, bool Wp=true );
 
 private:

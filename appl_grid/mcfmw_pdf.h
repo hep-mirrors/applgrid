@@ -29,21 +29,19 @@ class mcfmwp_pdf : public appl_pdf {
 
 public: 
 
-  mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(m_ckmsum); make_ckm(m_ckm2, true); } 
+  mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { 
+    m_Nproc = 6; 
+    make_ckmsum(m_ckmsum); 
+    make_ckm(m_ckm2, true); 
+  } 
 
   ~mcfmwp_pdf() { 
-    delete[] m_ckmsum; 
-    for ( int i=0 ; i<13 ; i++ ) delete[] m_ckm2[i];
-    delete m_ckm2;
+    //    delete[] m_ckmsum; 
+    //    for ( int i=0 ; i<13 ; i++ ) delete[] m_ckm2[i];
+    //    delete m_ckm2;
   } 
 
   virtual void evaluate(const double* fA, const double* fB, double* H);
-
-private:
-
-  // ckm matrix related information 
-  double*  m_ckmsum;
-  double** m_ckm2;
 
 };
 
@@ -56,21 +54,15 @@ class mcfmwm_pdf : public appl_pdf {
 
 public: 
 
-  mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { m_Nproc = 6; make_ckmsum(m_ckmsum); make_ckm(m_ckm2, false); } 
-
-  ~mcfmwm_pdf() { 
-    delete[] m_ckmsum; 
-    for ( int i=0 ; i<13 ; i++ ) delete[] m_ckm2[i];
-    delete m_ckm2;
+  mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { 
+    m_Nproc = 6; 
+    make_ckmsum(m_ckmsum); 
+    make_ckm(m_ckm2, false);
   } 
 
+  ~mcfmwm_pdf() { } 
+
   virtual void evaluate(const double* fA, const double* fB, double* H);
-
-private:
-
-  // ckm matrix related information 
-  double*  m_ckmsum;
-  double** m_ckm2;
 
 };
 

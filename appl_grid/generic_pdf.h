@@ -32,11 +32,11 @@ public:
 
   virtual ~generic_pdf() { 
     if ( H )        delete[] H; 
-    if ( m_ckmsum ) delete[] m_ckmsum;
-    if ( m_ckm2 ) { 
-      for ( int i=0 ; i<13 ; i++ ) if ( m_ckm2[i] ) delete[] m_ckm2[i];
-      delete[] m_ckm2;
-    }
+    // if ( m_ckmsum ) delete[] m_ckmsum;
+    // if ( m_ckm2 ) { 
+    //   for ( int i=0 ; i<13 ; i++ ) if ( m_ckm2[i] ) delete[] m_ckm2[i];
+    //   delete[] m_ckm2;
+    //  }
   } 
 
   void evaluate(const double* fA, const double* fB, double* H);
@@ -100,8 +100,11 @@ private:
   bool m_initialised;
 
   /// ckm matrices should they be needed ...
-  double*  m_ckmsum;
-  double** m_ckm2; 
+  // double*  m_ckmsum;
+  // double** m_ckm2; 
+  std::vector<double>                m_ckmsum;
+  std::vector<std::vector<double> >  m_ckm2; 
+
 
   bool    debug;
 

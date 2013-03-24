@@ -34,7 +34,8 @@ using namespace appl;
 generic_pdf::generic_pdf(const std::string& s) 
   : appl_pdf(s), 
     m_initialised(false), 
-    m_ckmsum(0), m_ckm2(0), H(0)
+    //    m_ckmsum(0), m_ckm2(0), 
+    H(0)
  {
    /// need to check has the appropriate form, 
    if ( s!="" ) { 
@@ -307,7 +308,8 @@ double *generic_pdf::GetGeneralisedPdf(const double *f1, const double *f2){
   f1 += nQuark;
   f2 += nQuark;
 
-  double* ckmsum = m_ckmsum + nQuark;
+  //  double* ckmsum = m_ckmsum + nQuark;
+  double* ckmsum = &(m_ckmsum[nQuark]);
   
   for(int i = -nQuark; i <= nQuark; i++) {
     

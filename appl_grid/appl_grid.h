@@ -478,6 +478,8 @@ protected:
   /// add a generic pdf to the data base of registered pdfs
   void addpdf( std::string s );
 
+  /// set the ckm matrix values if need be
+  void setckm( const std::vector<double>& ckmsum, const std::vector<std::vector<double> >& ckm2 );
 
 protected:
 
@@ -527,6 +529,9 @@ protected:
 
   std::string m_documentation;
   
+  std::vector<double>                m_ckmsum;
+  std::vector<std::vector<double> >  m_ckm2;
+
 };
 
 

@@ -243,6 +243,9 @@ install_appl_grid() {
     #	   make clean
     #    fi
 
+    make clean
+    autoreconf -i
+ 
     make 
     make install
 

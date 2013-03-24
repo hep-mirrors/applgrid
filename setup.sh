@@ -34,3 +34,6 @@ export LDFLAGS=$ARCH
 export PATH=${BASEDIR}/bin:${PATH}
 export LD_LIBRARY_PATH=${BASEDIR}/lib:${LD_LIBRARY_PATH}
 
+# to redo the makefiles etc
+#autoreconf --install --force
+

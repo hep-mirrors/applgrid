@@ -5,8 +5,8 @@ CERNLIB     =
 # Replace this with the location of LHAPDF on your system (if desired)
 LHAPDFLIB   = /usr/local/lib
 
-MCFMHOME        = /tmp/applgrid-full/mcfm-6.0
-SOURCEDIR       = /tmp/applgrid-full/mcfm-6.0/src
+MCFMHOME        = /home/tcarli/applgridtest/mcfm-6.0
+SOURCEDIR       = /home/tcarli/applgridtest/mcfm-6.0/src
 
 MCFMHOME        = .
 SOURCEDIR       = $(MCFMHOME)/src

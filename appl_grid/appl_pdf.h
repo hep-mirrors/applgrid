@@ -133,16 +133,15 @@ public:
   const std::vector<double>&               getckmsum() const { return m_ckmsum; }
   const std::vector<std::vector<double> >& getckm2()   const { return m_ckm2; }
 
-  void setckmsum( const std::vector<double>& ckmsum )           { m_ckmsum = ckmsum; }
-  void setckm2( const std::vector<std::vector<double> >& ckm2 ) { m_ckm2 = ckm2; } 
+  /// set the ckm matrices from external values
+  void setckm2( const std::vector<std::vector<double> >& ckm2 ); 
 
-  /// code to set up the ckm matrices if required - static methods 
-  /// that require the variables that need to be assigned to avoid
-  /// data members in classes when they are not needed  
-
-  static void make_ckmsum( std::vector<double>& ckmsum, bool Wp=true );
-  static void make_ckm( std::vector<std::vector<double> >& ckm2, bool Wp=true );
-
+  /// code to create the ckm matrices using the hardcoded default 
+  /// values if required
+  /// takes a bool input - if true creates the ckm for Wplus, 
+  /// false for Wminus
+  void make_ckm( bool Wp=true );
+  
 private:
 
   static void addtopdfmap(const string& s, appl_pdf* f) { 

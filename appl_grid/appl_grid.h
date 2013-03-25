@@ -479,7 +479,7 @@ protected:
   void addpdf( std::string s );
 
   /// set the ckm matrix values if need be
-  void setckm( const std::vector<double>& ckmsum, const std::vector<std::vector<double> >& ckm2 );
+  void setckm( const std::vector<std::vector<double> >& ckm2 );
 
 protected:
 

@@ -31,15 +31,10 @@ public:
 
   mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { 
     m_Nproc = 6; 
-    make_ckmsum(m_ckmsum, true); 
-    make_ckm(m_ckm2, true); 
+    make_ckm( true ); 
   } 
 
-  ~mcfmwp_pdf() { 
-    //    delete[] m_ckmsum; 
-    //    for ( int i=0 ; i<13 ; i++ ) delete[] m_ckm2[i];
-    //    delete m_ckm2;
-  } 
+  ~mcfmwp_pdf() { }
 
   virtual void evaluate(const double* fA, const double* fB, double* H);
 
@@ -56,8 +51,7 @@ public:
 
   mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { 
     m_Nproc = 6; 
-    make_ckmsum(m_ckmsum, false); 
-    make_ckm(m_ckm2, false);
+    make_ckm( false ); 
   } 
 
   ~mcfmwm_pdf() { } 

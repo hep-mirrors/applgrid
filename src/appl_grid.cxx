@@ -286,7 +286,7 @@ grid::grid(const string& filename, const string& dirname)  :
   else                            m_applyCorrections = false;
 
 
-  std::vector<double> _ckmsum;
+  //  std::vector<double> _ckmsum;
   std::vector<std::vector<double> > _ckm2;
 
   bool savedckm = false;
@@ -297,18 +297,18 @@ grid::grid(const string& filename, const string& dirname)  :
     
     savedckm = true;
 
-    TVectorT<double>* ckmsum=(TVectorT<double>*)gridfilep->Get((dirname+"/CKMSUM").c_str());
+    //    TVectorT<double>* ckmsum=(TVectorT<double>*)gridfilep->Get((dirname+"/CKMSUM").c_str());
 
-    appl_pdf::make_ckmsum(_ckmsum);
-    for ( int ic=0 ; ic<13 ; ic++ ) _ckmsum[ic] = (*ckmsum)(ic); 
+    //    appl_pdf::make_ckmsum(_ckmsum);
+    //    for ( int ic=0 ; ic<13 ; ic++ ) _ckmsum[ic] = (*ckmsum)(ic); 
 
     TVectorT<double>* ckm2flat=(TVectorT<double>*)gridfilep->Get((dirname+"/CKM2").c_str());
 
-    appl_pdf::make_ckm(_ckm2);
+    _ckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13) );
     for ( int ic=0 ; ic<13 ; ic++ ) { 
       for ( int id=0 ; id<13 ; id++ ) _ckm2[ic][id] = (*ckm2flat)(ic*13+id); 
     }
- 
+
   }
 
   /// check to see if we require a generic pdf from a text file, and 
@@ -319,7 +319,7 @@ grid::grid(const string& filename, const string& dirname)  :
   std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
 
   // set the ckm matrices 
-  if ( _ckmsum.size()>0 )  setckm( _ckmsum, _ckm2 );
+  if ( _ckm2.size()>0 )  setckm( _ckm2 );
 
   delete setup;
 
@@ -675,11 +675,8 @@ void grid::addpdf( std::string s ) {
 
 }
 
-void grid::setckm( const std::vector<double>& ckmsum, const std::vector<std::vector<double> >& ckm2 ) { 
-  for ( int i=0 ; i<3 ; i++ ) { 
-    m_genpdf[i]->setckmsum(ckmsum);
-    m_genpdf[i]->setckm2(ckm2);
-  }
+void grid::setckm( const std::vector<std::vector<double> >& ckm2 ) { 
+  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]->setckm2(ckm2);
 }
 
 void grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
@@ -757,12 +754,12 @@ void grid::Write(const string& filename, const string& dirname) {
   
   if ( (*setup)(8) == 1 ) { 
     
-    TVectorT<double>* ckmsum = new TVectorT<double>(13);
+    //    TVectorT<double>* ckmsum = new TVectorT<double>(13);
 
-    const std::vector<double>& _ckmsum = m_genpdf[0]->getckmsum();
-    for ( int ic=0 ; ic<13 ; ic++ ) (*ckmsum)(ic) = _ckmsum[ic];
+    //    const std::vector<double>& _ckmsum = m_genpdf[0]->getckmsum();
+    //    for ( int ic=0 ; ic<13 ; ic++ ) (*ckmsum)(ic) = _ckmsum[ic];
 
-    ckmsum->Write("CKMSUM");
+    //    ckmsum->Write("CKMSUM");
 
     TVectorT<double>* ckm2flat = new TVectorT<double>(169);
     const std::vector<std::vector<double> >& _ckm2 = m_genpdf[0]->getckm2();

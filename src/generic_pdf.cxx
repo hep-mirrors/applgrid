@@ -77,11 +77,10 @@ void generic_pdf::initialise(const std::string& filename) {
   currentsubprocess=-1;
   nQuark=6;  
   
-  make_ckmsum( m_ckmsum ); 
   /// for Wp production 
-  make_ckm( m_ckm2, true );  
+  make_ckm( true );  
   /// for Wm production 
-  //  make_ckm( m_ckm2, false );  
+  //  make_ckm( false );  
   
   Print_ckm();  
   

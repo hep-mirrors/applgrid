@@ -99,6 +99,14 @@ void appl_pdf::make_ckm( bool Wp ) {
     for ( unsigned j=0 ; j<m_ckm2[i].size() ; j++ ) m_ckmsum[i] += m_ckm2[i][j]; 
   }
 
+  /*
+  for ( int i=0 ; i<13 ; i++ ) {
+    for ( int j=0 ; j<13 ; j++ ) {
+      if (m_ckm2[i][j]!=0)
+	std::cout << " ckm[" << i << "][" << j << "]\t =\t " << m_ckm2[i][j] << std::endl;
+    }
+  }
+  */
 }
 
 

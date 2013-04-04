@@ -47,8 +47,7 @@ public:
 
   void ReadSubprocessSteering(const std::string& fname);
 
-  //void Print_ckm();  
-  void Print_myckm();  
+  void Print_ckm();  
 
   void PrintSubprocess();
 
@@ -76,8 +75,7 @@ public:
 
   void SetnQuark(int nq) { nQuark=nq; }
 
-  //  void generic_pdf::MakeCkm();
-  void MakeMyCkm();
+  void MakeCkm();
 
   void PrintFlavourMap() {
     cout<<" generic_pdf: print out flavour map "<<endl;
@@ -97,7 +95,6 @@ public:
   
 private:
 
-  std::vector<std::vector<double> > myckm2;
 
   /// this might eventually become a string encoding the grid
   string m_filename;  

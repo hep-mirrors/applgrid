@@ -158,20 +158,7 @@ void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {
   return; 
  }
 
- //need to move this out to initialize 
- this->MakeMyCkm();
-
- /*
- if (debug){
-  cout<<"generic_pdf print my ckm matrix "<<endl;
-  this->Print_myckm();  
- }
- */
  if (debug) cout << "generic_pdf:evaluate " <<endl;
- // shift pointers by nQuark so we can index them using -nQuark .. nQuark  
- //fA += nQuark;
- //fB += nQuark;
- //double* ckmsum = m_ckmsum + nQuark;
   
  //this->PrintFlavourMap();
 
@@ -194,39 +181,23 @@ void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {
  pdfB[0]=fA[0+nQuark];
 
 /*
- if (debug) {
-  for(int i = -2; i <= 2; i++) {
-   cout<<" pdfA["<<i<<"]= "<<pdfA[i]
-       <<" pdfB["<<i<<"]= "<<pdfB[i]
-       <<" m_ckmsum["<<i<<"]= "<<m_ckmsum[nQuark+i]
-       <<endl;
-  }
- }
-*/
  std::vector<double> myckmsum = std::vector<double>(myckm2.size(),0);
  for ( unsigned i=0 ; i<myckm2.size() ; i++ ) { 
   for ( unsigned j=0 ; j<myckm2[i].size() ; j++ ) myckmsum[i] += myckm2[i][j]; 
  }
+*/
 
-
- /*
- for(int i=-6; i <=6; i++) {
-  for(int i=-6; i <=6; i++) {
-   myckm2[i+nQuark][j+nQuark]
-  }
- }
- */
  for(int i=-6; i <=6; i++) {
   int j=flavourtype[i];
   if (j==0) continue;
-  pdfA[j] += fA[nQuark + i]*myckmsum[nQuark+j];
-  pdfB[j] += fB[nQuark + i]*myckmsum[nQuark+j];
+  pdfA[j] += fA[nQuark + i]*m_ckmsum[nQuark+j];
+  pdfB[j] += fB[nQuark + i]*m_ckmsum[nQuark+j];
   if (debug)
     cout<<" i= "<<i<<" j= "<<j
       <<" fA["<<i<<"]= "<<fA[nQuark + i]
       <<" fB["<<i<<"]= "<<fB[nQuark + i]
       <<" pdfA["<<j<<"]= "<<pdfA[j]<<" pdfB["<<j<<"]= "<<pdfB[j]
-      <<" myckmsum["<<nQuark+j<<"]= "<<myckmsum[nQuark+j]
+      <<" m_ckmsum["<<nQuark+j<<"]= "<<m_ckmsum[nQuark+j]
       <<endl;
  }
 
@@ -366,42 +337,8 @@ int generic_pdf::decideSubProcess(const int iflav1, const int iflav2)
 }
 
 
-void generic_pdf::MakeMyCkm() { 
-  //
-  // make by hand CKM matrix
-  //
-    myckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13,0));
-
-    myckm2[3][8]  =   0.049284000000000001417976847051249933 ;
-    myckm2[8][3]  =   0.049284000000000001417976847051249933 ;
-    
-    myckm2[5][8]  =   0.950624999999999942268402719491859898 ;
-    myckm2[8][5]  =   0.950624999999999942268402719491859898 ;
-    
-    myckm2[5][10] =   0.049284000000000001417976847051249933 ;
-    myckm2[10][5] =   0.049284000000000001417976847051249933 ;
-    
-    myckm2[3][10] =   0.950624999999999942268402719491859898 ;
-    myckm2[10][3] =   0.950624999999999942268402719491859898 ;
-
-    myckm2[4][9] =   0.049284000000000001417976847051249933 ;
-    myckm2[9][4] =   0.049284000000000001417976847051249933 ;
-    
-    myckm2[7][4] =   0.950624999999999942268402719491859898 ;
-    myckm2[4][7] =   0.950624999999999942268402719491859898 ;
-    
-    myckm2[7][2] =   0.049284000000000001417976847051249933 ;
-    myckm2[2][7] =   0.049284000000000001417976847051249933 ;
-    
-    myckm2[9][2] =   0.950624999999999942268402719491859898 ;
-    myckm2[2][9] =   0.950624999999999942268402719491859898 ;
-
-  return;
-}
-
 // get ckm related information
 
-/*
 void generic_pdf::Print_ckm() {  
   //
   // print ckm matrix for W+ and W-
@@ -421,25 +358,6 @@ void generic_pdf::Print_ckm() {
   
   return;
 }
-*/
-void generic_pdf::Print_myckm() {  
-  // 
-  
-  cout << "generic_pdf::Print_myckm = " << endl;
-  cout<<" ckm size= "<<myckm2.size()<<endl;
-  if (myckm2.size()<=0) return;
-
-  //
-  for ( int i=0 ; i<13 ; i++ ) {
-    for ( int j=0 ; j<13 ; j++ ) {
-     if (myckm2[i][j]!=0)
-      std::cout << " myckm2[" << i-nQuark << "][" << j-nQuark << "]\t =\t " << myckm2[i][j] << std::endl;
-    }
-  }
-  
-  return;
-}
-
 
 
 void generic_pdf::PrintSubprocess() { 

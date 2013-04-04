@@ -141,6 +141,8 @@ public:
   /// takes a bool input - if true creates the ckm for Wplus, 
   /// false for Wminus
   void make_ckm( bool Wp=true );
+
+  void SetNProc(int Nsub){ m_Nproc=Nsub; return;};
   
 private:
 

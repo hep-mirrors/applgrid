@@ -584,9 +584,6 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 		     double beam_scale ) 
 {
 
-  bool debug=false;
-  if (debug) cout<<"appl_igrid::setuppdf pdf table "<<endl;
-
   void (*splitting)(const double& , const double&, double* ) = Splitting;
 		     
   const int n_tau = Ntau();
@@ -648,10 +645,9 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     // alpha_s table 
     m_alphas[itau] = alphas(rscale_factor*Q)*invtwopi;
 
-    if (debug)
-     std::cout << itau << "\ttau= " << tau 
-               << "\tQ2= " << Q2 << "\tQ= " << Q 
-     	       << "\talphas= " << m_alphas[itau] << std::endl; 
+    //    std::cout << itau << "\ttau " << tau 
+    //	      << "\tQ2 " << Q2 << "\tQ " << Q 
+    //	      << "\talphas " << m_alphas[itau] << std::endl; 
 
 #if 0
     int iymin1 = m_weight[0]->ymin();
@@ -689,16 +685,8 @@ void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 	}    
       }
 
-      if (debug) cout<<" calling PDF() "<<endl;
       pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
-      if (debug)
-       cout<<" x= "<<x<<" fscale_factor= "<<fscale_factor
-           <<" Q= "<<Q<<"  m_fg1["<<itau<<"]["<<iy<<"]= "
-           <<endl;
-      if (debug) for (int ifl=0; ifl<=12; ifl++)
-       cout<<" m_fg1["<<itau<<"]["<<iy<<"]["<<ifl<<"]="<<m_fg1[itau][iy][ifl]<<endl;
-
-
+      
       double invx = 1/x;
       for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
       if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= fun;
@@ -814,22 +802,21 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 			double Escale) 
 { 
 
-  char name[]="appl_grid:igrid::convolute(): ";
+  //char name[]="appl_grid:igrid::convolute(): ";
   static const double twopi = 2*M_PI;
   static const int nc = 3;
   //TC   const int nf = 6;
   static const int nf = 5;
   static double beta0=(11.*nc-2.*nf)/(6.*twopi);
-
-  const bool debug=true;  
+  //const bool debug=false;  
 
   double alphas_tmp = 0.;  
   double dsigma  = 0.; //, xsigma = 0.;
   double _alphas = 1.;
   double  alphaplus1 = 0.;
   // do the convolution  
-  if (debug) cout<<name<<" nloop= "<<nloop<<" Nproc= "<<m_Nproc<<endl;
-  if (debug) std::cout << "\t order=" << lo_order << "\tnloop=" << nloop << std::endl;
+  // if (debug) cout<<name<<" nloop= "<<nloop<<endl;
+  //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
   // is the grid empty
   int size=0;
   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
@@ -881,21 +868,16 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	  if ( (sig[ip] = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2)) ) nonzero = true;
 	}
 	
-	if (debug) for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout<<"\t sigma("<<ip<<")= " << sig[ip]; 
-	//if (debug) std::cout << std::endl;
+	//	for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << sig[ip]; 
+	//	std::cout << std::endl;
 
 	if ( nonzero ) { 	
 	  // build the generalised pdfs from the actual pdfs
-
-	  if (debug) cout<<" m_fg1["<<itau<<"]["<<iy1<<"]= "<<m_fg1[itau][iy1]
-                         <<" m_fg2["<<itau<<"]["<<iy2<<"]= "<<m_fg2[itau][iy2]
-                         <<endl;
- 
-
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
 	
-	  if (debug) for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
-	   std::cout <<"H["<<ip<<"]= "<< H[ip] << std::endl;
+	  //	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) H[ip] = 1;
+	  //    std::cout << "H return" << std::endl;
+	  //    for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << H[ip] << std::endl;
 
 	  //	  for  ( int ipp=0 ; ipp<m_Nproc ; ipp++ ) H[ipp]=1;
   
@@ -919,13 +901,13 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	  } 
 #endif
 
-          if (debug) 
-           cout<<name<<" nloop= "<<nloop
-                               <<" itau="<<itau
-	 	     <<" iy1= "<<iy1<<" iy2= "<<iy2
-                               <<" xsigma= "<<xsigma
-                               <<" dsigma= "<<dsigma
-                               << endl;
+          //if (debug) 
+          // cout<<name<<" nloop= "<<nloop
+          //                     <<" itau="<<itau
+	  //	       <<" iy1= "<<iy1<<" iy2= "<<iy2
+          //                     <<" xsigma= "<<xsigma
+          //                     <<" dsigma= "<<dsigma
+          //                     << endl;
 	  
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
@@ -935,11 +917,11 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	      // nlo relative ln mu_R^2 term 
 	      dsigma+= alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
   
-              if (debug) cout<<" xsigma= "<<xsigma
-                  <<" twopi= "<<twopi<<" beta0= "<<beta0
-                  <<" lo_order="<<lo_order 
-                  <<" log(rscale_factor*rscale_factor)= "<<log(rscale_factor*rscale_factor)  
-                  <<endl;
+              //if (debug) cout<<" xsigma= "<<xsigma
+              //    <<" twopi= "<<twopi<<" beta0= "<<beta0
+              //    <<" lo_order="<<lo_order 
+              //    <<" log(rscale_factor*rscale_factor)= "<<log(rscale_factor*rscale_factor)  
+              //    <<endl;
               //if (debug) cout<<name<<" dsigma= "<<dsigma
               //               <<" factor*xsigma= "
               //               << twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma
@@ -966,7 +948,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
     }  // iy1
   }  // itau
   
-  if (debug)  cout << name<<"     convoluted dsigma=" << dsigma << endl; 
+  //if (debug)  cout << name<<"     convoluted dsigma=" << dsigma << endl; 
   
   delete[] sig;
   delete[] H;

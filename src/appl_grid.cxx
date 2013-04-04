@@ -89,7 +89,8 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false), 
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
-  m_documentation("") {
+  m_documentation("")
+{
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
   m_obs_bins->SetDirectory(0);
@@ -115,7 +116,8 @@ grid::grid(int Nobs, const double* obsbins,
   m_run(0), m_optimised(false), m_trimmed(false),  m_normalised(false), m_symmetrise(false),
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
-  m_documentation("") {
+  m_documentation("")
+{
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
@@ -142,7 +144,8 @@ grid::grid(const vector<double> obs,
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
-  m_documentation("") {
+  m_documentation("")
+{
   
   if ( obs.size()==0 ) { 
     cerr << "grid::not enough bins in observable" << endl;
@@ -210,7 +213,7 @@ grid::grid(const string& filename, const string& dirname)  :
   m_normalised(false),
   m_symmetrise(false), m_transform(""), 
   m_applyCorrections(false),
-  m_documentation("") 
+  m_documentation("")
 {
 
   struct stat stfileinfo;
@@ -282,11 +285,41 @@ grid::grid(const string& filename, const string& dirname)  :
   if ( setup->GetNoElements()>7 ) m_applyCorrections = ( (*setup)(7)!=0 ? true : false );
   else                            m_applyCorrections = false;
 
- 
+
+  //  std::vector<double> _ckmsum;
+  std::vector<std::vector<double> > _ckm2;
+
+  bool savedckm = false;
+
+  if ( setup->GetNoElements()>8 && (*setup)(8)!=0 ) {
+
+    std::cout << "grid::grid() read ckm matrices" << std::endl;
+    
+    savedckm = true;
+
+    //    TVectorT<double>* ckmsum=(TVectorT<double>*)gridfilep->Get((dirname+"/CKMSUM").c_str());
+
+    //    appl_pdf::make_ckmsum(_ckmsum);
+    //    for ( int ic=0 ; ic<13 ; ic++ ) _ckmsum[ic] = (*ckmsum)(ic); 
+
+    TVectorT<double>* ckm2flat=(TVectorT<double>*)gridfilep->Get((dirname+"/CKM2").c_str());
+
+    _ckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13) );
+    for ( int ic=0 ; ic<13 ; ic++ ) { 
+      for ( int id=0 ; id<13 ; id++ ) _ckm2[ic][id] = (*ckm2flat)(ic*13+id); 
+    }
+
+  }
+
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
   if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
+
+  std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
+
+  // set the ckm matrices 
+  if ( _ckm2.size()>0 )  setckm( _ckm2 );
 
   delete setup;
 
@@ -351,7 +384,9 @@ grid::grid(const grid& g) :
   m_genpdfname(g.m_genpdfname), 
   m_cmsScale(g.m_cmsScale),
   m_applyCorrections(g.m_applyCorrections), 
-  m_documentation(g.m_documentation)
+  m_documentation(g.m_documentation),
+  m_ckmsum(g.m_ckmsum), /// need a deep copy of the contents
+  m_ckm2(g.m_ckm2)      /// need a deep copy of the contents
 {
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -374,14 +409,11 @@ void grid::construct(int Nobs,
 		     int order, 
 		     string transform ) { 
 
-  std::cout << "appl::grid::construct() m_order " << m_order << "\tNobs " << Nobs << std::endl; 
+  //  std::cout << "appl::grid::construct() m_order " << m_order << "\tNobs " << Nobs << std::endl; 
 
   for ( int iorder=0 ; iorder<3 ; iorder++ ) m_grids[iorder] = 0;
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
-   std::cout << "appl::grid::construct() Nproc= " << m_genpdf[iorder]->Nproc()
-<< std::endl; 
-
     m_grids[iorder] = new igrid*[Nobs];
     for ( int iobs=0 ; iobs<Nobs ; iobs++ ) {
       m_grids[iorder][iobs] = new igrid(NQ2, Q2min, Q2max, Q2order, 
@@ -643,7 +675,9 @@ void grid::addpdf( std::string s ) {
 
 }
 
-
+void grid::setckm( const std::vector<std::vector<double> >& ckm2 ) { 
+  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]->setckm2(ckm2);
+}
 
 void grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
 // void grid::pdfinterp(double x, double Q2, double* f) {  }
@@ -712,8 +746,33 @@ void grid::Write(const string& filename, const string& dirname) {
   (*setup)(5) =   m_cmsScale ;
   (*setup)(6) = ( m_normalised ? 1 : 0 );
   (*setup)(7) = ( m_applyCorrections ? 1 : 0 );
+
+  if ( m_genpdf[0]->getckmsum().size()==0 ) (*setup)(8) = 0;
+  else                                      (*setup)(8) = 1;
+
   setup->Write("State");
   
+  if ( (*setup)(8) == 1 ) { 
+    
+    //    TVectorT<double>* ckmsum = new TVectorT<double>(13);
+
+    //    const std::vector<double>& _ckmsum = m_genpdf[0]->getckmsum();
+    //    for ( int ic=0 ; ic<13 ; ic++ ) (*ckmsum)(ic) = _ckmsum[ic];
+
+    //    ckmsum->Write("CKMSUM");
+
+    TVectorT<double>* ckm2flat = new TVectorT<double>(169);
+    const std::vector<std::vector<double> >& _ckm2 = m_genpdf[0]->getckm2();
+
+    for ( int ic=0 ; ic<13 ; ic++ ) { 
+      for ( int id=0 ; id<13 ; id++ ) (*ckm2flat)(ic*13+id) = _ckm2[ic][id];
+    }
+
+    ckm2flat->Write("CKM2");
+
+  }
+  
+
   //  int _size     = 0;
   //  int trim_size = 0;
 

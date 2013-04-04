@@ -27,16 +27,10 @@ class generic_pdf : public appl_pdf {
 
 public:
 
-
   generic_pdf(const std::string& s="");
 
   virtual ~generic_pdf() { 
     if ( H )        delete[] H; 
-    // if ( m_ckmsum ) delete[] m_ckmsum;
-    // if ( m_ckm2 ) { 
-    //   for ( int i=0 ; i<13 ; i++ ) if ( m_ckm2[i] ) delete[] m_ckm2[i];
-    //   delete[] m_ckm2;
-    //  }
   } 
 
   void evaluate(const double* fA, const double* fB, double* H);
@@ -53,27 +47,28 @@ public:
 
   void ReadSubprocessSteering(const std::string& fname);
 
-  void Print_ckm();  
+  //void Print_ckm();  
+  void Print_myckm();  
 
   void PrintSubprocess();
 
   int  GetSubProcessNumber(){ return procname.size(); }
 
-  double* GetGeneralisedPdf(const double *,const double *); 
+  //double* GetGeneralisedPdf(const double *,const double *); 
 
-  int  decideSubProcess(const int iflav1, const int iflav2, const int nproc);
+  int  decideSubProcess(const int iflav1, const int iflav2);
 
   void SetSubCurrentProcess(int mypro) { currentsubprocess=mypro; }
 
   int GetCurrentSubProcess() { 
-    if ( currentsubprocess==-1 ) std::cout << " MySubProcess: current subprocess not defined ! " << std::endl;
+    if ( currentsubprocess==-1 ) std::cout << " generic_pdf: current subprocess not defined ! " << std::endl;
     return currentsubprocess;
   }
 
   void SetCurrentProcess(int mypro){ currentprocess=mypro; }
   
   int GetCurrentProcess() { 
-    if (currentprocess==-1) cout<<" MySubProcess: current process not defined ! "<<endl;
+    if (currentprocess==-1) cout<<" generic_pdf: current process not defined ! "<<endl;
     return currentprocess;
   }
   
@@ -81,17 +76,28 @@ public:
 
   void SetnQuark(int nq) { nQuark=nq; }
 
+  //  void generic_pdf::MakeCkm();
+  void MakeMyCkm();
+
   void PrintFlavourMap() {
-    cout<<" print out flavour map "<<endl;
+    cout<<" generic_pdf: print out flavour map "<<endl;
     std::map<int,int>::iterator imap;
     for (imap = flavourtype.begin(); imap!=flavourtype.end(); ++imap){
       cout<<" Flavourtype["<<imap->first<<"]= "<<imap->second<<" "<<endl;
     }
   }
 
+  //int GetNProc() {return procname.size(); };
+
+  // generic_pdf() : appl_pdf("vrapzLO") { 
+  // m_Nproc=this->GetSubProcessNumber(); 
+  //} 
+
 
   
 private:
+
+  std::vector<std::vector<double> > myckm2;
 
   /// this might eventually become a string encoding the grid
   string m_filename;  
@@ -100,11 +106,8 @@ private:
   bool m_initialised;
 
   /// ckm matrices should they be needed ...
-  // double*  m_ckmsum;
-  // double** m_ckm2; 
-  std::vector<double>                m_ckmsum;
-  std::vector<std::vector<double> >  m_ckm2; 
-
+  //std::vector<double>                m_ckmsum;
+  //std::vector<std::vector<double> >  m_ckm2;
 
   bool    debug;
 
@@ -123,8 +126,9 @@ private:
   std::map<int,int> flavourtype;
 
   // sum of quark flavour belonging to one flavour type up,down,gluon
-  std::map<int,double> pdfsumtypes1;
-  std::map<int,double> pdfsumtypes2;
+  std::map<int,double> pdfA; //hadron A
+  std::map<int,double> pdfB; //hadron B
+
   
   // maps iflavour -2, -1, 0, 1, 2 of first or second proton to iprocess
   std::map<int,int> Flav1; 

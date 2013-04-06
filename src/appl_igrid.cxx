@@ -819,7 +819,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
   //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
   // is the grid empty
   int size=0;
-  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
+   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
     if ( !m_weight[ip]->trimmed() )  {
       //  cout << "igrid::convolute() naughty, naughty!" << endl;
       m_weight[ip]->trim();
@@ -1007,8 +1007,8 @@ double igrid::convolute_subproc(int subproc,
   int size=0;
   
   int ip = 0;
-
-  if ( subproc>=0 && subproc<genpdf->Nproc() )   ip = subproc;
+  //TC if ( subproc>=0 && subproc<genpdf->Nproc() )   ip = subproc;
+  if ( subproc>=0 && subproc<m_Nproc )   ip = subproc;
   else throw exception("convolute_subproc() subprocess index out of range\n");
 
 

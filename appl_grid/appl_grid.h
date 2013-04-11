@@ -435,6 +435,8 @@ public:
   /// apply corrections to a vector
   void applyCorrections(std::vector<double>& v);
 
+  /// set the ckm matrix values if need be
+  void setckm( const std::vector<std::vector<double> >& ckm2 );
 
 protected:
 
@@ -478,8 +480,6 @@ protected:
   /// add a generic pdf to the data base of registered pdfs
   void addpdf( std::string s );
 
-  /// set the ckm matrix values if need be
-  void setckm( const std::vector<std::vector<double> >& ckm2 );
 
 protected:
 

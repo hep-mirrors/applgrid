@@ -64,6 +64,8 @@ public:
     return currentsubprocess;
   }
 
+  string GetSubProcessName(int isub) {return procname[isub];};
+
   void SetCurrentProcess(int mypro){ currentprocess=mypro; }
   
   int GetCurrentProcess() { 

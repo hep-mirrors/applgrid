@@ -14,6 +14,7 @@ using namespace appl;
 
 #include "appl_grid/mcfmz_pdf.h"
 #include "appl_grid/mcfmw_pdf.h"
+#include "appl_grid/mcfmwc_pdf.h"
 #include "appl_grid/mcfmQQ_pdf.h"
 #include "appl_grid/nlojet_pdf.h"
 #include "appl_grid/jetrad_pdf.h"
@@ -33,6 +34,9 @@ pdfmap appl_pdf::m_pdfmap;
 mcfmz_pdf     mcfmzpdf;
 mcfmwp_pdf    mcfmwppdf;
 mcfmwm_pdf    mcfmwmpdf;
+
+mcfmwpc_pdf    mcfmwpcpdf;
+mcfmwmc_pdf    mcfmwmcpdf;
 
 mcfmCC_pdf    mcfmccpdf;
 mcfmBB_pdf    mcfmbbpdf;

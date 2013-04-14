@@ -20,6 +20,7 @@ libAPPLgrid_la_SOURCES = \
 	appl_grid.cxx		appl_igrid.cxx  	appl_pdf.cxx 		appl_timer.cxx \
 	fastnlo.cxx 		SparseMatrix3d.cxx	hoppet_init.cxx	\
 	nlojet_pdf.cxx		nlojetpp_pdf.cxx 	mcfmz_pdf.cxx 		mcfmw_pdf.cxx  \
+	mcfmwc_pdf.cxx \
 	mcfmQQ_pdf.cxx \
 	jetrad_pdf.cxx		dis_pdf.cxx \
 	generic_pdf.cxx \

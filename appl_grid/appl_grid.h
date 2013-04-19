@@ -122,6 +122,17 @@ public:
 		       const double obs, 
 		       const double* weight, const int iorder);
   
+  void fill_grid(const double x1, const double x2, const double Q2, 
+		 const double obs, 
+		 const double* weight, const int iorder)
+  {
+    if (isOptimised())
+      fill(x1, x2, Q2, obs, weight, iorder);
+    else
+      fill_phasespace(x1, x2, Q2, obs, weight, iorder);
+    return;
+  }
+
   void fill_index(const int ix1, const int ix2, const int iQ2, 
 		  const int iobs, 
 		  const double* weight, const int iorder);

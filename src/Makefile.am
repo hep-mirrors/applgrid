@@ -23,7 +23,7 @@ libAPPLgrid_la_SOURCES = \
 	mcfmwc_pdf.cxx \
 	mcfmQQ_pdf.cxx \
 	jetrad_pdf.cxx		dis_pdf.cxx \
-	generic_pdf.cxx \
+	generic_pdf.cxx basic_pdf.cxx \
 	TFileString.cxx		TFileStringDict.cxx \
 	TFileVector.cxx		TFileVectorDict.cxx
 

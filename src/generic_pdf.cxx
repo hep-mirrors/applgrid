@@ -296,6 +296,8 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
 
   }
 
+  m_Nproc = procname.size();
+
 }
 
 

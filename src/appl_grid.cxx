@@ -664,7 +664,7 @@ void grid::addpdf( std::string s ) {
     for ( unsigned i=0 ; i<imax ; i++ ) { 
       if ( names[i].find(".dat")!=std::string::npos ) { 
 	try {
-	  appl_pdf::getpdf(names[i]);
+	  appl_pdf::getpdf(names[i]); // , false);
 	}
 	catch ( appl_pdf::exception e ) { 
 	  std::cout << "creating new generic_pdf " << names[i] << std::endl;

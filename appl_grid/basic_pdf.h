@@ -1,8 +1,20 @@
 // emacs: this is -*- c++ -*-
 //
-//   basic_pdf.h        
+//   basic_pdf.h  pdf transform class for basic 121 ( 11 x 11 ) of 
+//                incoming parton combinations (not including a top 
+//                density) the 121 different sub processes correspond 
+//                to flavour combinations of where the first parton 
+//                if from proton 1 and the second from proton 2 of
 //
-//   pdf transform function for basic 121 ( 11 x 11 ) combinations                    
+//                  0 - bbar-bbar
+//                  1 - bbar-cbar
+//                  2 - bbar-sbar 
+//                  ...
+//                  120 - b-b
+//                    
+//                The flavours are in the standard lhapdf convention:
+//                  -6 (tbar) to +6 (top) with the gluon, flavour 0  
+//                    
 // 
 //   Copyright (C) 2007 M.Sutton (sutt@hep.ucl.ac.uk)    
 //
@@ -25,6 +37,8 @@ public:
   basic_pdf() : appl::appl_pdf("basic") { m_Nproc=121; } 
 
   void evaluate(const double* f1, const double* f2, double* H);
+
+  int  decideSubProcess(const int iflav1, const int iflav2);
 
 };  
   
@@ -49,6 +63,12 @@ inline void basic_pdf::evaluate(const double* _f1, const double* _f2, double* H)
   }
 }
   
+
+inline int  basic_pdf::decideSubProcess(const int iflav1, const int iflav2) { 
+  if ( std::abs(iflav1)>5 || std::abs(iflav2)>5 ) return -1;
+  return (iflav1+5)*11+(iflav2+5);
+}
+
 
 
 // fortran callable wrapper

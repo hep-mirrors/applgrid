@@ -14,6 +14,7 @@
 #define __APPL_PDF_H
 
 #include <iostream>
+#include <sstream>
 using std::ostream;
 using std::cout;
 using std::cerr;
@@ -64,19 +65,18 @@ public:
   class exception : public std::exception { 
   public: 
     exception(const string& s="") { cerr << what() << " " << s << endl; }; 
-    exception(ostream& s)         { cerr << what() << " " << s << endl; }; 
-    virtual const char* what() const throw() {  return "appl::appl_pdf::exception "; }
+    exception(std::ostream& s)    { cerr << what() << " " << s << endl; }; 
+    const char* what() const throw() { return "appl::appl_pdf::exception "; }
   };
   
 public:
 
   // retrieve an instance from the map 
-  static appl_pdf* getpdf(const string& s) {
+  static appl_pdf* getpdf(const string& s, bool printout=true) {
     pdfmap::iterator itr = m_pdfmap.find(s);
     if ( itr!=m_pdfmap.end() ) return itr->second;    
     throw exception( cerr << "getpdf() " << s << " not instantiated in map " );
   }
-
   
   static void printmap() {
     pdfmap::iterator itr = m_pdfmap.begin();

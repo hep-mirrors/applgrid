@@ -34,7 +34,8 @@ using namespace appl;
 generic_pdf::generic_pdf(const std::string& s) 
   : appl_pdf(s), 
     m_initialised(false), 
-    H(0)
+    H(0), 
+    m_ckmflag(false)
  {
 
    /// need to check has the appropriate form, 
@@ -187,19 +188,37 @@ void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {
  }
 */
 
- for(int i=-6; i <=6; i++) {
-  int j=flavourtype[i];
-  if (j==0) continue;
-  pdfA[j] += fA[nQuark + i]*m_ckmsum[nQuark+j];
-  pdfB[j] += fB[nQuark + i]*m_ckmsum[nQuark+j];
-  if (debug)
-    cout<<" i= "<<i<<" j= "<<j
-      <<" fA["<<i<<"]= "<<fA[nQuark + i]
-      <<" fB["<<i<<"]= "<<fB[nQuark + i]
-      <<" pdfA["<<j<<"]= "<<pdfA[j]<<" pdfB["<<j<<"]= "<<pdfB[j]
-      <<" m_ckmsum["<<nQuark+j<<"]= "<<m_ckmsum[nQuark+j]
-      <<endl;
+ if ( m_ckmflag ) {
+   /// do we need the ckm matrix ??
+   for(int i=-6; i <=6; i++) {
+     int j=flavourtype[i];
+     if (j==0) continue;
+     pdfA[j] += fA[nQuark + i]*m_ckmsum[nQuark+j];
+     pdfB[j] += fB[nQuark + i]*m_ckmsum[nQuark+j];
+     if (debug)
+       cout<<" i= "<<i<<" j= "<<j
+	   <<" fA["<<i<<"]= "<<fA[nQuark + i]
+	   <<" fB["<<i<<"]= "<<fB[nQuark + i]
+	   <<" pdfA["<<j<<"]= "<<pdfA[j]<<" pdfB["<<j<<"]= "<<pdfB[j]
+	   <<" m_ckmsum["<<nQuark+j<<"]= "<<m_ckmsum[nQuark+j]
+	   <<endl;
+   }
  }
+ else { 
+   for(int i=-6; i <=6; i++) {
+     int j=flavourtype[i];
+     if (j==0) continue;
+     pdfA[j] += fA[nQuark + i];
+     pdfB[j] += fB[nQuark + i];
+     if (debug)
+       cout<<" i= "<<i<<" j= "<<j
+	   <<" fA["<<i<<"]= "<<fA[nQuark + i]
+	   <<" fB["<<i<<"]= "<<fB[nQuark + i]
+	   <<" pdfA["<<j<<"]= "<<pdfA[j]<<" pdfB["<<j<<"]= "<<pdfB[j]
+	   <<endl;
+   }
+ }
+
 
  /*
  if (debug) {
@@ -248,9 +267,10 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
   //
   
   if (debug)
-  std::cout << "generic_pdf::ReadSubprocessSteering: read subprocess configuration file: " << fname << endl; 
+    std::cout << "generic_pdf::ReadSubprocessSteering: read subprocess configuration file: " << fname << endl; 
   
   std::ifstream infile(fname.c_str(), std::ios::in);
+
   if ( !infile ) { // Check open
     std::cerr << "Can't open " << fname << std::endl;
     infile.close();
@@ -275,6 +295,21 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
     
     //if (debug) std::cout<< "line= "<< line << "\n";
 
+    if ( !m_ckmflag ) { 
+      if ( mytest=="Wplus" )  {
+   	std::cout << "generic_pdf::ReadSubprocessSteering() setting W+ cmk matrix" << std::endl;
+	make_ckm( true );
+	m_ckmflag = true;
+	continue;
+      }
+      else if ( mytest=="Wminus" ) { 
+   	std::cout << "generic_pdf::ReadSubprocessSteering() setting W- cmk matrix" << std::endl;
+	make_ckm( false );
+	m_ckmflag = true;
+	continue;
+      }
+    }
+    
     if(line[0] != '%'  && mytest.size()!=0) {
       char flav1[100];char flav2[100];
       sscanf(line,"%s %s",flav1,flav2);
@@ -284,10 +319,12 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
       int ifl2=iflavour[flav2];
 
       if (debug)
-      std::cout<<"ReadSubProcesses: ifl1 = " << ifl1 << " ifl2 = " << ifl2 << std::endl;
+	std::cout<<"ReadSubProcesses: ifl1 = " << ifl1 << " ifl2 = " << ifl2 << std::endl;
+  
       Flav1[iproc]=ifl1;
       Flav2[iproc]=ifl2;
       iproc++;
+      
       std::string myprocname=string(flav1)+"-"+string(flav2);
       if (debug) std::cout << iproc << " process name = " << myprocname << endl;;
       procname.push_back(myprocname);

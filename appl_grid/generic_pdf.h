@@ -138,7 +138,7 @@ private:
   int currentsubprocess;
   int currentprocess;
 
-
+  bool m_ckmflag;
 };
 
 

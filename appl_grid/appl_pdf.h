@@ -41,7 +41,8 @@ namespace appl {
 
 
 class appl_pdf;
-typedef map <const string, appl_pdf*> pdfmap;
+
+typedef map<const string, appl_pdf*> pdfmap;
 
 
 // this is a *maybe* nice class, a base class for pdf 
@@ -71,32 +72,25 @@ public:
   
 public:
 
-  // retrieve an instance from the map 
-  static appl_pdf* getpdf(const string& s, bool printout=true) {
-    pdfmap::iterator itr = m_pdfmap.find(s);
-    if ( itr!=m_pdfmap.end() ) return itr->second;    
-    throw exception( cerr << "getpdf() " << s << " not instantiated in map " );
-  }
+  /// constructor and destructor
+  appl_pdf(const string& name);
+
+  virtual ~appl_pdf();
+
+  /// retrieve an instance from the map 
+  static appl_pdf* getpdf(const string& s, bool printout=true);
   
-  static void printmap() {
+  /// print out the pdf map
+  static void printmap(std::ostream& s=std::cout) {
     pdfmap::iterator itr = m_pdfmap.begin();
     while ( itr!=m_pdfmap.end() )  {
-      std::cout << "pdfmap " << itr->first << "\t\t" << itr->second << std::endl;
+      s << "pdfmap " << itr->first << "\t\t" << itr->second << std::endl;
       itr++;
     } 
   }
-  
-public:
 
-  appl_pdf(const string& name) : m_Nproc(0), m_name(name) { 
-    if ( m_name!="" ) addtopdfmap(m_name, this);
-  }
-  
-  virtual ~appl_pdf() { 
-    // when I'm destroyed, remove my entry from the map 
-    pdfmap::iterator mit = m_pdfmap.find(m_name);
-    if ( mit!=m_pdfmap.end() ) m_pdfmap.erase(mit);
-  } 
+  /// initiqlise the factory  
+  static bool create_map(); 
 
   virtual void evaluate(const double* f1, const double* f2, double* H) = 0; 
 
@@ -148,14 +142,14 @@ private:
 
   static void addtopdfmap(const string& s, appl_pdf* f) { 
     if ( m_pdfmap.find(s)==m_pdfmap.end() ) { 
-      m_pdfmap[s] = f;
+      m_pdfmap.insert( pdfmap::value_type( s, f ) );
       //      cout << "appl_pdf::addtomap() registering " << s << " in map addr \t" << f << endl;
     }
     else { 
       throw exception( cerr << "appl_pdf::addtopdfmap() " << s << " already in map\t0x" << m_pdfmap.find(s)->second  );
     }
   }
-
+  
 protected:
 
   int    m_Nproc;
@@ -163,14 +157,13 @@ protected:
 
   vector<string> m_subnames;
   
-  static pdfmap m_pdfmap;
+  static pdfmap  m_pdfmap;
 
   // ckm matrix related information 
   std::vector<double>               m_ckmsum;
   std::vector<std::vector<double> > m_ckm2;
 
 };
-
 
 
 };

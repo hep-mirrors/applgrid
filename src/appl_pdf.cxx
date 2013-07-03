@@ -10,7 +10,6 @@
 
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
 #include "appl_grid/mcfmz_pdf.h"
 #include "appl_grid/mcfmw_pdf.h"
@@ -26,31 +25,72 @@ using namespace appl;
 
 namespace appl { 
 
+
 // initialise the map with some default instances
 // although the user could create these themselves
 // if they wanted
 pdfmap appl_pdf::m_pdfmap; 
 
-mcfmz_pdf     mcfmzpdf;
-mcfmwp_pdf    mcfmwppdf;
-mcfmwm_pdf    mcfmwmpdf;
 
-mcfmwpc_pdf    mcfmwpcpdf;
-mcfmwmc_pdf    mcfmwmcpdf;
+/// constructor and destructor
+appl_pdf::appl_pdf(const string& name) : m_Nproc(0), m_name(name) { 
+   if ( m_name!="" ) addtopdfmap(m_name, this);
+}
+  
+appl_pdf:: ~appl_pdf() { 
+  // when I'm destroyed, remove my entry from the map 
+  pdfmap::iterator mit = m_pdfmap.find(m_name);
+  if ( mit!=m_pdfmap.end() ) m_pdfmap.erase(mit);
+} 
 
-mcfmCC_pdf    mcfmccpdf;
-mcfmBB_pdf    mcfmbbpdf;
-mcfmTT_pdf    mcfmttpdf;
 
-nlojet_pdf    nlojetpdf;
-nlojetpp_pdf  nlojetpppdf;
-jetrad_pdf    jetradpdf;
-dis_pdf       dispdf;
-vrapzLO_pdf   vrapzLOpdf;
-vrapzNLO_pdf  vrapzNLOpdf;
-vrapzNNLO_pdf vrapzNNLOpdf;
+/// retrieve an instance from the map 
+appl_pdf* appl_pdf::getpdf(const string& s, bool printout) {
+  /// initialise the factory
+  if ( m_pdfmap.size()==0 ) appl::appl_pdf::create_map(); 
+  pdfmap::iterator itr = m_pdfmap.find(s);
+  if ( itr!=m_pdfmap.end() ) return itr->second; 
+  /// not found in map
+  throw exception( std::cerr << "getpdf() " << s << " not instantiated in map " );
+}
 
-// generic_pdf   genericpdf;
+
+bool appl_pdf::create_map() { 
+
+  std::cout << "appl_pdf::create_map() creating pdf combination factory" << std::endl;
+
+  if ( m_pdfmap.size()==0 ) { 
+    
+    /// the appl_pdf add their own pointers to the 
+    /// pdf map so we don;t need to remember their 
+    /// pointers ourselves
+    new  mcfmz_pdf;
+    new  mcfmwp_pdf;
+    new  mcfmwm_pdf;
+    
+    new  mcfmwpc_pdf;
+    new  mcfmwmc_pdf;
+    
+    new  mcfmCC_pdf;
+    new  mcfmBB_pdf;
+    new  mcfmTT_pdf;
+
+    new nlojet_pdf;
+    new nlojetpp_pdf;
+    new jetrad_pdf;
+    new dis_pdf;
+
+    new vrapzLO_pdf;
+    new vrapzNLO_pdf;
+    new vrapzNNLO_pdf;
+
+    //    printmap( std::cerr );
+
+  }
+
+  return true;
+}
+
 
 
 
@@ -64,7 +104,7 @@ void appl_pdf::make_ckm( bool Wp ) {
 
   if ( Wp ) { 
     
-    std::cout << "creating ckm matrix terms for Wplus production" << std::endl;
+    //  std::cout << "creating ckm matrix terms for Wplus production" << std::endl;
     
     m_ckm2[3][8]  =   0.049284000000000001417976847051249933 ;
     m_ckm2[8][3]  =   0.049284000000000001417976847051249933 ;
@@ -81,7 +121,7 @@ void appl_pdf::make_ckm( bool Wp ) {
   }
   else { 
     
-    std::cout << "creating ckm matrix terms for Wminus production" << std::endl;
+    //    std::cout << "creating ckm matrix terms for Wminus production" << std::endl;
     
     m_ckm2[4][9] =   0.049284000000000001417976847051249933 ;
     m_ckm2[9][4] =   0.049284000000000001417976847051249933 ;

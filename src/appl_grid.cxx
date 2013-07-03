@@ -40,13 +40,12 @@ using appl::grid;
 #include "TVectorT.h"
 
 
-
 /// this is a compatability flag for persistent versions 
 /// of the grid
 /// NB: ONLY change this if the persistent class
 ///     changes in a non-backwards compatible way.
 
-const string grid::m_version = "version-3.0";
+const string grid::m_version = "version-3.1";
 
 /// check if we have hoppet included 
 #include "amconfig.h"
@@ -77,6 +76,10 @@ void Splitting(const double& x, const double& Q, double* xf) {
 
 #endif
 
+
+
+/// make sure pdf map is initialised
+// bool pdf_ready = appl::appl_pdf::create_map(); 
 
 
 grid::grid(int NQ2, double Q2min, double Q2max, int Q2order, 

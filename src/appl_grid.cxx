@@ -826,8 +826,8 @@ void grid::Write(const string& filename, const string& dirname) {
 
   //  std::cout << "close file" << std::endl;
 
-  rootfile.Close();
   d.pop();
+  rootfile.Close();
 
   //  std::cout << "written" << std::endl;
 }

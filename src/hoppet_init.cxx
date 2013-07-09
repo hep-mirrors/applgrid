@@ -8,7 +8,7 @@
 //
 //   $Id: hoppet_init.cxx, v0.0   Sat 26 Sep 2009 13:24:31 BST sutt $
 
-#include "appl_grid/hoppet_init.h"
+#include "hoppet_init.h"
 
 #include <iostream>
 #include <vector>

@@ -11,7 +11,7 @@
 
 
 
-#include "appl_grid/TFileString.h"
+#include "TFileString.h"
 
 ClassImp(TFileString)
 

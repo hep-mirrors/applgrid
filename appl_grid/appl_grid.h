@@ -42,11 +42,10 @@ using std::string;
 
 #include <exception>
 
+// now use a forward declaration
+// #include "appl_grid/appl_igrid.h"
 
-#include "appl_grid/appl_igrid.h"
-using appl::igrid;
-
-#include "appl_grid/generic_pdf.h"
+// #include "generic_pdf.h"
 
 
 #include "TH1D.h"
@@ -60,6 +59,15 @@ double _fun(double y);
 
 namespace appl { 
 
+
+/// forward declarations - full definitions included 
+/// from appl_grid.cxx 
+class igrid;
+class appl_pdf;
+
+
+
+/// externally visible grid class
 class grid {
 
 public:
@@ -194,13 +202,6 @@ public:
 					 double (*alphas)(const double& ), 
 					 int     nloops, 
 					 double  rscale_factor=1, double Escale=1 ); 
-#if 0
-  double  convolute_bin(int bin,
-			void   (*pdf)(const double& , const double&, double* ), 
-			double (*alphas)(const double& ), 
-			int     nloops, 
-			double  rscale_factor=1, double Escale=1 ); 
-#endif  
 
 
   // perform the convolution to a specified number of loops 
@@ -367,19 +368,13 @@ public:
   // set optimise flag on all sub grids
   bool setOptimised(bool t=true) { 
     return m_optimised=t;
-    for ( int iorder=0 ; iorder<2 ; iorder++ ) { 
-      for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) m_grids[iorder][iobs]->setOptimised(t); 
-    }
+    //    for ( int iorder=0 ; iorder<2 ; iorder++ ) { 
+    //      for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) m_grids[iorder][iobs]->setOptimised(t); 
+    //    }
   }
 
   // find the number of words used for storage
-  int size() const { 
-    int _size = 0;
-    for( int iorder=0 ; iorder<2 ; iorder++ ) {
-      for( int iobs=0 ; iobs<Nobs() ; iobs++ ) _size += m_grids[iorder][iobs]->size();
-    }
-    return _size;
-  }
+  int size() const; 
 
   // get the cross sections
   double& crossSection()      { return m_total; } 

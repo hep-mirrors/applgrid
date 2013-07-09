@@ -39,7 +39,7 @@ using std::setprecision;
 
 
 
-#include "appl_grid/tsparse1d.h"
+#include "tsparse1d.h"
 
 
 template<class T> 

@@ -11,7 +11,7 @@
 #ifndef __VRAPZ_PDF_H
 #define __VRAPZ_PDF_H
 
-// #include "appl_grid/EWparams.h"
+// #include "EWparams.h"
 
 #include "appl_grid/appl_pdf.h" 
 using namespace appl;

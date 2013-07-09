@@ -13,7 +13,7 @@
 #include "appl_grid/appl_pdf.h" 
 using namespace appl;
 
-#include "appl_grid/dis_pdf.h"
+#include "dis_pdf.h"
 
 
 extern "C" void fdis_pdf__(const double* fA, const double* fB, double* H) { 

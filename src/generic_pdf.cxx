@@ -22,7 +22,7 @@
 #include "appl_grid/appl_pdf.h" 
 using namespace appl;
 
-#include "appl_grid/generic_pdf.h"
+#include "generic_pdf.h"
 
 
 /// don't want a fortran implementation

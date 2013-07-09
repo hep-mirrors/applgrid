@@ -13,7 +13,7 @@
 #define __SPARSE_H
 
 
-#include "appl_grid/tsparse3d.h"
+#include "tsparse3d.h"
 
 typedef tsparse1d<double> sparse1d;
 typedef tsparse2d<double> sparse2d;

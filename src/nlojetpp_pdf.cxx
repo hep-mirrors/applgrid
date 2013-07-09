@@ -13,7 +13,7 @@
 #include "appl_grid/appl_pdf.h" 
 using namespace appl;
 
-#include "appl_grid/nlojetpp_pdf.h"
+#include "nlojetpp_pdf.h"
 
 
 extern "C" void fnlojetpp_pdf__(const double* fA, const double* fB, double* H) { 

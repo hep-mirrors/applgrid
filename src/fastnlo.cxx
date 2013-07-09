@@ -10,6 +10,8 @@
 
 
 #include "appl_grid/fastnlo.h"
+#include "appl_igrid.h"
+
 
 #include <iostream>
 #include <fstream>

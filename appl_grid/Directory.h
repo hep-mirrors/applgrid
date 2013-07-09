@@ -1,7 +1,7 @@
 // emacs: this is -*- c++ -*-
 /**************************************************************************
  **
- **   File:         Directory.h  
+ **   File:         appl_grid/Directory.h  
  **
  **   Description:  class to keep a directory for each object 
  **                 in a root sort of way, but needed to keep 

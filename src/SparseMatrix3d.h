@@ -18,8 +18,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "appl_grid/axis.h"
-#include "appl_grid/sparse.h"
+#include "axis.h"
+#include "sparse.h"
 
 #include "TH1D.h"
 #include "TH3D.h"

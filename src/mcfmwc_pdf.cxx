@@ -2,7 +2,7 @@
 #include "appl_grid/appl_pdf.h" 
 using namespace appl;
 
-#include "appl_grid/mcfmwc_pdf.h"
+#include "mcfmwc_pdf.h"
 
 
 // fortran callable wrapper

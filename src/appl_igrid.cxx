@@ -20,7 +20,7 @@ using std::endl;
 using std::setprecision;
 using std::setw;
 
-#include "appl_grid/appl_igrid.h"
+#include "appl_igrid.h"
 using appl::igrid;
 
 #include <cmath>
@@ -36,7 +36,7 @@ using std::setprecision;
 #include "TVectorT.h"
 
 
-#include "appl_grid/TFileString.h"
+#include "TFileString.h"
 
 // splitting function code
 

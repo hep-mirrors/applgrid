@@ -25,12 +25,16 @@ using std::setw;
 // using std::abs;
 // using std::fabs;
 
+#include "appl_igrid.h"
 #include "appl_grid/appl_pdf.h"
 #include "appl_grid/appl_timer.h"
 #include "appl_grid/Directory.h"
 #include "appl_grid/appl_grid.h"
-#include "appl_grid/TFileString.h"
-#include "appl_grid/TFileVector.h"
+
+#include "generic_pdf.h"
+
+#include "TFileString.h"
+#include "TFileVector.h"
 using appl::grid;
 
 
@@ -50,7 +54,7 @@ const string grid::m_version = "version-3.1";
 /// check if we have hoppet included 
 #include "amconfig.h"
 
-#include "appl_grid/hoppet_init.h"
+#include "hoppet_init.h"
 
 #ifdef HAVE_HOPPET
 
@@ -1308,6 +1312,15 @@ void grid::addCorrection(TH1D* h, const std::string& label) {
 }
 
 
+
+// find the number of words used for storage
+int grid::size() const { 
+    int _size = 0;
+    for( int iorder=0 ; iorder<2 ; iorder++ ) {
+      for( int iobs=0 ; iobs<Nobs() ; iobs++ ) _size += m_grids[iorder][iobs]->size();
+    }
+    return _size;
+}
 
 
 /// apply corrections to a vector

@@ -10,7 +10,7 @@
 
 
 
-#include "appl_grid/basic_pdf.h"
+#include "basic_pdf.h"
 
 
 // fortran callable wrapper

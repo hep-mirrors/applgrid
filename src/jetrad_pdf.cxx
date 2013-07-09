@@ -13,7 +13,7 @@
 #include "appl_grid/appl_pdf.h"
 using namespace appl;
 
-#include "appl_grid/jetrad_pdf.h"
+#include "jetrad_pdf.h"
 
 
 // fortran callable wrapper

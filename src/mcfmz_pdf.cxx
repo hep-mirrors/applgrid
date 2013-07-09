@@ -13,7 +13,7 @@
 #include "appl_grid/appl_pdf.h" 
 using namespace appl;
 
-#include "appl_grid/mcfmz_pdf.h"
+#include "mcfmz_pdf.h"
 
 
 // fortran callable wrapper

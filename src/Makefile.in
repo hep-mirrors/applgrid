@@ -585,7 +585,7 @@ clean-local:
 	$(CXX) $(AM_CXXFLAGS) -c $<
 %.o : %.c 
 	$(CC) $(AM_CFLAGS) -c $<
-%Dict.cxx : ../appl_grid/%.h %.cxx
+%Dict.cxx : %.h %.cxx
 	$(CINT) -f $@ -c $< 
 
 #../appl_grid/$*LinkDef.h

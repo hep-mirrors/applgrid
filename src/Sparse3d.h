@@ -20,8 +20,8 @@ using std::endl;
 
 
 #include "TMatrixDSparse.h"
-#include "appl_grid/tsparse1d.h"
-#include "appl_grid/axis.h"
+#include "tsparse1d.h"
+#include "axis.h"
 
 
 class Sparse3d : public tsparse_base {

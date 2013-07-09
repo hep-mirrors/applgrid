@@ -11,16 +11,16 @@
 
 #include "appl_grid/appl_pdf.h" 
 
-#include "appl_grid/mcfmz_pdf.h"
-#include "appl_grid/mcfmw_pdf.h"
-#include "appl_grid/mcfmwc_pdf.h"
-#include "appl_grid/mcfmQQ_pdf.h"
-#include "appl_grid/nlojet_pdf.h"
-#include "appl_grid/jetrad_pdf.h"
-#include "appl_grid/nlojetpp_pdf.h"
-#include "appl_grid/dis_pdf.h"
-#include "appl_grid/vrapz_pdf.h"
-// #include "appl_grid/generic_pdf.h"
+#include "mcfmz_pdf.h"
+#include "mcfmw_pdf.h"
+#include "mcfmwc_pdf.h"
+#include "mcfmQQ_pdf.h"
+#include "nlojet_pdf.h"
+#include "jetrad_pdf.h"
+#include "nlojetpp_pdf.h"
+#include "dis_pdf.h"
+#include "vrapz_pdf.h"
+// #include "generic_pdf.h"
 
 
 namespace appl { 

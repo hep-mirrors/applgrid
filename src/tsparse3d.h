@@ -20,7 +20,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 
-#include "appl_grid/tsparse2d.h"
+#include "tsparse2d.h"
 
 
 template<class T> 

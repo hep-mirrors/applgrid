@@ -7,7 +7,7 @@
 //   $Id: SparseMatrix3d.cxx, v1.0   Fri Nov 23 00:49:26 GMT 2007 sutt
 
 
-#include "appl_grid/SparseMatrix3d.h"
+#include "SparseMatrix3d.h"
 
 
 

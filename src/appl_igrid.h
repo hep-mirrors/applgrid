@@ -48,7 +48,7 @@ using std::string;
 // using std::pow;
 
 #include "appl_grid/Directory.h"
-#include "appl_grid/SparseMatrix3d.h"
+#include "SparseMatrix3d.h"
 #include "appl_grid/appl_pdf.h"
 
 

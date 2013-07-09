@@ -13,7 +13,7 @@
 #include "appl_grid/appl_pdf.h" 
 using namespace appl;
 
-#include "appl_grid/vrapz_pdf.h"
+#include "vrapz_pdf.h"
 
 
 extern "C" void fvrapzLO_pdf__(const double* fA, const double* fB, double* H) { 

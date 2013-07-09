@@ -29,7 +29,7 @@ using std::ostringstream;
 #include <string>
 using std::string;
 
-#include "appl_grid/tsparse_base.h"
+#include "tsparse_base.h"
 
 
 template<class T> 

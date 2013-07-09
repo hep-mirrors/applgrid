@@ -16,7 +16,7 @@
 #include <string>
 
 
-#include "lumi_pdf.h"
+#include "appl_grid/lumi_pdf.h"
 
 
 

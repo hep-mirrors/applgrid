@@ -92,7 +92,7 @@ public:
   /// initiqlise the factory  
   static bool create_map(); 
 
-  virtual void evaluate(const double* f1, const double* f2, double* H) = 0; 
+  virtual void evaluate(const double* fA, const double* fA, double* H) = 0; 
 
   int     Nproc() const { return m_Nproc; } 
   string   name() const { return m_name;  }

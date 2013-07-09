@@ -37,7 +37,7 @@ public:
 
   basic_pdf() : appl::appl_pdf("basic") { m_Nproc=121; } 
 
-  void evaluate(const double* f1, const double* f2, double* H);
+  void evaluate(const double* _fA, const double* _fB, double* H);
 
   int  decideSubProcess(const int iflav1, const int iflav2);
 
@@ -45,13 +45,13 @@ public:
   
 
 
-inline void basic_pdf::evaluate(const double* _f1, const double* _f2, double* H) {  
+inline void basic_pdf::evaluate(const double* _fA, const double* _fB, double* H) {  
 
   // remapping from pdg -6..6 convention to u..t ubar..tbar g internal
   // basic convention
 
-  const double* f1 = _f1+6;
-  const double* f2 = _f1+6;
+  const double* f1 = _fA+6;
+  const double* f2 = _fB+6;
 
   ///  double H[121]; /// do not include top: 11x11 rather than 13x13
   int ih=0;

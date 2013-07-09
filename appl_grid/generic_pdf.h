@@ -32,6 +32,7 @@ public:
 
   virtual ~generic_pdf() {   } 
 
+  /// actually evaluate the 
   void evaluate(const double* _fA, const double* _fB, double* H);
 
   /// additional user defined functions to actually initialise 

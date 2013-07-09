@@ -31,8 +31,8 @@ using std::setw;
 #include "appl_grid/Directory.h"
 #include "appl_grid/appl_grid.h"
 
-#include "generic_pdf.h"
-#include "lumi_pdf.h"
+#include "appl_grid/generic_pdf.h"
+#include "appl_grid/lumi_pdf.h"
 
 #include "TFileString.h"
 #include "TFileVector.h"

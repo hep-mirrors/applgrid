@@ -19,10 +19,9 @@
 #include <fstream>
 
 
-#include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
-#include "generic_pdf.h"
+#include "appl_grid/generic_pdf.h"
+using namespace appl;
 
 
 /// don't want a fortran implementation

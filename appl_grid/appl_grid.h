@@ -504,7 +504,7 @@ protected:
   int  m_order;
 
   // the actual weight grids themselves
-  igrid** m_grids[3]; 
+  igrid** m_grids[5]; /// up to 5 grids LO, NLO, NNLO, Real virtual, etc 
 
   // total cross section qand uncertainty
   double m_total;
@@ -524,7 +524,7 @@ protected:
   string m_genpdfname; 
 
   // pdf combination class
-  appl_pdf* m_genpdf[3];
+  appl_pdf* m_genpdf[5];
 
   static const string m_version;
 

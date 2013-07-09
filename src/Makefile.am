@@ -31,10 +31,11 @@ libAPPLgrid_la_SOURCES = \
 
 #bin_PROGRAMS = 
 libfAPPLgrid_la_SOURCES = fappl_grid.cxx
-
-
 library_includedir=$(includedir)/appl_grid
-library_include_HEADERS=../appl_grid/*.h *.h
+library_include_HEADERS=../appl_grid/*.h 
+include_HEADERS=../appl_grid/*.h *.h
+# stupid definition because or (old) autoconf versions on lxplus 
+docdir = ${datadir}/doc/${PACKAGE}
 ROOTCFLAGS= $(shell root-config --cflags)
 ROOTLIBS= $(shell root-config --nonew --libs)
 ROOTGLIBS= $(shell root-config --nonew --glibs)
@@ -42,9 +43,7 @@ ROOTGLIBS= $(shell root-config --nonew --glibs)
 HOPPETDIR= $(shell hoppet-config --prefix)
 HOPPETCFLAGS= $(shell hoppet-config --cxxflags)
 HOPPETLIBS= $(shell hoppet-config --libs)
-
 ROOTARCH = $(findstring -m64, $(ROOTCFLAGS) )
-
 # GSLLIBS=$(shell gsl-config --libs)
 # WDIR = $(shell pwd)
 ROOTCINT=rootcint

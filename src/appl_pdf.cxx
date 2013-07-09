@@ -37,7 +37,7 @@ appl_pdf::appl_pdf(const string& name) : m_Nproc(0), m_name(name) {
    if ( m_name!="" ) addtopdfmap(m_name, this);
 }
   
-appl_pdf:: ~appl_pdf() { 
+appl_pdf::~appl_pdf() { 
   // when I'm destroyed, remove my entry from the map 
   pdfmap::iterator mit = m_pdfmap.find(m_name);
   if ( mit!=m_pdfmap.end() ) m_pdfmap.erase(mit);

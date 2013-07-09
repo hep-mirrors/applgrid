@@ -32,12 +32,11 @@ using std::setw;
 #include "appl_grid/appl_grid.h"
 
 #include "generic_pdf.h"
+#include "lumi_pdf.h"
 
 #include "TFileString.h"
 #include "TFileVector.h"
 using appl::grid;
-
-
 
 #include "TFile.h"
 #include "TObjString.h"
@@ -81,6 +80,10 @@ void Splitting(const double& x, const double& Q, double* xf) {
 #endif
 
 
+/// helper function
+static bool contains(const std::string& s, const std::string& reg ) { 
+  return s.find(reg)!=std::string::npos;
+}
 
 /// make sure pdf map is initialised
 // bool pdf_ready = appl::appl_pdf::create_map(); 
@@ -104,7 +107,9 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
-  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  //  if      ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  //  else if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
@@ -132,7 +137,9 @@ grid::grid(int Nobs, const double* obsbins,
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
-  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
+
   findgenpdf( m_genpdfname );
 
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform );
@@ -170,7 +177,8 @@ grid::grid(const vector<double> obs,
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
-  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  //   if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
@@ -205,7 +213,8 @@ grid::grid(const vector<double> obs,
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
-  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) m_grids[iorder] = new igrid*[Nobs];
@@ -320,7 +329,8 @@ grid::grid(const string& filename, const string& dirname)  :
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
-  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
@@ -397,7 +407,8 @@ grid::grid(const grid& g) :
 {
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
-  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+  if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
@@ -440,6 +451,11 @@ int grid::subProcesses(int i) const {
   return m_grids[i][0]->SubProcesses();     
 }  
 
+
+/// access the transform functions for the appl::igrid so that the 
+/// igrid can be hidden 
+double grid::transformvar()         { return igrid::transformvar(); }
+double grid::transformvar(double v) { return igrid::transformvar(v); }
 
 
 
@@ -649,9 +665,11 @@ void grid::findgenpdf( std::string s ) {
 }
 
 
-void grid::addpdf( std::string s ) {
+void grid::addpdf( const std::string& s, const std::vector<int>& combinations ) {
 
-    /// parse names, if they are contain .dat, then create the new generic pdfs
+  std::cout << "addpdf() in " << std::endl;
+
+    /// parse names, if they contain .dat, then create the new generic pdfs
     /// they will be added to the pdf map automatically 
     std::vector<std::string> names = parse( s, ":" );
 
@@ -665,10 +683,15 @@ void grid::addpdf( std::string s ) {
       }
     }
 
+    std::cout << "imax " << imax << std::endl; 
+
     /// loop through all the required pdfs checking whether they exist already,
     /// if not (from thrown exception) then create it, otherwise, don't need to 
     /// do anything 
     for ( unsigned i=0 ; i<imax ; i++ ) { 
+
+      std::cout << "\ti " << i<< std::endl; 
+
       if ( names[i].find(".dat")!=std::string::npos ) { 
 	try {
 	  appl_pdf::getpdf(names[i]); // , false);
@@ -678,7 +701,19 @@ void grid::addpdf( std::string s ) {
 	  new generic_pdf(names[i]);
 	}
       }
-    } 
+      else if ( names[i].find(".config")!=std::string::npos ) { 
+	try {
+	  appl_pdf::getpdf(names[i]); // , false);
+	}
+	catch ( appl_pdf::exception e ) { 
+	  std::cout << "creating new lumi_pdf " << names[i] << std::endl;
+	  new lumi_pdf(names[i], combinations);
+	  std::cout << "created" << names[i] << std::endl;
+
+	}
+      }
+
+    }
 
 }
 

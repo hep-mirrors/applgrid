@@ -24,6 +24,7 @@ libAPPLgrid_la_SOURCES = \
 	mcfmQQ_pdf.cxx \
 	jetrad_pdf.cxx		dis_pdf.cxx \
 	generic_pdf.cxx basic_pdf.cxx \
+	combination.cxx lumi_pdf.cxx \
 	TFileString.cxx		TFileStringDict.cxx \
 	TFileVector.cxx		TFileVectorDict.cxx
 
@@ -32,10 +33,13 @@ libAPPLgrid_la_SOURCES = \
 #bin_PROGRAMS = 
 libfAPPLgrid_la_SOURCES = fappl_grid.cxx
 library_includedir=$(includedir)/appl_grid
-library_include_HEADERS=../appl_grid/*.h 
-include_HEADERS=../appl_grid/*.h *.h
-# stupid definition because or (old) autoconf versions on lxplus 
+# library_include_HEADERS=../appl_grid/{Directory.h,appl_grid.h,appl_pdf.h,appl_timer.h,fastnlo.h} 
+library_include_HEADERS=../appl_grid/*.h
+#include_HEADERS=../appl_grid/*.h
+# stupid definition because of (old) autoconf versions on lxplus 
 docdir = ${datadir}/doc/${PACKAGE}
+
+
 ROOTCFLAGS= $(shell root-config --cflags)
 ROOTLIBS= $(shell root-config --nonew --libs)
 ROOTGLIBS= $(shell root-config --nonew --glibs)

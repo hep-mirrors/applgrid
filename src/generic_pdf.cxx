@@ -31,10 +31,11 @@ using namespace appl;
 //    pdf.evaluate(fA, fB, H);
 //  }
 
-generic_pdf::generic_pdf(const std::string& s) 
+
+// generic_pdf::generic_pdf(const std::string& s, const std::vector<int> combinations)  
+generic_pdf::generic_pdf(const std::string& s)
   : appl_pdf(s), 
     m_initialised(false), 
-    H(0), 
     m_ckmflag(false)
  {
 
@@ -45,7 +46,7 @@ generic_pdf::generic_pdf(const std::string& s)
    }
 
    //debug=false;
-  cout<<" initialize generic pdf "<<s<<" debug= "<<debug<<endl;
+  cout << " initialize generic pdf " << s << " debug= " << m_debug << endl;
 } 
 
 
@@ -76,21 +77,13 @@ void generic_pdf::initialise(const std::string& filename) {
 
   /// tancredi's code 
 
-  debug=false;
+  m_debug=false;
   
   currentprocess=-1;
   currentsubprocess=-1;
-  nQuark=6; // offset to go from 0,..,13 to  -6,..,0.,..,6
+  m_nQuark=6; // offset to go from 0,..,13 to  -6,..,0.,..,6
 
-  
-  //make_ckmsum( m_ckmsum ); 
-  /// for Wp production
-  // change this to appropriate valuse 
-  //make_ckm(true );  
-  /// for Wm production 
-  //  make_ckm( m_ckm2, false );  
-  //Print_ckm();  
-  
+#if 0
   std::vector<std::string> names;
   names.push_back("topbar");
   names.push_back("beautybar");
@@ -105,17 +98,23 @@ void generic_pdf::initialise(const std::string& filename) {
   names.push_back("charm");
   names.push_back("beauty");
   names.push_back("top");
-  
-  std::string* name2 = (&names[0])+6; /// so we can use -6..6 indexing
-  for (int i=-nQuark; i<=nQuark; i++) {
-    //  if (i>0)  name2 = names[i];
-    //  if (i<0)  name2 = names[-i];
-    //  if (i==0) name2 = names[i];
-    //cout<<i<<" name2= "<<name2<<endl;
-    flavname[i] = name2[i];
-    iflavour[name2[i]]=i;    
-    if (debug)
-    cout<<"generic_pdf "<<" iflavour["<<name2[i]<<"]= "<<iflavour[name2[i]]<<endl;
+ 
+  std::string names[13] = { "topbar", "beautybar", "charmbar", "strangebar", "upbar", "downbar", 
+			    "gluon", 
+			    "down", "up", "strange" "charm", "beauty", "top" };
+#endif
+
+  std::string _names[13] = { "tbar", "bbar", "cbar", "sbar", "ubar", "dbar", 
+			    "g", "d", "u", "s" "c", "b", "t" };
+
+ 
+  std::string* names = (&_names[0])+6; /// so we can use -6..6 indexing
+
+  for (int i=-m_nQuark; i<=m_nQuark; i++) {
+    flavname[i] = names[i];
+    iflavour[names[i]]=i;    
+    if (m_debug)
+    cout<<"generic_pdf "<<" iflavour[" <<names[i] << "]= " << iflavour[names[i]] << endl;
   }
   
   //pdfsumtypes1.clear();
@@ -130,7 +129,7 @@ void generic_pdf::initialise(const std::string& filename) {
   
   flavourtype.clear();
   int ifltype = -99;  
-  for(int ifl = -nQuark; ifl <= nQuark; ifl++) {
+  for(int ifl = -m_nQuark; ifl <= m_nQuark; ifl++) {
     if ((ifl== 2)||(ifl== 4)||(ifl== 6))  ifltype =  2; 
     if ((ifl==-2)||(ifl==-4)||(ifl==-6))  ifltype = -2; 
     if ((ifl== 1)||(ifl== 3)||(ifl== 5))  ifltype =  1;
@@ -141,124 +140,124 @@ void generic_pdf::initialise(const std::string& filename) {
   }
 
   //this->MakeCkm();
- //if (debug) PrintFlavourMap();
+  //if (debug) PrintFlavourMap();
   
   const int nsub = GetSubProcessNumber();
   
-  if (debug) 
-   std::cout << "generic_pdf::initialize nsub = " << nsub << std::endl;
-  H = new double[nsub];
-  
+  if (m_debug) 
+    std::cout << "generic_pdf::initialize nsub = " << nsub << std::endl;
+
 } 
 
 
 void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {  
- //  fill this in with tancredi's code ...
- if ( !m_initialised ) {
-  cout<<"  generic_pdf::evaluate not initialized "<<endl;
-  return; 
- }
-
- if (debug) cout << "generic_pdf:evaluate " <<endl;
+  //  fill this in with tancredi's code ...
+  if ( !m_initialised ) {
+    cout<<"  generic_pdf::evaluate not initialized "<<endl;
+    return; 
+  }
   
- //this->PrintFlavourMap();
+  /// off set the input vectors so we can address them from -n .. n with 0 = gluon  
+  //  double* fA = _fA+m_nQuark; 
+  //  double* fB = _fB+m_nQuark; 
+  
+  fA += 6;
+  fB += 6;
 
- /*
- if (debug) {
-  for(int i = -nQuark; i <= nQuark; i++) {
-   std::cout << " fA[" << i << "]= " << fA[i+nQuark]
-             << " fB[" << i << "]= " << fB[i+nQuark] 
-             << std::endl;
+  if (m_debug) cout << "generic_pdf:evaluate " <<endl;
+  
+  //this->PrintFlavourMap();
+  
+  /*
+    if (debug) {
+    for(int i = -m_nQuark; i <= m_nQuark; i++) {
+    std::cout << " fA[" << i << "]= " << fA[i+m_nQuark]
+    << " fB[" << i << "]= " << fB[i+m_nQuark] 
+    << std::endl;
+    }
+    }  
+  */
+
+  // reset pdf sums per flavour -2,-1,0,1,2 downbar, upbar, gluon, up, down
+  // these are the pdf weights x by the ckm matrix 
+  pdfA.clear();
+  pdfB.clear();
+  
+  for ( int i=-2; i<=2 ; i++ ) { 
+    pdfA[i]=0.; 
+    pdfB[i]=0.;
   }
- }  
- */
- // reset pdf sums per flavour -2,-1,0,1,2 downbar, upbar, gluon, up, down
- pdfA.clear();
- pdfB.clear();
- for(int i = -2; i <= 2; i++) {
-  pdfA[i]=0.; pdfB[i]=0.;
- }
- pdfA[0]=fA[0+nQuark]; // gluon
- pdfB[0]=fA[0+nQuark];
-
-/*
- std::vector<double> myckmsum = std::vector<double>(myckm2.size(),0);
- for ( unsigned i=0 ; i<myckm2.size() ; i++ ) { 
-  for ( unsigned j=0 ; j<myckm2[i].size() ; j++ ) myckmsum[i] += myckm2[i][j]; 
- }
-*/
-
- if ( m_ckmflag ) {
-   /// do we need the ckm matrix ??
-   for(int i=-6; i <=6; i++) {
-     int j=flavourtype[i];
-     if (j==0) continue;
-     pdfA[j] += fA[nQuark + i]*m_ckmsum[nQuark+j];
-     pdfB[j] += fB[nQuark + i]*m_ckmsum[nQuark+j];
-     if (debug)
-       cout<<" i= "<<i<<" j= "<<j
-	   <<" fA["<<i<<"]= "<<fA[nQuark + i]
-	   <<" fB["<<i<<"]= "<<fB[nQuark + i]
-	   <<" pdfA["<<j<<"]= "<<pdfA[j]<<" pdfB["<<j<<"]= "<<pdfB[j]
-	   <<" m_ckmsum["<<nQuark+j<<"]= "<<m_ckmsum[nQuark+j]
-	   <<endl;
-   }
- }
- else { 
-   for(int i=-6; i <=6; i++) {
-     int j=flavourtype[i];
-     if (j==0) continue;
-     pdfA[j] += fA[nQuark + i];
-     pdfB[j] += fB[nQuark + i];
-     if (debug)
-       cout<<" i= "<<i<<" j= "<<j
-	   <<" fA["<<i<<"]= "<<fA[nQuark + i]
-	   <<" fB["<<i<<"]= "<<fB[nQuark + i]
-	   <<" pdfA["<<j<<"]= "<<pdfA[j]<<" pdfB["<<j<<"]= "<<pdfB[j]
-	   <<endl;
-   }
- }
-
-
- /*
- if (debug) {
-  for(int i = -2; i <= 2; i++) {
-   cout<<" pdfA["<<i<<"]= "<<pdfA[i]
-       <<" pdfB["<<i<<"]= "<<pdfB[i]
-       <<endl;
+  
+  pdfA[0]=fA[0]; // gluon
+  pdfB[0]=fA[0];
+  
+  /*
+    std::vector<double> myckmsum = std::vector<double>(myckm2.size(),0);
+    for ( unsigned i=0 ; i<myckm2.size() ; i++ ) { 
+    for ( unsigned j=0 ; j<myckm2[i].size() ; j++ ) myckmsum[i] += myckm2[i][j]; 
+    }
+  */
+  
+  /// offset so can be adressed from -n .. n as with the quark ids
+  double* _ckmsum = (&m_ckmsum[0])+m_nQuark;
+  
+  if ( m_ckmflag ) {
+    /// do we need the ckm matrix ??
+    for(int i=-6; i <=6; i++) {
+      int j=flavourtype[i];
+      if (j==0) continue;
+      pdfA[j] += fA[i]*_ckmsum[j];
+      pdfB[j] += fB[i]*_ckmsum[j];
+      if (m_debug)
+	cout << " i= " << i 
+	     << " j= " << j
+	     << " fA[" << i << "]= " << fA[i]
+	     << " fB[" << i << "]= " << fB[i]
+	     << " pdfA[" << j << "]= " << pdfA[j] << " pdfB[" << j << "]= " << pdfB[j]
+	     << " m_ckmsum[" << j << "]= " << _ckmsum[j]
+	     << endl;
+    }
   }
- }
- */
- /*
- double S12=0., S21=0.;
- for (int i1 = -3; i1 <= -1; i1 += 2){
-  for(int i2 =  2; i2 <=  4; i2 += 2){
-    cout<<" i1= "<<i1+nQuark<<" i2= "<<i2+nQuark<<endl;
-    S12 += fA[i1+nQuark]*fB[i2+nQuark]*m_ckm2[i1+nQuark][i2+nQuark];
-    S21 += fA[i2+nQuark]*fB[i1+nQuark]*m_ckm2[i2+nQuark][i1+nQuark];
-   }
- }    
- */
- for ( unsigned iproc=0 ; iproc<procname.size() ; iproc++ ) {
-  int ifl1=Flav1[iproc];  
-  int ifl2=Flav2[iproc];
-
-  H[iproc]=pdfA[ifl1]*pdfB[ifl2];
-  if (ifl1==ifl2)   H[iproc]*=2.; // symetric contributions are counted twice
-
-  if (debug) cout<<iproc<<" ifl1= "<<ifl1<<" ifl2= "<<ifl2
-         	 <<" pdfA["<<ifl1<<"]= "<<pdfA[ifl1]
-	         <<" pdfB["<<ifl2<<"]= "<<pdfB[ifl2]
-	         <<" H= "<<H[iproc]
-                 <<" name= "<<procname[iproc]
-	         <<endl;
- }
-
-
-
- return;
-
+  else { 
+    for(int i=-6; i <=6; i++) {
+      int j=flavourtype[i];
+      if (j==0) continue;
+      pdfA[j] += fA[i];
+      pdfB[j] += fB[i];
+      if (m_debug)
+	cout<<" i= "<<i<<" j= "<<j
+	    <<" fA["<<i<<"]= "<<fA[i]
+	    <<" fB["<<i<<"]= "<<fB[i]
+	    <<" pdfA["<<j<<"]= "<<pdfA[j]<<" pdfB["<<j<<"]= "<<pdfB[j]
+	    <<endl;
+    }
+  }
+  
+  
+  for ( unsigned iproc=0 ; iproc<procname.size() ; iproc++ ) {
+    int ifl1=Flav1[iproc];  
+    int ifl2=Flav2[iproc];
+    
+    H[iproc]=pdfA[ifl1]*pdfB[ifl2];
+    if (ifl1==ifl2)   H[iproc]*=2.; // symetric contributions are counted twice
+    
+    if (m_debug) cout<<iproc<<" ifl1= "<<ifl1<<" ifl2= "<<ifl2
+		     <<" pdfA["<<ifl1<<"]= "<<pdfA[ifl1]
+		     <<" pdfB["<<ifl2<<"]= "<<pdfB[ifl2]
+		     <<" H= "<<H[iproc]
+		     <<" name= "<<procname[iproc]
+		     <<endl;
+  }
+  
+  
+  return;
+  
 }; 
+
+
+
+
+
 
 void generic_pdf::ReadSubprocessSteering(const std::string& fname){
   
@@ -266,7 +265,7 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
   // read steering deciding on subprocesses
   //
   
-  if (debug)
+  if (m_debug)
     std::cout << "generic_pdf::ReadSubprocessSteering: read subprocess configuration file: " << fname << endl; 
   
   std::ifstream infile(fname.c_str(), std::ios::in);
@@ -285,7 +284,7 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
 
   while (infile.good()) {
 
-    //if (debug) std::cout << " good: " << infile.good() << " eof: " << infile.eof() << std::endl;
+    //if (m_debug) std::cout << " good: " << infile.good() << " eof: " << infile.eof() << std::endl;
 
     if (!infile.good()) break;
 
@@ -293,7 +292,7 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
     std::string mytest = std::string(line);
     //std::cout<< "sizof test= "<< mytest.size() << std::endl;
     
-    //if (debug) std::cout<< "line= "<< line << "\n";
+    //if (m_debug) std::cout<< "line= "<< line << "\n";
 
     if ( !m_ckmflag ) { 
       if ( mytest=="Wplus" )  {
@@ -318,7 +317,7 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
       int ifl1=iflavour[flav1];
       int ifl2=iflavour[flav2];
 
-      if (debug)
+      if (m_debug)
 	std::cout<<"ReadSubProcesses: ifl1 = " << ifl1 << " ifl2 = " << ifl2 << std::endl;
   
       Flav1[iproc]=ifl1;
@@ -326,7 +325,7 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
       iproc++;
       
       std::string myprocname=string(flav1)+"-"+string(flav2);
-      if (debug) std::cout << iproc << " process name = " << myprocname << endl;;
+      if (m_debug) std::cout << iproc << " process name = " << myprocname << endl;;
       procname.push_back(myprocname);
 
     }
@@ -347,14 +346,14 @@ int generic_pdf::decideSubProcess(const int iflav1, const int iflav2)
 
   int    iProcess = -1;
  
-  if (debug) std::cout << "generic_pdf::decideSubProces: " << std::endl; 
-  if (debug) std::cout << " iflav1 = " << iflav1 << " iflav2 = " << iflav2 << std::endl;
+  if (m_debug) std::cout << "generic_pdf::decideSubProces: " << std::endl; 
+  if (m_debug) std::cout << " iflav1 = " << iflav1 << " iflav2 = " << iflav2 << std::endl;
   int ifl1=flavourtype[iflav1];
   int ifl2=flavourtype[iflav2];
   
   for ( unsigned i=0 ; i<procname.size() ; i++ ) {
     if (iProcess!=-1) continue;
-    if (debug) std::cout << " " << i << " name= " << procname[i]
+    if (m_debug) std::cout << " " << i << " name= " << procname[i]
 			 << " Flav1, Flav2 = " << Flav1[i] << " " << Flav2[i]
 			 << std::endl; 
 
@@ -364,7 +363,7 @@ int generic_pdf::decideSubProcess(const int iflav1, const int iflav2)
     }
   }
   
-  if (debug) std::cout << "generic_pdf:decideSubprocess iProcess found " << iProcess << std::endl;
+  if (m_debug) std::cout << "generic_pdf:decideSubprocess iProcess found " << iProcess << std::endl;
   
   if ( iProcess==-1 ) { 
     std::cout << "generic_pdf:decideSubprocess " << iflav1 << " <> " << iflav2 << std::endl; 

@@ -27,13 +27,12 @@ class generic_pdf : public appl_pdf {
 
 public:
 
-  generic_pdf(const std::string& s="");
+  //  generic_pdf(const std::string& s="", const std::vector<int> combinations=std::vector<int>() );
+  generic_pdf(const std::string& s="" );
 
-  virtual ~generic_pdf() { 
-    if ( H )        delete[] H; 
-  } 
+  virtual ~generic_pdf() {   } 
 
-  void evaluate(const double* fA, const double* fB, double* H);
+  void evaluate(const double* _fA, const double* _fB, double* H);
 
   /// additional user defined functions to actually initialise 
   /// based on the input file
@@ -73,9 +72,9 @@ public:
     return currentprocess;
   }
   
-  int GetnQuark() { return nQuark; }
+  int GetnQuark() { return m_nQuark; }
 
-  void SetnQuark(int nq) { nQuark=nq; }
+  void SetnQuark(int nq) { m_nQuark=nq; }
 
   void MakeCkm();
 
@@ -108,11 +107,11 @@ private:
   //std::vector<double>                m_ckmsum;
   //std::vector<std::vector<double> >  m_ckm2;
 
-  bool    debug;
+  bool    m_debug;
 
-  int     nQuark; //Number of Quarks not yet implemented
+  int     m_nQuark; //Number of Quarks 
 
-  double* H; // generalised PDF defined in GetSubprocess
+  //  double* m_H; // generalised PDF defined in GetSubprocess
 
   // map name to index
   // maps flavour type names to iflavour <-> -6...6

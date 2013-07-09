@@ -357,6 +357,10 @@ public:
 
   // find out which transform and which pdf combination are being used
   string getTransform() const { return m_transform; }
+
+  static double transformvar();
+  static double transformvar(double v);
+
   string getGenpdf()    const { return m_genpdfname; }
 
   string version()      const { return m_version; } 
@@ -458,7 +462,7 @@ protected:
   /// string manipulators to parse the pdf names 
 
   /// return chomped string
-  std::string chomptoken(std::string& s1, const std::string& s2)
+  static std::string chomptoken(std::string& s1, const std::string& s2)
   {
     std::string s3 = "";
     std::string::size_type pos = s1.find(s2);
@@ -473,7 +477,7 @@ protected:
     return s3;
   } 
  
-  std::vector<std::string> parse(std::string s, const std::string& key) {
+  static std::vector<std::string> parse(std::string s, const std::string& key) {
     std::vector<std::string> clauses;
     while ( s.size() ) clauses.push_back( chomptoken(s, key) );
     return clauses;
@@ -484,8 +488,7 @@ protected:
 
 
   /// add a generic pdf to the data base of registered pdfs
-  void addpdf( std::string s );
-
+  void addpdf( const std::string& s, const std::vector<int>& combinations=std::vector<int>() );
 
 protected:
 

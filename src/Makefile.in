@@ -49,8 +49,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = src
-DIST_COMMON = $(include_HEADERS) $(library_include_HEADERS) \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in
+DIST_COMMON = $(library_include_HEADERS) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -64,7 +64,7 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)" \
+am__installdirs = "$(DESTDIR)$(libdir)" \
 	"$(DESTDIR)$(library_includedir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
@@ -73,8 +73,9 @@ am_libAPPLgrid_la_OBJECTS = appl_grid.lo appl_igrid.lo appl_pdf.lo \
 	appl_timer.lo fastnlo.lo SparseMatrix3d.lo hoppet_init.lo \
 	nlojet_pdf.lo nlojetpp_pdf.lo mcfmz_pdf.lo mcfmw_pdf.lo \
 	mcfmwc_pdf.lo mcfmQQ_pdf.lo jetrad_pdf.lo dis_pdf.lo \
-	generic_pdf.lo basic_pdf.lo TFileString.lo TFileStringDict.lo \
-	TFileVector.lo TFileVectorDict.lo
+	generic_pdf.lo basic_pdf.lo combination.lo lumi_pdf.lo \
+	TFileString.lo TFileStringDict.lo TFileVector.lo \
+	TFileVectorDict.lo
 libAPPLgrid_la_OBJECTS = $(am_libAPPLgrid_la_OBJECTS)
 libfAPPLgrid_la_LIBADD =
 am_libfAPPLgrid_la_OBJECTS = fappl_grid.lo
@@ -93,9 +94,8 @@ CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libAPPLgrid_la_SOURCES) $(libfAPPLgrid_la_SOURCES)
 DIST_SOURCES = $(libAPPLgrid_la_SOURCES) $(libfAPPLgrid_la_SOURCES)
-includeHEADERS_INSTALL = $(INSTALL_HEADER)
 library_includeHEADERS_INSTALL = $(INSTALL_HEADER)
-HEADERS = $(include_HEADERS) $(library_include_HEADERS)
+HEADERS = $(library_include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -184,7 +184,8 @@ build_vendor = @build_vendor@
 builddir = @builddir@
 datadir = @datadir@
 datarootdir = @datarootdir@
-# stupid definition because or (old) autoconf versions on lxplus 
+#include_HEADERS=../appl_grid/*.h
+# stupid definition because of (old) autoconf versions on lxplus 
 docdir = ${datadir}/doc/${PACKAGE}
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
@@ -225,6 +226,7 @@ libAPPLgrid_la_SOURCES = \
 	mcfmQQ_pdf.cxx \
 	jetrad_pdf.cxx		dis_pdf.cxx \
 	generic_pdf.cxx basic_pdf.cxx \
+	combination.cxx lumi_pdf.cxx \
 	TFileString.cxx		TFileStringDict.cxx \
 	TFileVector.cxx		TFileVectorDict.cxx
 
@@ -234,8 +236,8 @@ libAPPLgrid_la_SOURCES = \
 #bin_PROGRAMS = 
 libfAPPLgrid_la_SOURCES = fappl_grid.cxx
 library_includedir = $(includedir)/appl_grid
-library_include_HEADERS = ../appl_grid/*.h 
-include_HEADERS = ../appl_grid/*.h *.h
+# library_include_HEADERS=../appl_grid/{Directory.h,appl_grid.h,appl_pdf.h,appl_timer.h,fastnlo.h} 
+library_include_HEADERS = ../appl_grid/*.h
 ROOTCFLAGS = $(shell root-config --cflags)
 ROOTLIBS = $(shell root-config --nonew --libs)
 ROOTGLIBS = $(shell root-config --nonew --glibs)
@@ -340,12 +342,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appl_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/appl_timer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basic_pdf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/combination.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dis_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fappl_grid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fastnlo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generic_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hoppet_init.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/jetrad_pdf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lumi_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcfmQQ_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcfmw_pdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mcfmwc_pdf.Plo@am__quote@
@@ -379,23 +383,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-includeHEADERS: $(include_HEADERS)
-	@$(NORMAL_INSTALL)
-	test -z "$(includedir)" || $(MKDIR_P) "$(DESTDIR)$(includedir)"
-	@list='$(include_HEADERS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(includeHEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(includedir)/$$f'"; \
-	  $(includeHEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(includedir)/$$f"; \
-	done
-
-uninstall-includeHEADERS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(include_HEADERS)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(includedir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(includedir)/$$f"; \
-	done
 install-library_includeHEADERS: $(library_include_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(library_includedir)" || $(MKDIR_P) "$(DESTDIR)$(library_includedir)"
@@ -492,7 +479,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)" "$(DESTDIR)$(library_includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(library_includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -540,7 +527,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-includeHEADERS install-library_includeHEADERS
+install-data-am: install-library_includeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -576,7 +563,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES \
+uninstall-am: uninstall-libLTLIBRARIES \
 	uninstall-library_includeHEADERS
 
 .MAKE: install-am install-strip
@@ -587,15 +574,15 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-includeHEADERS install-info \
-	install-info-am install-libLTLIBRARIES \
-	install-library_includeHEADERS install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-includeHEADERS \
-	uninstall-libLTLIBRARIES uninstall-library_includeHEADERS
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-library_includeHEADERS \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
+	uninstall-am uninstall-libLTLIBRARIES \
+	uninstall-library_includeHEADERS
 
 clean-local:
 	rm -rf *.o *.lo *Dict*

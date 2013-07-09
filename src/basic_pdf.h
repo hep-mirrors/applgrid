@@ -25,6 +25,7 @@
 #ifndef BASIC_PDF_H
 #define BASIC_PDF_H
 
+#include <cmath>
 
 #include "appl_grid/appl_pdf.h" 
 
@@ -65,7 +66,7 @@ inline void basic_pdf::evaluate(const double* _f1, const double* _f2, double* H)
   
 
 inline int  basic_pdf::decideSubProcess(const int iflav1, const int iflav2) { 
-  if ( std::abs(iflav1)>5 || std::abs(iflav2)>5 ) return -1;
+  if ( std::fabs(iflav1)>5 || std::fabs(iflav2)>5 ) return -1;
   return (iflav1+5)*11+(iflav2+5);
 }
 

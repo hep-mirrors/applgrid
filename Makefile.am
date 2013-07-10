@@ -1,6 +1,7 @@
 AUTOMAKE_OPTIONS = foreign 
 ACLOCAL = aclocal
 AUTOMAKE= automake
+docdir = ${datadir}/doc/${PACKAGE}
 dist_doc_DATA = README INSTALL COPYING
 clean-local:
 	rm -rf autom4te.cache

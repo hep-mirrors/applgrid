@@ -26,8 +26,7 @@
 #include <iostream>
 
 #include "appl_grid/appl_pdf.h" 
-
-#include "combination.h"
+#include "appl_grid/combination.h"
 
 
 class lumi_pdf : public appl::appl_pdf {

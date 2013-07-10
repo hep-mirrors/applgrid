@@ -26,7 +26,8 @@ libAPPLgrid_la_SOURCES = \
 	generic_pdf.cxx basic_pdf.cxx \
 	combination.cxx lumi_pdf.cxx \
 	TFileString.cxx		TFileStringDict.cxx \
-	TFileVector.cxx		TFileVectorDict.cxx
+	TFileVector.cxx		TFileVectorDict.cxx \
+	*.h
 
 #	fappl_grid.cxx
 
@@ -37,7 +38,7 @@ library_includedir=$(includedir)/appl_grid
 library_include_HEADERS=../appl_grid/*.h
 #include_HEADERS=../appl_grid/*.h
 # stupid definition because of (old) autoconf versions on lxplus 
-docdir = ${datadir}/doc/${PACKAGE}
+# docdir = ${datadir}/doc/${PACKAGE}
 
 
 ROOTCFLAGS= $(shell root-config --cflags)
@@ -53,8 +54,9 @@ ROOTARCH = $(findstring -m64, $(ROOTCFLAGS) )
 ROOTCINT=rootcint
 # AM_CXXFLAGS= $(ROOTARCH) -O2 -Wall -fPIC  -I../appl_grid $(ROOTCFLAGS) -I$(LHAPDFDIR)/include $(HOPPETCFLAGS) 
 # AM_CFLAGS=   $(ROOTARCH) -O2 -Wall -fPIC  -I../appl_grid $(ROOTCFLAGS) -I$(LHAPDFDIR)/include $(HOPPETCFLAGS) 
-AM_CXXFLAGS= $(ROOTARCH) -O2 -Wall -fPIC  -I.. $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
-AM_CFLAGS=   $(ROOTARCH) -O2 -Wall -fPIC  -I.. $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
+AM_CXXFLAGS=  $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
+AM_CFLAGS=    $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
+AM_CPPFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
 #INCLUDES=-I$(LHAPDFDIR)/include
 # AM_LDFLAGS= -O -L$(LHAPDFDIR)/lib -lLHAPDF  $(ROOTLIBS) $(GSLLIBS) $(FCLIBS)
 AM_LDFLAGS= $(ROOTARCH) -O  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS)

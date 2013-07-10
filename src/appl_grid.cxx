@@ -327,10 +327,34 @@ grid::grid(const string& filename, const string& dirname)  :
 
   }
 
+
+
   /// check to see if we require a generic pdf from a text file, and 
-  /// and if so, create the required generic pdf
+  /// and if so, create the required generic pdf (or lumi_pdf for amcatnlo)
   //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
-  if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
+  
+  if ( contains(m_genpdfname, ".config") ) { 
+    /// decode the pdf combination if appropriate
+
+    /// again have to use TVectorT<double> because TVectorT<int> has no constructor!!!
+    /// I ask you!! what's the point of a template if it doesn't actually instantiate
+    /// it's pathetic
+    TVectorT<double>* _combinations = (TVectorT<double>*)gridfilep->Get((dirname+"/Combinations").c_str());
+
+    std::vector<int> combinations(_combinations->GetNoElements());
+
+    for ( unsigned ic=0 ; ic<combinations.size() ; ic++ ) {
+      combinations[ic] = int((*_combinations)(ic)); 
+    }
+    
+    addpdf(m_genpdfname, combinations);
+  }
+  else { 
+    /// of just create the generic from the file
+    if ( contains(m_genpdfname, ".dat") ) addpdf(m_genpdfname);
+  }
+
+  /// returieve the pdf routine 
   findgenpdf( m_genpdfname );
 
   std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
@@ -813,6 +837,25 @@ void grid::Write(const string& filename, const string& dirname) {
     ckm2flat->Write("CKM2");
 
   }
+
+
+  /// encode the pdf combination if appropriate
+
+  if ( contains( m_genpdfname, ".config" ) ) { 
+    std::vector<int> combinations = dynamic_cast<lumi_pdf*>(m_genpdf[0])->serialise();  
+    TVectorT<double>* _combinations = new TVectorT<double>(combinations.size()); // add a few extra just in case 
+    for ( unsigned ic=0 ; ic<combinations.size() ; ic++ ) { 
+      //     std::cout << "write " << ic << "\tcombinations " << combinations[ic] << std::endl;
+      /// because root stupidly doesn't have a constructor for TVectorT<int> 
+      /// we need to store these integers as doubles - this mean we add (or subtract) 
+      /// 0.5 from each value to ensure that the double->int conversion doesn't mess 
+      /// up with 0.9999 -> 0 etc    
+      if ( combinations[ic]<0 ) (*_combinations)(ic) = double(combinations[ic]-0.5);
+      else                      (*_combinations)(ic) = double(combinations[ic]+0.5);
+    }
+    _combinations->Write("Combinations");
+  }
+
   
 
   //  int _size     = 0;

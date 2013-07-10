@@ -10,9 +10,8 @@
 //
 //   $Id: combination.cxx, v0.0   Thu  4 Jul 2013 23:20:23 CEST sutt $
 
-#include "combination.h"
 
-/// automatically keeps count of how many subprocess combination 
+/// automatically keeps count of how many subprocess combinations 
 /// there have been 
  
 /// read each of the pairs to be summed for a specific 
@@ -20,6 +19,7 @@
 
 
 #include "appl_grid/appl_pdf.h"
+#include "appl_grid/combination.h"
 
 
 combination::combination(const std::vector<int>& v) { 

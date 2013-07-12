@@ -14,20 +14,12 @@
 #define __TSPARSE1D_H
 
 #include <iostream>
-using std::ostream;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include <iomanip>
-using std::setprecision;
-using std::setw;
 
 #include <sstream>
-using std::ostringstream;
 
 #include <string>
-using std::string;
 
 #include "tsparse_base.h"
 
@@ -105,23 +97,23 @@ public:
 
 #if 1  
   void print() const { 
-    cout << "   \tsize=" << size() << "\t";
+    std::cout << "   \tsize=" << size() << "\t";
     for ( int i=0 ; i<Nx() ; i++ ) { 
-      if ( trimmed(i) ) cout << "o";
-      else              cout << " ";
+      if ( trimmed(i) ) std::cout << "o";
+      else              std::cout << " ";
     }
-    cout << endl;
+    std::cout << std::endl;
   }
 #else
   void print() const { 
-    cout << "   \tsize=" << size() << "\t";
+    std::cout << "   \tsize=" << size() << "\t";
     for ( int i=0 ; i<Nx() ; i++ ) { 
       if ( trimmed(i) ) {
-	cout << setprecision(2) << setw(4) << mant((*this)(i)) << "\t";
+	cout << std::setprecision(2) << std::setw(4) << mant((*this)(i)) << "\t";
       }
-      else              cout << "  -\t";
+      else              std::cout << "  -\t";
     }
-    cout << endl;
+    std::cout << std::endl;
   }
 #endif
 
@@ -181,10 +173,8 @@ private:
 
 
 // stream IO template
-template<class T>ostream& operator<<(ostream& s, const tsparse1d<T>& sp) { 
-  for ( int i=0 ; i<sp.Nx() ; i++ ) { 
-    s << "\t" << sp(i) ;
-  }
+template<class T>std::ostream& operator<<(std::ostream& s, const tsparse1d<T>& sp) { 
+  for ( int i=0 ; i<sp.Nx() ; i++ ) s << "\t" << sp(i);
   return s;
 }
 

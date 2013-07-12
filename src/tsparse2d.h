@@ -9,7 +9,7 @@
 //       since it checks to see whether the given element exists,
 //       and if not, it creates it, so even viewing it such as...
 //
-//          tsparse2d<...> d(10,10); cout << a(2,3) << endl;                    
+//          tsparse2d<...> d(10,10); std::cout << a(2,3) << std::endl;                    
 //
 //       will create the element if it doesn't exist *unless* you 
 //       are looking at a const tsparse2d<...>
@@ -23,19 +23,10 @@
 #define __TSPARSE2D_H
 
 #include <iostream>
-using std::ostream;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include <iomanip>
-using std::setw;
-using std::setprecision;
 
 #include <cmath>
-// using std::fabs;
-// using std::pow;
-// using std::log10;
 
 
 
@@ -50,8 +41,8 @@ public:
 
   class exception { 
   public:
-    exception(const string& s) { cerr << s << endl; }; 
-    exception(ostream& s) { cerr << s << endl; }; 
+    exception(const std::string& s) { cerr << s << std::endl; }; 
+    exception(ostream& s) { cerr << s << std::endl; }; 
   };
 #endif
 
@@ -200,71 +191,71 @@ public:
 
   void print() const { 
     
-    //   cout << "\t\t+";
-    //   for ( int j=0 ; j<Ny() ; j++ ) cout << "-";
-    //   cout << "+\n" << endl; 
+    //   std::cout << "\t\t+";
+    //   for ( int j=0 ; j<Ny() ; j++ ) std::cout << "-";
+    //   std::cout << "+\n" << std::endl; 
    
-    cout << "\t\t+";
-    for ( int j=0 ; j<Ny() ; j++ ) cout << "--";
-    cout << "+\n";
+    std::cout << "\t\t+";
+    for ( int j=0 ; j<Ny() ; j++ ) std::cout << "--";
+    std::cout << "+\n";
 
     for ( int i=0 ; i<Nx() ; i++ ) {
-      cout << setw(9) << trimmed(i) << "\t";
+      std::cout << std::setw(9) << trimmed(i) << "\t";
       
-      cout << "|";
+      std::cout << "|";
 
       for ( int j=0 ; j<Ny() ; j++ ) {
 #if 1
       	if ( trimmed(i,j) ) { 
-	  //	  cout << setprecision(2) << setw(4) << mant((*this)(i,j)) << "\t";
-	  cout << "oo";
+	  //	  std::cout << std::setprecision(2) << std::setw(4) << mant((*this)(i,j)) << "\t";
+	  std::cout << "oo";
 	}
-      	else  if ( i==j ) cout << ". "; 
-	else              cout << "  "; 
+      	else  if ( i==j ) std::cout << ". "; 
+	else              std::cout << "  "; 
 #else
       	if ( trimmed(i,j) ) { 
-	  cout << setprecision(1) << setw(1) << mant(std::fabs((*this)(i,j)));
+	  std::cout << std::setprecision(1) << std::setw(1) << std::mant(std::fabs((*this)(i,j)));
 	}
-      	else  if ( i==j ) cout << "  "; 
-	else              cout << "  "; 
+      	else  if ( i==j ) std::cout << "  "; 
+	else              std::cout << "  "; 
 #endif
       }
-      //      cout << "|\n";
-      cout << "|\n";
+      //      std::cout << "|\n";
+      std::cout << "|\n";
     }
 
 #if 0
     ////////////////////////////////////////////////////////////////////
     
-    cout << "\nPAW null 0 " << Nx() <<  "0 " << Ny() << endl;
+    std::cout << "\nPAW null 0 " << Nx() <<  "0 " << Ny() << std::endl;
 
     for ( int i=0 ; i<Nx() ; i++ ) {
-      cout << setw(9) << trimmed(i) << "\t";
+      std::cout << std::setw(9) << trimmed(i) << "\t";
       
       for ( int j=0 ; j<Ny() ; j++ ) {
 
       	if ( trimmed(i,j) ) { 
-	  //	  cout << setprecision(2) << setw(4) << mant((*this)(i,j)) << "\t";
-	  cout << "\nPAW box " << i-1 << " " << i << " " << j-1 << " " << j << endl;
+	  //	  std::cout << std::setprecision(2) << std::setw(4) << mant((*this)(i,j)) << "\t";
+	  std::cout << "\nPAW box " << i-1 << " " << i << " " << j-1 << " " << j << std::endl;
 	}
-	//      	else  if ( i==j ) cout << ". "; 
-	//	else              cout << "  "; 
+	//      	else  if ( i==j ) std::cout << ". "; 
+	//	else              std::cout << "  "; 
       }
-      //      cout << "|\n";
-      // cout << "|\n";
+      //      std::cout << "|\n";
+      // std::cout << "|\n";
     }
     //////////////////////////////////////////////////////////////
-    cout << "\nPAW wait" << endl;
+    std::cout << "\nPAW wait" << std::endl;
 
 #endif
 
-    cout << "\t\t+";
-    for ( int j=0 ; j<Ny() ; j++ ) cout << "--";
-    cout << "+\n";
+    std::cout << "\t\t+";
+    for ( int j=0 ; j<Ny() ; j++ ) std::cout << "--";
+    std::cout << "+\n";
    
-    //   cout << "\t\t+";
-    //   for ( int j=0 ; j<Ny() ; j++ ) cout << "-";
-    //   cout << "+\n" << endl; 
+    //   std::cout << "\t\t+";
+    //   for ( int j=0 ; j<Ny() ; j++ ) std::cout << "-";
+    //   std::cout << "+\n" << std::endl; 
     
   }
 
@@ -333,7 +324,7 @@ private:
 
 
 // stream IO template
-template<class T>ostream& operator<<(ostream& s, const tsparse2d<T>& sp) { 
+template<class T>std::ostream& operator<<(std::ostream& s, const tsparse2d<T>& sp) { 
   for ( int i=0 ; i<sp.Nx() ; i++ ) { 
     for ( int j=0 ; j<sp.Ny() ; j++ ) { 
       s << sp(i,j) << "\t"; 

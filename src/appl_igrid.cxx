@@ -9,25 +9,13 @@
 //   $Id: appl_igrid.cxx, v1.00 2007/10/16 17:01:39 sutt
 
 #include <stdlib.h>
-
 #include <iostream>
-using std::ostream;
-using std::cerr;
-using std::cout;
-using std::endl;
-
 #include <iomanip>
-using std::setprecision;
-using std::setw;
-
-#include "appl_igrid.h"
-using appl::igrid;
-
 #include <cmath>
 
-#include <iomanip>
-using std::setw;
-using std::setprecision;
+
+#include "appl_igrid.h"
+
 
 #include "TFile.h"
 #include "TObject.h"
@@ -35,8 +23,8 @@ using std::setprecision;
 #include "TH3D.h"
 #include "TVectorT.h"
 
-
 #include "TFileString.h"
+
 
 // splitting function code
 
@@ -48,16 +36,16 @@ void Splitting(const double& x, const double& Q, double* f);
 // bool   igrid::m_symmetrise = false;
 
 // variable tranformation parameters
-double igrid::m_transvar = 5;
+double appl::igrid::m_transvar = 5;
 
-map<const string, igrid::transform_vec> igrid::m_fmap = igrid::init_fmap();
+std::map<const std::string, appl::igrid::transform_vec> appl::igrid::m_fmap = appl::igrid::init_fmap();
 
 
 
 // double Escale = 1;
 
 
-igrid::igrid() : 
+appl::igrid::igrid() : 
   fy(NULL),   fx(NULL), 
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),
@@ -72,16 +60,16 @@ igrid::igrid() :
   m_fg1(NULL),     m_fg2(NULL),
   m_fsplit1(NULL), m_fsplit2(NULL),
   m_alphas(NULL) { 
-  //  cout << "igrid() (default) Ntau=" << m_Ntau << "\t" << fQ2(m_taumin) << " - " << fQ2(m_taumax) << endl;
+  //  std::cout << "igrid() (default) Ntau=" << m_Ntau << "\t" << fQ2(m_taumin) << " - " << fQ2(m_taumax) << std::endl;
 
 } 
 
 
 
 // standard constructor
-igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order, 
-	     int Nx,  double xmin,  double xmax,  int xorder, 
-	     string transform, int Nproc, bool disflag ):
+appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order, 
+		   int Nx,  double xmin,  double xmax,  int xorder, 
+		   std::string transform, int Nproc, bool disflag ):
   m_Ny1(Nx),   m_Ny2( disflag ? 1 : Nx ),  m_yorder(xorder), 
   m_Ntau(NQ2), m_tauorder(Q2order), 
   m_Nproc(Nproc), 
@@ -95,7 +83,7 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_alphas(NULL),
   m_DISgrid(disflag)   
 {
-  //  cout << "igrid::igrid() transform=" << m_transform << endl;
+  //  std::cout << "igrid::igrid() transform=" << m_transform << std::endl;
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
 
   fx=m_fmap[m_transform].mfx;
@@ -125,24 +113,24 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   else            m_deltatau = 0;
 
   if ( m_Ny1-1<m_yorder ) { 
-    cerr << "igrid() not enough nodes for this interpolation order Ny1=" << m_Ny1 
-	 << "\tyorder=" << m_yorder << endl;
+    std::cerr << "igrid() not enough nodes for this interpolation order Ny1=" << m_Ny1 
+	      << "\tyorder=" << m_yorder << std::endl;
  
     while ( m_Ny1-1<m_yorder ) m_yorder--;
   } 
 
   if ( !m_DISgrid ) { 
     if ( m_Ny2-1<m_yorder ) { 
-      cerr << "igrid() not enough nodes for this interpolation order Ny2=" << m_Ny2 
-	   << "\tyorder=" << m_yorder << endl;
+      std::cerr << "igrid() not enough nodes for this interpolation order Ny2=" << m_Ny2 
+		<< "\tyorder=" << m_yorder << std::endl;
       
       while ( m_Ny2-1<m_yorder ) m_yorder--;
     } 
   }
   
   if ( m_Ntau-1<m_tauorder ) { 
-    cerr << "igrid() not enough nodes for this interpolation order Ntau=" << m_Ntau 
-	 << "\ttauorder=" << m_tauorder << endl;
+    std::cerr << "igrid() not enough nodes for this interpolation order Ntau=" << m_Ntau 
+	      << "\ttauorder=" << m_tauorder << std::endl;
     
     while ( m_Ntau-1<m_tauorder ) m_tauorder--;
   } 
@@ -156,7 +144,7 @@ igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
 
 
 // copy constructor
-igrid::igrid(const igrid& g) : 
+appl::igrid::igrid(const appl::igrid& g) : 
   fy(g.fy),  fx(g.fx), 
   m_Ny1(g.m_Ny1),     
   m_y1min(g.m_y1min),     m_y1max(g.m_y1max),     m_deltay1(g.m_deltay1),   
@@ -182,7 +170,7 @@ igrid::igrid(const igrid& g) :
 
 
 // read from a file 
-igrid::igrid(TFile& f, const string& s) :
+appl::igrid::igrid(TFile& f, const std::string& s) :
   fy(NULL),   fx(NULL),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),   
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),   
@@ -198,14 +186,14 @@ igrid::igrid(TFile& f, const string& s) :
   m_fsplit1(NULL), m_fsplit2(NULL),    
   m_alphas(NULL) 
 { 
-  //  cout << "igrid::igrid()" << endl;
+  //  std::cout << "igrid::igrid()" << std::endl;
   
   //  mfx = igrid::_fx;
   //  mfy = igrid::_fy;
   //  mweightfun = igrid::_fun;
  
   // using the title of a TH1D because I don't know 
-  // how else to save a string in a root file 
+  // how else to save a std::string in a root file 
   // TH1D* _transform = (TH1D*)f.Get((s+"/Transform").c_str());
   // m_transform = _transform->GetTitle();
   // delete _transform;
@@ -255,7 +243,7 @@ igrid::igrid(TFile& f, const string& s) :
 
   delete setup;
 
-  //  cout << "igrid::igrid() read setup" << endl;
+  //  std::cout << "igrid::igrid() read setup" << std::endl;
 
   // create grids
   m_deltay1   = (m_y1max-m_y1min)/(m_Ny1-1);
@@ -273,7 +261,7 @@ igrid::igrid(TFile& f, const string& s) :
     // get storage histogram
     TH3D* htmp = (TH3D*)f.Get((s+name).c_str()); 
  
-    //    cout << "igrid::igrid() read " << name << endl;
+    //    std::cout << "igrid::igrid() read " << name << std::endl;
 
     // create grid
     m_weight[ip]=new SparseMatrix3d(htmp);
@@ -295,7 +283,7 @@ igrid::igrid(TFile& f, const string& s) :
 
 
 // constructor common internals 
-void igrid::construct() 
+void appl::igrid::construct() 
 {
   // Initialize histograms representing the weight grid
   for( int ip=0 ; ip<m_Nproc ; ip++ ) {
@@ -308,7 +296,7 @@ void igrid::construct()
 
 
 // destructor
-igrid::~igrid() {
+appl::igrid::~igrid() {
   deletepdftable();
   deleteweights();
 }
@@ -316,9 +304,9 @@ igrid::~igrid() {
 
 
 // clean up internal pdf table (could be moved to local variable)
-void igrid::deletepdftable() { 
+void appl::igrid::deletepdftable() { 
 
-  //  cout << "deleting pdf tables" << endl;
+  //  std::cout << "deleting pdf tables" << std::endl;
 
   if ( m_fg1 ) { 
     for ( int i=0 ; i<m_Ntau ; i++ ) {
@@ -329,7 +317,7 @@ void igrid::deletepdftable() {
     m_fg1=NULL;
   }
   
-  //  cout << "deleting splitting tables" << endl;
+  //  std::cout << "deleting splitting tables" << std::endl;
 
   if ( m_fsplit1 ) { 
     for ( int i=0 ; i<m_Ntau ; i++ ) {
@@ -357,7 +345,7 @@ void igrid::deletepdftable() {
     }
     
     
-    //  cout << "deleting splitting tables" << endl;
+    //  std::cout << "deleting splitting tables" << std::endl;
     if ( m_fsplit2 ) { 
       for ( int i=0 ; i<m_Ntau ; i++ ) {
 	for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fsplit2[i][j];
@@ -368,7 +356,7 @@ void igrid::deletepdftable() {
     }
   }
 
-  //  cout << "delete alphas table" << endl;
+  //  std::cout << "delete alphas table" << std::endl;
 
   if ( m_alphas ) { 
     delete[] m_alphas;
@@ -381,7 +369,7 @@ void igrid::deletepdftable() {
 
 
 // delete internal grids
-void igrid::deleteweights() { 
+void appl::igrid::deleteweights() { 
   if ( m_weight ) { 
     for ( int ip=0 ; ip<m_Nproc ; ip++ ) if (m_weight[ip]) delete m_weight[ip];
     delete[] m_weight;
@@ -393,7 +381,7 @@ void igrid::deleteweights() {
 
 
 // write to file
-void igrid::write(const string& name) { 
+void appl::igrid::write(const std::string& name) { 
   Directory d(name);
   d.push();
 
@@ -452,9 +440,9 @@ void igrid::write(const string& name) {
 
     //    int newsize = m_weight[ip]->size();
     
-    //    cout << "iproc=" << ip 
+    //    std::cout << "iproc=" << ip 
     //	 << "\tgrid size(untrimmed)=" << oldsize
-    //	 << "\tgrid size(trimmed)="   << newsize << endl;
+    //	 << "\tgrid size(trimmed)="   << newsize << std::endl;
 
     //    m_weight[ip]->print();
 
@@ -468,10 +456,10 @@ void igrid::write(const string& name) {
   }
 
 #if 0
-  //    cout << name << " trimmed" << endl;
-  cout << name << "\tsize=" << igridsize << "\t-> " << igridtrimsize;
-  if ( igridsize ) cout << "\t( " << igridtrimsize*100/igridsize << "% )";
-  cout << endl;
+  //    std::cout << name << " trimmed" << std::endl;
+  std::cout << name << "\tsize=" << igridsize << "\t-> " << igridtrimsize;
+  if ( igridsize ) std::cout << "\t( " << igridtrimsize*100/igridsize << "% )";
+  std::cout << std::endl;
 #endif
 
   d.pop();
@@ -481,7 +469,7 @@ void igrid::write(const string& name) {
 
 
 
-void igrid::fill(const double x1, const double x2, const double Q2, const double* weight) 
+void appl::igrid::fill(const double x1, const double x2, const double Q2, const double* weight) 
 {  
 
   // find preferred vertex for low end of interpolation range
@@ -533,7 +521,7 @@ void igrid::fill(const double x1, const double x2, const double Q2, const double
 	  //  } 
 	  //  else {
 
-	  //	  cout << "weight[" << ip << "]=" << weight[ip] << "\tfillweight=" << fillweight << endl;;
+	  //	  std::cout << "weight[" << ip << "]=" << weight[ip] << "\tfillweight=" << fillweight << std::endl;;
 
 	  (*m_weight[ip])(k3+i3, k1+i1, k2+i2) += fillweight;	  
 	  //  }	  
@@ -548,7 +536,7 @@ void igrid::fill(const double x1, const double x2, const double Q2, const double
 }
 
 
-void igrid::fill_phasespace(const double x1, const double x2, const double Q2, const double* weight) { 
+void appl::igrid::fill_phasespace(const double x1, const double x2, const double Q2, const double* weight) { 
 
   int k1=fk1(x1);
   int k2=fk2(x2);
@@ -562,7 +550,7 @@ void igrid::fill_phasespace(const double x1, const double x2, const double Q2, c
 
 
 
-void igrid::fill_index(const int ix1, const int ix2, const int iQ2, const double* weight) { 
+void appl::igrid::fill_index(const int ix1, const int ix2, const int iQ2, const double* weight) { 
 
   //  int k1=ix1;
   //  int k2=ix2;
@@ -576,12 +564,12 @@ void igrid::fill_index(const int ix1, const int ix2, const int iQ2, const double
 
 
 
-void igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
-		     double (*alphas)(const double&),
-		     int nloop,
-		     double rscale_factor,
-		     double fscale_factor,
-		     double beam_scale ) 
+void appl::igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
+			   double (*alphas)(const double&),
+			   int nloop,
+			   double rscale_factor,
+			   double fscale_factor,
+			   double beam_scale ) 
 {
 
   void (*splitting)(const double& , const double&, double* ) = Splitting;
@@ -792,14 +780,14 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 // grids are seperate from the nlo grids, if nloop=1 then we must be calculating 
 // {r,f}scale_factor ie f*mu then *scale_factor=f
 // splitting, is the splitting function 
-double igrid::convolute(void   (*pdf)(const double& , const double&, double* ), 
-			appl_pdf*  genpdf,
-			double (*alphas)(const double& ), 
-			int     lo_order,  
-			int     nloop, 
-			double  rscale_factor,
-			double  fscale_factor,
-			double Escale) 
+double appl::igrid::convolute(void   (*pdf)(const double& , const double&, double* ), 
+			      appl_pdf*  genpdf,
+			      double (*alphas)(const double& ), 
+			      int     lo_order,  
+			      int     nloop, 
+			      double  rscale_factor,
+			      double  fscale_factor,
+			      double Escale) 
 { 
 
   //char name[]="appl_grid:igrid::convolute(): ";
@@ -815,13 +803,13 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
   double _alphas = 1.;
   double  alphaplus1 = 0.;
   // do the convolution  
-  // if (debug) cout<<name<<" nloop= "<<nloop<<endl;
+  // if (debug) std::cout<<name<<" nloop= "<<nloop<<endl;
   //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
   // is the grid empty
   int size=0;
    for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
     if ( !m_weight[ip]->trimmed() )  {
-      //  cout << "igrid::convolute() naughty, naughty!" << endl;
+      //  std::cout << "igrid::convolute() naughty, naughty!" << std::endl;
       m_weight[ip]->trim();
     }
     size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
@@ -902,12 +890,12 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 #endif
 
           //if (debug) 
-          // cout<<name<<" nloop= "<<nloop
+          // std::cout<<name<<" nloop= "<<nloop
           //                     <<" itau="<<itau
 	  //	       <<" iy1= "<<iy1<<" iy2= "<<iy2
           //                     <<" xsigma= "<<xsigma
           //                     <<" dsigma= "<<dsigma
-          //                     << endl;
+          //                     << std::endl;
 	  
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
@@ -917,18 +905,18 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	      // nlo relative ln mu_R^2 term 
 	      dsigma+= alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
   
-              //if (debug) cout<<" xsigma= "<<xsigma
+              //if (debug) std::cout<<" xsigma= "<<xsigma
               //    <<" twopi= "<<twopi<<" beta0= "<<beta0
               //    <<" lo_order="<<lo_order 
               //    <<" log(rscale_factor*rscale_factor)= "<<log(rscale_factor*rscale_factor)  
               //    <<endl;
-              //if (debug) cout<<name<<" dsigma= "<<dsigma
+              //if (debug) std::cout<<name<<" dsigma= "<<dsigma
               //               <<" factor*xsigma= "
               //               << twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma
               //               <<endl;
 	      //
 
-              //if (debug) cout<<name<<" rscale= " << rscale_factor << " dsigma= "<<dsigma<<endl;
+              //if (debug) std::cout<<name<<" rscale= " << rscale_factor << " dsigma= "<<dsigma<<endl;
 	    }
 
 	    // factorisation scale dependent bit
@@ -940,7 +928,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 	      for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*(HA[ip]+HB[ip]);
 	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
 	      //if (debug) 
-              //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << endl;
+              //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
 	    }
 	  }
 	}  // nonzero
@@ -948,7 +936,7 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
     }  // iy1
   }  // itau
   
-  //if (debug)  cout << name<<"     convoluted dsigma=" << dsigma << endl; 
+  //if (debug)  std::cout << name<<"     convoluted dsigma=" << dsigma << std::endl; 
   
   delete[] sig;
   delete[] H;
@@ -982,15 +970,15 @@ double igrid::convolute(void   (*pdf)(const double& , const double&, double* ),
 
 
 
-double igrid::convolute_subproc(int subproc,
-				void   (*pdf)(const double& , const double&, double* ), 
-				appl_pdf*  genpdf,
-				double (*alphas)(const double& ), 
-				int     lo_order,  
-				int     nloop, 
-				double  rscale_factor,
-				double  fscale_factor,
-				double Escale ) 
+double appl::igrid::convolute_subproc(int subproc,
+				      void   (*pdf)(const double& , const double&, double* ), 
+				      appl::appl_pdf*  genpdf,
+				      double (*alphas)(const double& ), 
+				      int     lo_order,  
+				      int     nloop, 
+				      double  rscale_factor,
+				      double  fscale_factor,
+				      double Escale ) 
 { 
 
   static const double twopi = 2.*M_PI;
@@ -1013,7 +1001,7 @@ double igrid::convolute_subproc(int subproc,
 
 
   if ( !m_weight[ip]->trimmed() )  {
-      //  cout << "igrid::convolute() naughty, naughty!" << endl;
+      //  std::cout << "igrid::convolute() naughty, naughty!" << std::endl;
       m_weight[ip]->trim();
   }
   size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
@@ -1063,7 +1051,7 @@ double igrid::convolute_subproc(int subproc,
 	//for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
      
 	if ( ( sig = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) ) )  { 
-	  //	  cout << "alpha=" << _alphas << endl; 
+	  //	  std::cout << "alpha=" << _alphas << std::endl; 
 
 	  // build the generalised pdfs from the actual pdfs
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
@@ -1079,13 +1067,13 @@ double igrid::convolute_subproc(int subproc,
 	    
 	    // renormalisation scale dependent bit
 	    if ( rscale_factor!=1 ) { 
-	      //cout << "rscale=" << rscale_factor << endl;
+	      //cout << "rscale=" << rscale_factor << std::endl;
 	      dsigma += alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*sig*H[ip];  // nlo relative ln mu_R^2 term 
 	    }
 
 	    // factorisation scale dependent bit
 	    if ( fscale_factor!=1 ) {
-	      //cout << "fscale=" << fscale_factor << endl;
+	      //cout << "fscale=" << fscale_factor << std::endl;
 	      genpdf->evaluate( m_fg1    [itau][iy1],  m_fsplit2[itau][iy2], HA);
 	      genpdf->evaluate( m_fsplit1[itau][iy1],  m_fg2    [itau][iy2], HB);
 	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*sig*(HA[ip]+HB[ip]);              // nlo relative ln mu_F^2 term 
@@ -1097,7 +1085,7 @@ double igrid::convolute_subproc(int subproc,
     }  // iy1
   }  // itau
   
-  //  cout << "\tconvoluted dsigma=" << dsigma << endl; 
+  //  std::cout << "\tconvoluted dsigma=" << dsigma << std::endl; 
   
   delete[] H;
   delete[] HA;
@@ -1123,16 +1111,16 @@ double igrid::convolute_subproc(int subproc,
 // the point of the algorithm here is to find the extent of the filled
 // bines + 1 on either side and create a new grid with these limits
    
-void igrid::optimise(int NQ2, int Nx1, int Nx2) {     
+void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {     
 
-  cout << "\tsize(untrimmed)=" << m_weight[0]->size();
+  std::cout << "\tsize(untrimmed)=" << m_weight[0]->size();
 
-  //  cout << "ymin=" << gety(0) << "\tymax=" << gety(m_Ny-1) 
-  //       << "\txmin=" << fx(gety(m_Ny-1)) << "\txmax=" << fx(gety(0)) << endl;
+  //  std::cout << "ymin=" << gety(0) << "\tymax=" << gety(m_Ny-1) 
+  //       << "\txmin=" << fx(gety(m_Ny-1)) << "\txmax=" << fx(gety(0)) << std::endl;
 
   for ( int i=0 ; i<m_Nproc ; i++ )  m_weight[i]->trim();
 
-  cout << "\tsize(trimmed)=" << m_weight[0]->size() << endl;
+  std::cout << "\tsize(trimmed)=" << m_weight[0]->size() << std::endl;
 
 
 #if 1
@@ -1180,10 +1168,10 @@ void igrid::optimise(int NQ2, int Nx1, int Nx2) {
 
     //    m_weight[ip]->yaxis().print(fx);
 
-    //    cout << "initial ip=" << ip 
+    //    std::cout << "initial ip=" << ip 
     //	       << "\tm_y2min=" << m_y2min << "\tm_y2max=" << m_y2max
     //         << "\tm_y1min=" << m_y1min << "\tm_y1max=" << m_y1max  
-    //         << endl;  
+    //         << std::endl;  
 
     //    m_weight[ip]->print();
 
@@ -1196,7 +1184,7 @@ void igrid::optimise(int NQ2, int Nx1, int Nx2) {
     if ( ymin1<y1setmin )                 y1setmin = ymin1;
     if ( ymin1<=ymax1 && y1setmax<ymax1 ) y1setmax = ymax1; 
 
-    //    cout << "ip=" << ip << endl; // << "\tymin1=" << ymin1 << "\tymax1=" << ymax1 << endl;
+    //    std::cout << "ip=" << ip << std::endl; // << "\tymin1=" << ymin1 << "\tymax1=" << ymax1 << std::endl;
     
     // y2 optimisation
     int ymin2 = m_weight[ip]->zmin();    
@@ -1310,7 +1298,7 @@ void igrid::optimise(int NQ2, int Nx1, int Nx2) {
     m_taumax   = _max;
     m_deltatau = (m_taumax-m_taumin)/(m_Ntau-1);
     
-    //    cout << "done ip=" << ip << endl; 
+    //    std::cout << "done ip=" << ip << std::endl; 
     
   }
   
@@ -1332,7 +1320,7 @@ void igrid::optimise(int NQ2, int Nx1, int Nx2) {
 
 
 // numerical operators
-igrid& igrid::operator=(const igrid& g) { 
+appl::igrid& appl::igrid::operator=(const appl::igrid& g) { 
   m_Ny1     = g.m_Ny1;
   m_y1min   = g.m_y1min;
   m_y1max   = g.m_y1max;
@@ -1370,22 +1358,22 @@ igrid& igrid::operator=(const igrid& g) {
 }
 
 
-ostream& igrid::header(ostream& s) const { 
-  //  s << "interpolation orders: x=" << g.yorder() << "\tQ2=" << g.tauorder() << endl;
+std::ostream& appl::igrid::header(std::ostream& s) const { 
+  //  s << "interpolation orders: x=" << g.yorder() << "\tQ2=" << g.tauorder() << std::endl;
   
-  s << "\t x:  [ "  << setw(2) 
-    //    << Ny1() << " ;\t" << setw(7) << fx(y1max())  << " - " << setw(7) << setprecision(6) << fx(y1min()) << "\t : " 
-    //    << Ny2() << " ;\t" << setw(7) << fx(y2max())  << " - " << setw(7) << setprecision(6) << fx(y2min()) 
-    << Ny1() << " :\t " << setw(7) << setprecision(6) << fx(y1max())  << " - " << setw(7) << setprecision(6) << fx(y1min()) << "\t : " 
-    << Ny2() << " :\t " << setw(7) << setprecision(6) << fx(y2max())  << " - " << setw(7) << setprecision(6) << fx(y2min()) 
+  s << "\t x:  [ "  << std::setw(2) 
+    //    << Ny1() << " ;\t" << std::setw(7) << fx(y1max())  << " - " << std::setw(7) << std::setprecision(6) << fx(y1min()) << "\t : " 
+    //    << Ny2() << " ;\t" << std::setw(7) << fx(y2max())  << " - " << std::setw(7) << std::setprecision(6) << fx(y2min()) 
+    << Ny1() << " :\t " << std::setw(7) << std::setprecision(6) << fx(y1max())  << " - " << std::setw(7) << std::setprecision(6) << fx(y1min()) << "\t : " 
+    << Ny2() << " :\t " << std::setw(7) << std::setprecision(6) << fx(y2max())  << " - " << std::setw(7) << std::setprecision(6) << fx(y2min()) 
     << "\t : " << "\t( order=" << yorder()   << " ) ]"; 
   s << "\t Q2: [ " 
-    << Ntau() << " :\t "  << setw(7) << setprecision(6) << fQ2(taumin()) << " - " << setw(7) << setprecision(6) << fQ2(taumax()) 
+    << Ntau() << " :\t "  << std::setw(7) << std::setprecision(6) << fQ2(taumin()) << " - " << std::setw(7) << std::setprecision(6) << fQ2(taumax()) 
     << "\t( order=" << tauorder() << " ) ]";
   return s;
 }
 
 
-ostream& operator<<(ostream& s, const appl::igrid& g) {
+std::ostream& operator<<(std::ostream& s, const appl::igrid& g) {
   return g.header(s);
 }

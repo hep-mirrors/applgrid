@@ -15,23 +15,14 @@
 
 #include <iostream>
 #include <sstream>
-using std::ostream;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 // #include <sstream>
-// using std::ostringstream;
-// using std::stringstream;
 
 #include <vector> 
-using std::vector;
 
 #include <map> 
-using std::map;
 
 #include <string> 
-using std::string;
 
 
 #include <exception> 
@@ -42,18 +33,18 @@ namespace appl {
 
 class appl_pdf;
 
-typedef map<const string, appl_pdf*> pdfmap;
+typedef std::map<const std::string, appl_pdf*> pdfmap;
 
 
 // this is a *maybe* nice class, a base class for pdf 
 // functions
 //
 // it has a virtual evaluate() method to be definied in 
-// the derived class, and a static map of all the names
+// the derived class, and a static std::map of all the names
 // of instances of the derived classes
 //
 // when a new instance of the class is created, it 
-// automatically adds it's name to the map, so the user 
+// automatically adds it's name to the std::map, so the user 
 // doesn't need to worry about consistency, and removes 
 // itself when the derived instance is deleted
 
@@ -65,22 +56,22 @@ public:
   // pdf error exception
   class exception : public std::exception { 
   public: 
-    exception(const string& s="") { cerr << what() << " " << s << endl; }; 
-    exception(std::ostream& s)    { cerr << what() << " " << s << endl; }; 
+    exception(const std::string& s="") { std::cerr << what() << " " << s << std::endl; }; 
+    exception(std::ostream& s)         { std::cerr << what() << " " << s << std::endl; }; 
     const char* what() const throw() { return "appl::appl_pdf::exception "; }
   };
   
 public:
 
   /// constructor and destructor
-  appl_pdf(const string& name);
+  appl_pdf(const std::string& name);
 
   virtual ~appl_pdf();
 
-  /// retrieve an instance from the map 
-  static appl_pdf* getpdf(const string& s, bool printout=true);
+  /// retrieve an instance from the std::map 
+  static appl_pdf* getpdf(const std::string& s, bool printout=true);
   
-  /// print out the pdf map
+  /// print out the pdf std::map
   static void printmap(std::ostream& s=std::cout) {
     pdfmap::iterator itr = m_pdfmap.begin();
     while ( itr!=m_pdfmap.end() )  {
@@ -95,15 +86,15 @@ public:
   virtual void evaluate(const double* fA, const double* fA, double* H) = 0; 
 
   int     Nproc() const { return m_Nproc; } 
-  string   name() const { return m_name;  }
+  std::string   name() const { return m_name;  }
 
-  string  rename(const std::string& name) { 
-    /// remove my entry from the map, and add me again with my new name
+  std::string  rename(const std::string& name) { 
+    /// remove my entry from the std::map, and add me again with my new name
     if ( m_pdfmap.find(m_name)!=m_pdfmap.end() ) { 
       m_pdfmap.erase(m_pdfmap.find(m_name));
     }
     else { 
-      std::cout << "appl_pdf::rename() " << m_name << " not in map" << std::endl;
+      std::cout << "appl_pdf::rename() " << m_name << " not in std::map" << std::endl;
     }
     m_name = name;
     addtopdfmap(m_name, this);
@@ -111,17 +102,17 @@ public:
   }
 
 
-  /// code to allow optional vector of subprocess contribution names
+  /// code to allow optional std::vector of subprocess contribution names
 
-  const vector<string>& subnames() const { return m_subnames; }
+  const std::vector<std::string>& subnames() const { return m_subnames; }
 
-  void addSubnames( const vector<string>& subnames ) { m_subnames = subnames; }
+  void addSubnames( const std::vector<std::string>& subnames ) { m_subnames = subnames; }
 
-  void  addSubname( const string& subname ) { 
+  void  addSubname( const std::string& subname ) { 
     if ( int(m_subnames.size())<m_Nproc-1 ) m_subnames.push_back(subname); 
   }
 
-  /// access the ckm matrices - if no matrices are required these vectors have 
+  /// access the ckm matrices - if no matrices are required these std::vectors have 
   /// zero size
 
   const std::vector<double>&               getckmsum() const { return m_ckmsum; }
@@ -140,22 +131,22 @@ public:
   
 private:
 
-  static void addtopdfmap(const string& s, appl_pdf* f) { 
+  static void addtopdfmap(const std::string& s, appl_pdf* f) { 
     if ( m_pdfmap.find(s)==m_pdfmap.end() ) { 
       m_pdfmap.insert( pdfmap::value_type( s, f ) );
-      //      cout << "appl_pdf::addtomap() registering " << s << " in map addr \t" << f << endl;
+      //      std::cout << "appl_pdf::addtomap() registering " << s << " in std::map addr \t" << f << std::endl;
     }
     else { 
-      throw exception( cerr << "appl_pdf::addtopdfmap() " << s << " already in map\t0x" << m_pdfmap.find(s)->second  );
+      throw exception( std::cerr << "appl_pdf::addtopdfmap() " << s << " already in std::map\t0x" << m_pdfmap.find(s)->second  );
     }
   }
   
 protected:
 
-  int    m_Nproc;
-  string m_name;
+  int         m_Nproc;
+  std::string m_name;
 
-  vector<string> m_subnames;
+  std::vector<std::string> m_subnames;
   
   static pdfmap  m_pdfmap;
 

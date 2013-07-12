@@ -5,7 +5,6 @@
 
 #include "appl_grid/appl_pdf.h" 
 #include "TMath.h"
-using namespace appl;
 
 //
 // MCFM W+Charm production
@@ -15,27 +14,30 @@ using namespace appl;
 //
 //  W+
 //
-class mcfmwpc_pdf : public appl_pdf { 
-
+class mcfmwpc_pdf : public appl::appl_pdf { 
+  
 public: 
-
-  mcfmwpc_pdf(const string& s="mcfm-wpc") : appl_pdf(s) 
-   { m_Nproc = 10; make_ckm( true ); } 
-
+  
+ mcfmwpc_pdf(const std::string& s="mcfm-wpc") : appl_pdf(s) 
+  { m_Nproc = 10; make_ckm( true ); } 
+  
   ~mcfmwpc_pdf() { } 
-
+  
   virtual void evaluate(const double* fA, const double* fB, double* H);
 
 
 };
+
+
+
 //
 //  W-
 //
-class mcfmwmc_pdf : public appl_pdf { 
+class mcfmwmc_pdf : public appl::appl_pdf { 
 
 public: 
 
-  mcfmwmc_pdf(const string& s="mcfm-wmc") : appl_pdf(s) 
+  mcfmwmc_pdf(const std::string& s="mcfm-wmc") : appl_pdf(s) 
      { m_Nproc = 10; make_ckm( false ); } 
 
   ~mcfmwmc_pdf() {   } 

@@ -18,12 +18,11 @@
 #include <iostream>
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
 
 
 
-class generic_pdf : public appl_pdf {
+class generic_pdf : public appl::appl_pdf {
 
 public:
 
@@ -64,12 +63,12 @@ public:
     return currentsubprocess;
   }
 
-  string GetSubProcessName(int isub) {return procname[isub];};
+  std::string GetSubProcessName(int isub) {return procname[isub];};
 
   void SetCurrentProcess(int mypro){ currentprocess=mypro; }
   
   int GetCurrentProcess() { 
-    if (currentprocess==-1) cout<<" generic_pdf: current process not defined ! "<<endl;
+    if (currentprocess==-1) std::cout<<" generic_pdf: current process not defined ! "<< std::endl;
     return currentprocess;
   }
   
@@ -80,10 +79,10 @@ public:
   void MakeCkm();
 
   void PrintFlavourMap() {
-    cout<<" generic_pdf: print out flavour map "<<endl;
+    std::cout << " generic_pdf: print out flavour std::map " << std::endl;
     std::map<int,int>::iterator imap;
     for (imap = flavourtype.begin(); imap!=flavourtype.end(); ++imap){
-      cout<<" Flavourtype["<<imap->first<<"]= "<<imap->second<<" "<<endl;
+      std::cout<<" Flavourtype["<<imap->first<<"]= "<<imap->second<<" "<< std::endl;
     }
   }
 
@@ -98,8 +97,8 @@ public:
 private:
 
 
-  /// this might eventually become a string encoding the grid
-  string m_filename;  
+  /// this might eventually become a std::string encoding the grid
+  std::string m_filename;  
 
   /// has this been initialised yet?
   bool m_initialised;
@@ -114,14 +113,14 @@ private:
 
   //  double* m_H; // generalised PDF defined in GetSubprocess
 
-  // map name to index
-  // maps flavour type names to iflavour <-> -6...6
-  std::map<string, int> iflavour; 
+  // std::map name to index
+  // std::maps flavour type names to iflavour <-> -6...6
+  std::map<std::string, int> iflavour; 
   
-  // maps iflavour to flavour typs names -6...6 <-> name 
-  std::map<int, string> flavname;  
+  // std::maps iflavour to flavour typs names -6...6 <-> name 
+  std::map<int, std::string> flavname;  
 
-  // maps iflavour to types -6...6 <->  -2, -1, 0, 1, 2 
+  // std::maps iflavour to types -6...6 <->  -2, -1, 0, 1, 2 
   std::map<int,int> flavourtype;
 
   // sum of quark flavour belonging to one flavour type up,down,gluon
@@ -129,11 +128,11 @@ private:
   std::map<int,double> pdfB; //hadron B
 
   
-  // maps iflavour -2, -1, 0, 1, 2 of first or second proton to iprocess
+  // std::maps iflavour -2, -1, 0, 1, 2 of first or second proton to iprocess
   std::map<int,int> Flav1; 
   std::map<int,int> Flav2;
 
-  std::vector<string> procname; // names of subprocesses
+  std::vector<std::string> procname; // names of subprocesses
 
   int currentsubprocess;
   int currentprocess;

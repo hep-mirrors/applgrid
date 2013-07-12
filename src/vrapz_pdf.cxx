@@ -11,7 +11,6 @@
 
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
 #include "vrapz_pdf.h"
 

@@ -1,7 +1,7 @@
 //
 //   TFileString.cxx        
 //
-//    root TObject string vector class for writing string vectors
+//    root TObject std::string std::vector class for writing std::string std::vectors
 //    to root files               
 //                   
 // 

@@ -24,10 +24,10 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
 
   std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << std::endl; 
 
-  /// need to decode the input vector
+  /// need to decode the input std::vector
 
   if ( combinations.size() ) { 
-    /// vector initialised from serialised vector
+    /// std::vector initialised from serialised std::vector
     unsigned iv = 0;
     unsigned nproc = combinations[iv++];
     for ( unsigned i=0 ; i<nproc && iv<combinations.size() ; i++ ) {

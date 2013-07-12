@@ -26,32 +26,32 @@
 namespace appl { 
 
 
-// initialise the map with some default instances
+// initialise the std::map with some default instances
 // although the user could create these themselves
 // if they wanted
 pdfmap appl_pdf::m_pdfmap; 
 
 
 /// constructor and destructor
-appl_pdf::appl_pdf(const string& name) : m_Nproc(0), m_name(name) { 
+appl_pdf::appl_pdf(const std::string& name) : m_Nproc(0), m_name(name) { 
    if ( m_name!="" ) addtopdfmap(m_name, this);
 }
   
 appl_pdf::~appl_pdf() { 
-  // when I'm destroyed, remove my entry from the map 
+  // when I'm destroyed, remove my entry from the std::map 
   pdfmap::iterator mit = m_pdfmap.find(m_name);
   if ( mit!=m_pdfmap.end() ) m_pdfmap.erase(mit);
 } 
 
 
-/// retrieve an instance from the map 
-appl_pdf* appl_pdf::getpdf(const string& s, bool printout) {
+/// retrieve an instance from the std::map 
+appl_pdf* appl_pdf::getpdf(const std::string& s, bool printout) {
   /// initialise the factory
   if ( m_pdfmap.size()==0 ) appl::appl_pdf::create_map(); 
   pdfmap::iterator itr = m_pdfmap.find(s);
   if ( itr!=m_pdfmap.end() ) return itr->second; 
-  /// not found in map
-  throw exception( std::cerr << "getpdf() " << s << " not instantiated in map " );
+  /// not found in std::map
+  throw exception( std::cerr << "getpdf() " << s << " not instantiated in std::map " );
 }
 
 
@@ -62,7 +62,7 @@ bool appl_pdf::create_map() {
   if ( m_pdfmap.size()==0 ) { 
     
     /// the appl_pdf add their own pointers to the 
-    /// pdf map so we don;t need to remember their 
+    /// pdf std::map so we don;t need to remember their 
     /// pointers ourselves
     new  mcfmz_pdf;
     new  mcfmwp_pdf;
@@ -99,7 +99,7 @@ bool appl_pdf::create_map() {
 
 void appl_pdf::make_ckm( bool Wp ) { 
   
-  // cout << "make_ckm() initialising" << endl;
+  // std::cout << "make_ckm() initialising" << std::endl;
   m_ckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13,0));
 
   if ( Wp ) { 

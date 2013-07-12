@@ -14,13 +14,12 @@
 // #include "EWparams.h"
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
 
 
 // LO vrap pdf combination class 
 
-class vrapzLO_pdf : public appl_pdf {
+class vrapzLO_pdf : public appl::appl_pdf {
 
 public:
 
@@ -58,7 +57,7 @@ inline void  vrapzLO_pdf::evaluate(const double* fA, const double* fB, double* H
 
 // NLO vrap pdf combination class 
 
-class vrapzNLO_pdf : public appl_pdf {
+class vrapzNLO_pdf : public appl::appl_pdf {
 
 public:
 
@@ -111,9 +110,9 @@ inline void  vrapzNLO_pdf::evaluate(const double* fA, const double* fB, double* 
   H[5] = UG; 
 
 #if 0
-  std::cout << "appl::vrpz fA ";  for ( int i=-6 ; i<=6 ; i++ ) std::cout << "\t" << fA[i];  std::cout << endl;
-  std::cout << "appl::vrpz fB ";  for ( int i=-6 ; i<=6 ; i++ ) std::cout << "\t" << fB[i];  std::cout << endl;
-  std::cout << "appl::vrpz  H ";  for ( int i=0  ; i<6 ; i++ ) std::cout << "\t" << H[i];   std::cout << endl;
+  std::cout << "appl::vrpz fA ";  for ( int i=-6 ; i<=6 ; i++ ) std::cout << "\t" << fA[i];  std::cout << std::endl;
+  std::cout << "appl::vrpz fB ";  for ( int i=-6 ; i<=6 ; i++ ) std::cout << "\t" << fB[i];  std::cout << std::endl;
+  std::cout << "appl::vrpz  H ";  for ( int i=0  ; i<6 ; i++ ) std::cout << "\t" << H[i];   std::cout << std::endl;
 #endif
 
 
@@ -125,7 +124,7 @@ inline void  vrapzNLO_pdf::evaluate(const double* fA, const double* fB, double* 
 
 // vrap pdf combination class 
 
-class vrapzNNLO_pdf : public appl_pdf {
+class vrapzNNLO_pdf : public appl::appl_pdf {
 
 public:
 
@@ -249,9 +248,9 @@ inline void  vrapzNNLO_pdf::evaluate(const double* fA, const double* fB, double*
   H[18] = GA*GB;
 
 #if 0
-  std::cout << "appl::vrpz fA ";  for ( int i=-6 ; i<=6 ; i++ ) std::cout << "\t" << fA[i];  std::cout << endl;
-  std::cout << "appl::vrpz fB ";  for ( int i=-6 ; i<=6 ; i++ ) std::cout << "\t" << fB[i];  std::cout << endl;
-  std::cout << "appl::vrpz  H ";  for ( int i=0  ; i<18 ; i++ ) std::cout << "\t" << H[i];   std::cout << endl;
+  std::cout << "appl::vrpz fA ";  for ( int i=-6 ; i<=6 ; i++ ) std::cout << "\t" << fA[i];  std::cout << std::endl;
+  std::cout << "appl::vrpz fB ";  for ( int i=-6 ; i<=6 ; i++ ) std::cout << "\t" << fB[i];  std::cout << std::endl;
+  std::cout << "appl::vrpz  H ";  for ( int i=0  ; i<18 ; i++ ) std::cout << "\t" << H[i];   std::cout << std::endl;
 #endif
 
 }

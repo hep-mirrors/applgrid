@@ -63,8 +63,8 @@ private:
 
 private:
 
-  /// this might eventually become a string encoding the grid
-  string m_filename;  
+  /// this might eventually become a std::string encoding the grid
+  std::string m_filename;  
 
   /// has this been initialised yet?
   //  bool m_initialised;

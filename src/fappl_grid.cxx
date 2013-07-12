@@ -10,8 +10,6 @@
 
 #include <map>
 #include <iostream>
-using std::cout;
-using std::endl;
 
 #include "appl_grid/appl_grid.h"
 #include "appl_grid/fastnlo.h"
@@ -86,7 +84,7 @@ static int idcounter = 0;
 static std::map<int,appl::grid*> _grid;
 
 
-/// grid map management
+/// grid std::map management
 
 extern "C" void ngrids_(int& n) { n=_grid.size(); }
 
@@ -104,7 +102,7 @@ void bookgrid_(int& id, const int& Nobs, const double* binlims)
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
 
   if ( gitr==_grid.end() ) {
-    cout << "bookgrid_() creating grid with id " << id << endl; 
+    std::cout << "bookgrid_() creating grid with id " << id << std::endl; 
     _grid.insert(  std::map<int,appl::grid*>::value_type( id, new appl::grid( Nobs, binlims,
 									      2,    10, 1000, 1,
 									      12,  1e-5, 1, 3, 
@@ -206,7 +204,7 @@ void convoluteorder_(int& id, int& nloops, double* data) {
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
-    vector<double> v = g->vconvolute(fnpdf_, fnalphas_, nloops);
+    std::vector<double> v = g->vconvolute(fnpdf_, fnalphas_, nloops);
     for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
   }
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
@@ -218,7 +216,7 @@ void convolutewrap_(int& id, double* data,
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
-    vector<double> v = g->vconvolute( pdf, alphas);
+    std::vector<double> v = g->vconvolute( pdf, alphas);
     for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
   }
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
@@ -234,7 +232,7 @@ void fullconvolutewrap_(int& id, double* data,
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
-    vector<double> v = g->vconvolute( pdf, alphas, nloops, rscale, fscale);
+    std::vector<double> v = g->vconvolute( pdf, alphas, nloops, rscale, fscale);
     for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
   }
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
@@ -244,7 +242,7 @@ void fullconvolutewrap_(int& id, double* data,
 void writegrid_(int& id, const char* s) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
-    cout << "writegrid_() writing " << s << "\tid " << id << endl;
+    std::cout << "writegrid_() writing " << s << "\tid " << id << std::endl;
     appl::grid* g = gitr->second;
     g->trim();
     //   g->print();
@@ -260,7 +258,7 @@ void fillgrid_(int& id,
 	       const int& iobs, 
 	       const double* w, 
 	       const int& iorder ) { 
-  //  cout << "ix " << ix1 << " " << ix2 << "  iQ" << iQ << " " << iobs << "  " << iorder << endl;  
+  //  std::cout << "ix " << ix1 << " " << ix2 << "  iQ" << iQ << " " << iobs << "  " << iorder << std::endl;  
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     gitr->second->fill_index(ix1, ix2, iQ, iobs, w, iorder);
@@ -276,10 +274,10 @@ void readfastnlogrids_( int* ids, const char* s ) {
   fastnlo f(s);
 
   /// don't want the grids managed by the fastnlo object, 
-  /// manage them in fortran with the map
+  /// manage them in fortran with the std::map
   f.manageGrids(false);
 
-  ///copy to the fortran accessible grid map
+  ///copy to the fortran accessible grid std::map
   std::vector<appl::grid*> grids = f.grids();
 
   //  std::cout << "hooray!" << std::endl;

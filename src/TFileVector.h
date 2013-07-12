@@ -2,7 +2,7 @@
 //
 //   TFileVector.h        
 //
-//    root TObject string vector class for writing string vectors
+//    root TObject std::string std::vector class for writing std::string std::vectors
 //    to root files               
 // 
 //   Copyright (C) 2007 M.Sutton (sutt@hep.ucl.ac.uk)    
@@ -14,16 +14,10 @@
 #define  TFILESTRING_H
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::ostream;
 
 #include <string>
-using std::string;
 
 #include <vector>
-using std::vector;
 
 #include "TObjString.h"
 #include "TObject.h"
@@ -34,13 +28,13 @@ class TFileVector : public TObjString {
 
 public:
   
-  TFileVector(const string& name="") : TObjString(name.c_str()) { } 
+  TFileVector(const std::string& name="") : TObjString(name.c_str()) { } 
 
   std::vector<std::vector<double> >&       histos() { return mv; }
   const std::vector<std::vector<double> >& histos() const { return mv; }
 
   // get the name
-  string  name() const { return GetName(); } 
+  std::string  name() const { return GetName(); } 
 
   // get a value 
   std::vector<double>&       operator[](int i) { return mv[i]; }

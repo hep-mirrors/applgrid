@@ -21,24 +21,12 @@
 #define __APPL_GRID_H
 
 #include <vector>
-using std::vector;
 
 #include <iostream>
-using std::ostream;
-using std::cerr;
-using std::cout;
-using std::endl;
 
 #include <cmath>
-// using std::abs;
-// using std::fabs;
-using std::log;
-using std::exp;
-using std::sqrt;
-using std::pow;
 
 #include <string>
-using std::string;
 
 #include <exception>
 
@@ -77,7 +65,7 @@ public:
   // grid error exception
   class exception : public std::exception { 
   public:
-    exception(const string& s) { std::cerr << what() << " " << s << std::endl; }; 
+    exception(const std::string& s) { std::cerr << what() << " " << s << std::endl; }; 
     exception(ostream& s)      { std::cerr << what() << " " << s << std::endl; }; 
     virtual const char* what() const throw() { return "appl::grid::exception"; }
   };
@@ -87,35 +75,35 @@ public:
   grid(int NQ2=50,  double Q2min=10000.0, double Q2max=25000000.0,  int Q2order=5,  
        int Nx=50,   double xmin=1e-5,     double xmax=0.9,          int xorder=5,
        int Nobs=20, double obsmin=100.0,  double obsmax=7000.0, 
-       string genpdf="mcfm_pdf", 
+       std::string genpdf="mcfm_pdf", 
        int leading_order=0, int nloops=1, 
-       string transform="f2");
+       std::string transform="f2");
 
   grid( int Nobs, const double* obsbins,
 	int NQ2=50,  double Q2min=10000.0, double Q2max=25000000.0, int Q2order=5,
         int Nx=50,   double xmin=1e-5,     double xmax=0.9,         int xorder=5, 
-	string genpdf="mcfm_pdf",
+	std::string genpdf="mcfm_pdf",
 	int leading_order=0, int nloops=1, 
-	string transform="f2" );
+	std::string transform="f2" );
 
-  grid( const vector<double> obs,
+  grid( const std::vector<double> obs,
 	int NQ2=50,  double Q2min=10000.0, double Q2max=25000000.0,   int Q2order=5, 
         int Nx=50,   double xmin=1e-5,     double xmax=0.9,           int xorder=5, 
-	string genpdf="mcfm_pdf", 
+	std::string genpdf="mcfm_pdf", 
 	int leading_order=0, int nloops=1, 
-	string transform="f2" );
+	std::string transform="f2" );
 
   // build a grid but don't build the internal igrids - these can be added later
-  grid( const vector<double> obs,
-	string genpdf="nlojet_pdf", 
+  grid( const std::vector<double> obs,
+	std::string genpdf="nlojet_pdf", 
 	int leading_order=0, int nloops=1, 
-	string transform="f2" );
+	std::string transform="f2" );
 
   // copy constructor
   grid(const grid& g);
 
   // read from a file
-  grid(const string& filename="./grid.root", const string& dirname="grid");
+  grid(const std::string& filename="./grid.root", const std::string& dirname="grid");
 
   // add an igrid for a given bin and a given order 
   void add_igrid(int bin, int order, igrid* g);
@@ -328,7 +316,7 @@ public:
   const igrid* weightgrid(int iorder, int iobs) const { return m_grids[iorder][iobs]; }
   
   // save grid to specified file
-  void Write(const string& filename="weightgrid.root", const string& dirname="grid");
+  void Write(const std::string& filename="weightgrid.root", const std::string& dirname="grid");
 
   // accessors for the observable
   int    Nobs()               const { return m_obs_bins->GetNbinsX(); }
@@ -358,14 +346,14 @@ public:
   int  nloops()       const { return m_order-1; } 
 
   // find out which transform and which pdf combination are being used
-  string getTransform() const { return m_transform; }
+  std::string getTransform() const { return m_transform; }
 
   static double transformvar();
   static double transformvar(double v);
 
-  string getGenpdf()    const { return m_genpdfname; }
+  std::string getGenpdf()    const { return m_genpdfname; }
 
-  string version()      const { return m_version; } 
+  std::string version()      const { return m_version; } 
 
   double getCMSScale()          const { return m_cmsScale; }
   void   setCMSScale(double cmsScale) { m_cmsScale=cmsScale; }
@@ -414,7 +402,7 @@ public:
   void setRange(double lower, double upper, double xScaleFactor=1);
 
 
-  /// add a correction as a vector
+  /// add a correction as a std::vector
   void addCorrection( std::vector<double>& v, const std::string& label="" );
 
 
@@ -444,7 +432,7 @@ public:
     return m_applyCorrections=b; 
   } 
 
-  /// apply corrections to a vector
+  /// apply corrections to a std::vector
   void applyCorrections(std::vector<double>& v);
 
   /// set the ckm matrix values if need be
@@ -457,13 +445,13 @@ protected:
 		 int NQ2=50,  double Q2min=10000.0, double Q2max=25000000.0, int Q2order=4,  
 		 int Nx=50,   double xmin=1e-5,     double xmax=0.9,         int xorder=3,
 		 int order=2, 
-		 string transform="f" );
+		 std::string transform="f" );
   
 protected:
 
-  /// string manipulators to parse the pdf names 
+  /// std::string manipulators to parse the pdf names 
 
-  /// return chomped string
+  /// return chomped std::string
   static std::string chomptoken(std::string& s1, const std::string& s2)
   {
     std::string s3 = "";
@@ -520,19 +508,19 @@ protected:
   bool   m_symmetrise; 
  
   // transform and pdf combination tags
-  string m_transform; 
-  string m_genpdfname; 
+  std::string m_transform; 
+  std::string m_genpdfname; 
 
   // pdf combination class
   appl_pdf* m_genpdf[MAXGRIDS];
 
-  static const string m_version;
+  static const std::string m_version;
 
   double m_cmsScale;
 
   /// bin by bin correction factors 
   std::vector<std::vector<double> > m_corrections;
-  std::vector<string>               m_correctionLabels;
+  std::vector<std::string>          m_correctionLabels;
   
 
   /// should we apply the corrections?

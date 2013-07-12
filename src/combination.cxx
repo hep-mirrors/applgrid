@@ -1,7 +1,7 @@
 //
 //   @file    combination.cxx         
 //
-//            this is a class which allows the sum of a vector of 
+//            this is a class which allows the sum of a std::vector of 
 //            pairs of parton-parton initial states to be calculated  
 //
 //   @author M.Sutton
@@ -23,14 +23,14 @@
 
 
 combination::combination(const std::vector<int>& v) { 
-  //  std::cout << "combination::combination() vector" << std::endl;
+  //  std::cout << "combination::combination() std::vector" << std::endl;
   construct(v); 
 }
 
 
 combination::combination(const std::string& line) : m_index(-1), m_size(0) { 
 
-  //  std::cout << "combination::combination() string " << line << std::endl;
+  //  std::cout << "combination::combination() std::string " << line << std::endl;
 
   std::istringstream iss(line);
   

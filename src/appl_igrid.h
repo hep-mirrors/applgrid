@@ -25,27 +25,14 @@
 #define __APPL_IGRID_H
 
 #include <iostream>
-using std::ostream;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include <vector>
-using std::vector;
 
 #include <map>
-using std::map;
 
 #include <string>
-using std::string;
 
 #include <cmath>
-// using std::abs;
-// using std::fabs;
-// using std::log;
-// using std::exp;
-// using std::sqrt;
-// using std::pow;
 
 #include "appl_grid/Directory.h"
 #include "SparseMatrix3d.h"
@@ -63,8 +50,8 @@ private:
   // grid error exception
   class exception { 
   public:
-    exception(const string& s) { cerr << s << endl; }; 
-    exception(ostream& s)      { cerr << s << endl; }; 
+    exception(const std::string& s) { std::cerr << s << std::endl; }; 
+    exception(ostream& s)           { std::cerr << s << std::endl; }; 
   };
 
 
@@ -83,12 +70,12 @@ public:
 
   igrid(int NQ2,   double Q2min=10000.0, double Q2max=25000000.0,  int Q2order=5,  
 	int Nx=50, double xmin=1e-5,     double xmax=0.9,          int xorder=5, 
-	string transform="f", int Nproc=6, bool disflag=false);
+	std::string transform="f", int Nproc=6, bool disflag=false);
 
   igrid(const igrid& g);
 
   // read grid from stored file
-  igrid(TFile& f, const string& s);
+  igrid(TFile& f, const std::string& s);
 
   ~igrid();
 
@@ -103,9 +90,9 @@ public:
 
   // formatted print
   void print() const {
-    header(cout);
+    header(std::cout);
     for ( int i=0 ; i<m_Nproc ; i++ ) { 
-      cout << "sub process " << i << endl; 
+      std::cout << "sub process " << i << std::endl; 
       m_weight[i]->print();
     }
   }
@@ -121,7 +108,7 @@ public:
   void untrim() { for ( int i=0 ; i<m_Nproc ; i++ ) m_weight[i]->untrim(); }
 
   // write to the current root directory
-  void write(const string& name);
+  void write(const std::string& name);
   
   // update grid with one set of event weights
   void fill(const double x1, const double x2, const double Q2, const double* weight);
@@ -137,21 +124,21 @@ public:
 
 
   // this section stores the available x<->y transforms.
-  // they are static functions and the function pairs are stored in a map with a 
-  // (const string) tag - the tag can be saved to a root file to uniquely identify 
+  // they are static functions and the function pairs are stored in a std::map with a 
+  // (const std::string) tag - the tag can be saved to a root file to uniquely identify 
   // the transform pair.
-  // additional user defined transform pairs can be added to the map using the static 
+  // additional user defined transform pairs can be added to the std::map using the static 
   // add_transform method before creating the grid
 
   // transform 
   double (*fy)(double x);
   double (*fx)(double y);
 
-  string transform() const { return m_transform; } 
+  std::string transform() const { return m_transform; } 
 
   // potential static transforms and 
-  static map<const string, transform_vec> init_fmap() { 
-    map<const string, transform_vec> fmap; 
+  static std::map<const std::string, transform_vec> init_fmap() { 
+    std::map<const std::string, transform_vec> fmap; 
     fmap["f"]  = transform_vec( _fx , _fy  );
     fmap["f0"] = transform_vec( _fx0, _fy0 );
     fmap["f1"] = transform_vec( _fx1, _fy1 );
@@ -161,10 +148,10 @@ public:
     return fmap;
   }
 
-  static void add_transform(const string transform, 
+  static void add_transform(const std::string transform, 
 			    double (*__fx)(double), double (*__fy)(double)) { 
     if ( m_fmap.find(transform)!=m_fmap.end() ) { 
-      throw exception("igrid::add_fmap() transform "+transform+" already in map");
+      throw exception("igrid::add_fmap() transform "+transform+" already in std::map");
     }
     m_fmap[transform] = transform_vec( __fx, __fy );
   }
@@ -200,8 +187,8 @@ public:
       yp  -= delta/deriv;
     }
     // exceeded maximum iterations 
-    cerr << "_fx2() iteration limit reached y=" << y << endl; 
-    cout << "_fx2() iteration limit reached y=" << y << endl; 
+    std::cerr << "_fx2() iteration limit reached y=" << y << std::endl; 
+    std::cout << "_fx2() iteration limit reached y=" << y << std::endl; 
     return exp(-yp); 
   }
   
@@ -397,12 +384,12 @@ private:
     double y = fy(x);
     // make sure we are in the range covered by our binning
     if( y<y1min() || y>y1max() ) {
-      if ( y<y1min() ) cerr <<"\tWarning: x1 out of range: x=" << x << "\t(y=" << y << ")\tBelow Delx=" << x-fx(y1min());
-      else             cerr <<"\tWarning: x1 out of range: x=" << x << "\t(y=" << y << ")\tAbove Delx=" << x-fx(y1min());
-      cerr << " ( " <<  fx(y1max())  << " - " <<  fx(y1min())  << " )"  
-	   << "\ty=" << y << "\tDely=" << y-y1min() << " ( " << y1min() << " - " <<  y1max()  << " )" << endl;
+      if ( y<y1min() ) std::cerr <<"\tWarning: x1 out of range: x=" << x << "\t(y=" << y << ")\tBelow Delx=" << x-fx(y1min());
+      else             std::cerr <<"\tWarning: x1 out of range: x=" << x << "\t(y=" << y << ")\tAbove Delx=" << x-fx(y1min());
+      std::cerr << " ( " <<  fx(y1max())  << " - " <<  fx(y1min())  << " )"  
+		<< "\ty=" << y << "\tDely=" << y-y1min() << " ( " << y1min() << " - " <<  y1max()  << " )" << std::endl;
       //     cerr << "\t" << m_weight[0]->yaxis() << "\n\t" 
-      //          << m_weight[0]->yaxis().transform(fx) << endl; 
+      //          << m_weight[0]->yaxis().transform(fx) << std::endl; 
     }
     int k = (int)((y-y1min())/deltay1() - (m_yorder>>1)); // fast integer divide by 2
     if ( k<0 ) k=0;  
@@ -415,11 +402,11 @@ private:
     double y = fy(x);
     // make sure we are in the range covered by our binning
     if( y<y2min() || y>y2max() ) {
-      if ( y<y2min() ) cerr <<"\tWarning: x2 out of range: x=" << x << "\t(y=" << y << ")\tBelow Delx=" << x-fx(y2min());
-      else             cerr <<"\tWarning: x2 out of range: x=" << x << "\t(y=" << y << ")\tAbove Delx=" << x-fx(y2min());
-      cerr << " ( " <<  fx(y2max())  << " - " <<  fx(y2min())  << " )"  
-	   << "\ty=" << y << "\tdely=" << y-y2min() << " ( " << y2min() << " - " <<  y2max()  << " )" << endl;
-      //     cerr << "\t" << m_weight[0]->yaxis() << "\n\t" << m_weight[0]->yaxis().transform(fx) << endl; 
+      if ( y<y2min() ) std::cerr <<"\tWarning: x2 out of range: x=" << x << "\t(y=" << y << ")\tBelow Delx=" << x-fx(y2min());
+      else             std::cerr <<"\tWarning: x2 out of range: x=" << x << "\t(y=" << y << ")\tAbove Delx=" << x-fx(y2min());
+      std::cerr << " ( " <<  fx(y2max())  << " - " <<  fx(y2min())  << " )"  
+	   << "\ty=" << y << "\tdely=" << y-y2min() << " ( " << y2min() << " - " <<  y2max()  << " )" << std::endl;
+      //     cerr << "\t" << m_weight[0]->yaxis() << "\n\t" << m_weight[0]->yaxis().transform(fx) << std::endl; 
     }
     int k = (int)((y-y2min())/deltay2() - (m_yorder>>1)); // fast integer divide by 2
     if ( k<0 ) k=0;  
@@ -434,9 +421,9 @@ private:
     double tau = ftau(Q2);
     // make sure we are in the range covered by our binning
     if( tau<taumin() || tau>taumax() ) {
-      cerr << "\tWarning: Q2 out of range Q2=" << Q2 
-	   << "\t ( " << fQ2(taumin()) << " - " << fQ2(taumax()) << " )" << endl;
-      //      cerr << "\t" << m_weight[0]->xaxis() << "\n\t" << m_weight[0]->xaxis().transform(fQ2) << endl; 
+      std::cerr << "\tWarning: Q2 out of range Q2=" << Q2 
+		<< "\t ( " << fQ2(taumin()) << " - " << fQ2(taumax()) << " )" << std::endl;
+      //      cerr << "\t" << m_weight[0]->xaxis() << "\n\t" << m_weight[0]->xaxis().transform(fQ2) << std::endl; 
     }
     int kappa = (int)((tau-taumin())/deltatau() - (m_tauorder>>1)); // fast integer divide by 2
     // shift interpolation end nodes to enforce range
@@ -456,8 +443,8 @@ private:
     int j;
     static int ntop = 4;
     static double f[34] = { 1, 1, 2, 6, 24 }; 
-    if ( i<0 )  {  cerr << "igrid::fac() negative input"  << endl; return 0;  }
-    if ( i>33 ) {  cerr << "igrid::fac() input too large" << endl; return 0;  }
+    if ( i<0 )  {  std::cerr << "igrid::fac() negative input"  << std::endl; return 0;  }
+    if ( i>33 ) {  std::cerr << "igrid::fac() input too large" << std::endl; return 0;  }
     while ( ntop<i ) {
       j=ntop++;
       f[ntop]=f[j]*ntop;
@@ -507,8 +494,8 @@ private:
   // grid state information
 
   // useful transform information for storage in root file 
-  string                   m_transform;
-  static map<const string, transform_vec> m_fmap;
+  std::string                   m_transform;
+  static std::map<const std::string, transform_vec> m_fmap;
 
   static double m_transvar;    // transform function parameter
 

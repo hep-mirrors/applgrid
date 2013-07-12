@@ -15,11 +15,6 @@
 
 #include <iostream>
 
-using std::ostream;
-using std::cout;
-using std::cerr;
-using std::endl;
-
 #include "tsparse2d.h"
 
 
@@ -179,17 +174,17 @@ public:
 
 
   void print() const {
-    if ( m_ux-m_lx+1==0 ) cout << "-" << "\n";
+    if ( m_ux-m_lx+1==0 ) std::cout << "-" << "\n";
     else { 
       for ( int i=0 ; i<Nx() ; i++ ) {     
 	if ( tsparse_base::trimmed(i) ) { 
-	  cout << "m_v[" << i << "]=" << m_v[i-m_lx] << "\n";
+	  std::cout << "m_v[" << i << "]=" << m_v[i-m_lx] << "\n";
 	  if ( m_v[i-m_lx] ) m_v[i-m_lx]->print();
 	}
 	else {
-	  cout << "- \t"; 
+	  std::cout << "- \t"; 
 	}
-	cout << "\n";
+	std::cout << "\n";
       }
     }
   }  
@@ -343,7 +338,7 @@ protected:
 
 
 // stream IO template
-template<class T> ostream& operator<<(ostream& s, const tsparse3d<T>& sp) { 
+template<class T> std::ostream& operator<<(std::ostream& s, const tsparse3d<T>& sp) { 
   for ( int i=0 ; i<sp.Nx() ; i++ ) { 
     for ( int j=0 ; j<sp.Ny() ; j++ ) { 
       for ( int k=0 ; k<sp.Nz() ; k++ ) { 

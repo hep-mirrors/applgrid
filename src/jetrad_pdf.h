@@ -15,12 +15,11 @@
 
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
 
 
 // jetrad pdf combination class
-class jetrad_pdf : public appl_pdf {
+class jetrad_pdf : public appl::appl_pdf {
 
 public:
 

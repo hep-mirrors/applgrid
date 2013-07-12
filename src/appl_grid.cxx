@@ -14,16 +14,7 @@
 
 #include <iostream>
 #include <iomanip>
-using std::ostream;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::setprecision;
-using std::setw;
-
 #include <cmath>
-// using std::abs;
-// using std::fabs;
 
 #include "appl_igrid.h"
 #include "appl_grid/appl_pdf.h"
@@ -36,7 +27,6 @@ using std::setw;
 
 #include "TFileString.h"
 #include "TFileVector.h"
-using appl::grid;
 
 #include "TFile.h"
 #include "TObjString.h"
@@ -48,7 +38,7 @@ using appl::grid;
 /// NB: ONLY change this if the persistent class
 ///     changes in a non-backwards compatible way.
 
-const string grid::m_version = "version-3.1";
+const std::string appl::grid::m_version = "version-3.1";
 
 /// check if we have hoppet included 
 #include "amconfig.h"
@@ -85,16 +75,16 @@ static bool contains(const std::string& s, const std::string& reg ) {
   return s.find(reg)!=std::string::npos;
 }
 
-/// make sure pdf map is initialised
+/// make sure pdf std::map is initialised
 // bool pdf_ready = appl::appl_pdf::create_map(); 
 
 
-grid::grid(int NQ2, double Q2min, double Q2max, int Q2order, 
-	   int Nx,  double xmin,  double xmax,  int xorder,
-	   int Nobs,  double obsmin, double obsmax, 
-	   string genpdfname,
-	   int leading_order, int nloops, 
-	   string transform ) :
+appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order, 
+		 int Nx,  double xmin,  double xmax,  int xorder,
+		 int Nobs,  double obsmin, double obsmax, 
+		 std::string genpdfname,
+		 int leading_order, int nloops, 
+		 std::string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false), 
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
@@ -118,12 +108,12 @@ grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
 
 
 
-grid::grid(int Nobs, const double* obsbins, 
-	   int NQ2,  double Q2min, double Q2max, int Q2order, 
-	   int Nx,   double xmin, double xmax,   int xorder, 
-	   string genpdfname, 
-	   int leading_order, int nloops, 
-	   string transform ) :
+appl::grid::grid(int Nobs, const double* obsbins, 
+		 int NQ2,  double Q2min, double Q2max, int Q2order, 
+		 int Nx,   double xmin, double xmax,   int xorder, 
+		 std::string genpdfname, 
+		 int leading_order, int nloops, 
+		 std::string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false),  m_normalised(false), m_symmetrise(false),
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
@@ -148,12 +138,12 @@ grid::grid(int Nobs, const double* obsbins,
 
 
 
-grid::grid(const vector<double> obs, 
-	   int NQ2, double Q2min, double Q2max, int Q2order,
-	   int Nx,  double xmin,  double xmax,  int xorder, 
-	   string genpdfname,
-	   int leading_order, int nloops, 
-	   string transform )  :
+appl::grid::grid(const std::vector<double> obs, 
+		 int NQ2, double Q2min, double Q2max, int Q2order,
+		 int Nx,  double xmin,  double xmax,  int xorder, 
+		 std::string genpdfname,
+		 int leading_order, int nloops, 
+		 std::string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
@@ -162,7 +152,7 @@ grid::grid(const vector<double> obs,
 {
   
   if ( obs.size()==0 ) { 
-    cerr << "grid::not enough bins in observable" << endl;
+    std::cerr << "grid::not enough bins in observable" << std::endl;
     exit(0);
   } 
   
@@ -186,10 +176,10 @@ grid::grid(const vector<double> obs,
 
 
 
-grid::grid(const vector<double> obs, 
-	   string genpdfname,
-	   int leading_order, int nloops, 
-	   string transform )  :
+appl::grid::grid(const std::vector<double> obs, 
+		 std::string genpdfname,
+		 int leading_order, int nloops, 
+		 std::string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
@@ -198,7 +188,7 @@ grid::grid(const vector<double> obs,
 { 
 
   if ( obs.size()==0 ) { 
-    cerr << "grid::not enough bins in observable" << endl;
+    std::cerr << "grid::not enough bins in observable" << std::endl;
     exit(0);
   } 
   
@@ -223,7 +213,7 @@ grid::grid(const vector<double> obs,
 
 
 
-grid::grid(const string& filename, const string& dirname)  :
+appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_leading_order(0),  m_order(0),
   m_optimised(false),  m_trimmed(false), 
   m_normalised(false),
@@ -231,7 +221,7 @@ grid::grid(const string& filename, const string& dirname)  :
   m_applyCorrections(false),
   m_documentation("")
 {
-
+  
   struct stat stfileinfo;
   if ( stat(filename.c_str(),&stfileinfo) )   {    
     throw exception(std::cerr << "grid::grid() cannot open file " << filename << std::endl ); 
@@ -250,11 +240,11 @@ grid::grid(const string& filename, const string& dirname)  :
   
   //  gDirectory->cd(dirname.c_str());
 
-  //  cout << "pwd=" << gDirectory->GetName() << endl;
+  //  std::cout << "pwd=" << gDirectory->GetName() << std::endl;
 
   //  gDirectory->cd(dirname.c_str());
 
-  //  cout << "pwd=" << gDirectory->GetName() << endl;
+  //  std::cout << "pwd=" << gDirectory->GetName() << std::endl;
 
   //  Directory d(dirname);
   //  d.push();
@@ -264,7 +254,7 @@ grid::grid(const string& filename, const string& dirname)  :
   m_transform  = _tags[0];
   m_genpdfname = _tags[1];
 
-  string _version = _tags[2];
+  std::string _version = _tags[2];
 
   if ( _tags.size()>3 ) m_documentation = _tags[3];
 
@@ -276,9 +266,9 @@ grid::grid(const string& filename, const string& dirname)  :
   
   std::cout << "appl::grid " << m_version << "\t" << m_documentation << std::endl; 
   
-  //  cout << "Tags=" << _tags << endl;
+  //  std::cout << "Tags=" << _tags << std::endl;
 
-  //  cout << "grid::grid() read transform " << m_transform << " from file" << endl;
+  //  std::cout << "grid::grid() read transform " << m_transform << " from file" << std::endl;
 
   // read state information
   // hmmm, have to use TVectorT<double> since TVector<int> 
@@ -364,7 +354,7 @@ grid::grid(const string& filename, const string& dirname)  :
 
   delete setup;
 
-  //  cout << "grid::grid() read setup" << endl;
+  //  std::cout << "grid::grid() read setup" << std::endl;
 
   // Read observable bins information
   //  gridfile.GetObject("obs_bins", m_obs_bins );
@@ -373,19 +363,19 @@ grid::grid(const string& filename, const string& dirname)  :
   m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
 
-  //  cout << "grid::grid() read obs bins" << endl;
+  //  std::cout << "grid::grid() read obs bins" << std::endl;
 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    //  cout << "grid::grid() iorder=" << iorder << endl;
+    //  std::cout << "grid::grid() iorder=" << iorder << std::endl;
     m_grids[iorder] = new igrid*[Nobs()];  
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {
       char name[128];  sprintf(name, (dirname+"/weight[alpha-%d][%03d]").c_str(), iorder, iobs);
-      // cout << "grid::grid() reading " << name << "\tiobs=" << iobs << endl;
+      // std::cout << "grid::grid() reading " << name << "\tiobs=" << iobs << std::endl;
 
       m_grids[iorder][iobs] = new igrid(*gridfilep, name);
 
       //    _size += m_grids[iorder][iobs]->size();
-      //      cout << "grid::grid() done" << endl;
+      //      std::cout << "grid::grid() done" << std::endl;
     }
   }
 
@@ -407,7 +397,7 @@ grid::grid(const string& filename, const string& dirname)  :
     }
   }
 
-  //  cout << "grid::grid() read from file Nobs = " << Nobs() << endl;
+  //  std::cout << "grid::grid() read from file Nobs = " << Nobs() << std::endl;
 
   //  std::cout << "read grid" << std::endl;
 
@@ -415,7 +405,7 @@ grid::grid(const string& filename, const string& dirname)  :
 }
 
 
-grid::grid(const grid& g) : 
+appl::grid::grid(const grid& g) : 
   m_obs_bins(new TH1D(*g.m_obs_bins)), 
   m_leading_order(g.m_leading_order), m_order(g.m_order), 
   m_run(g.m_run), m_optimised(g.m_optimised), m_trimmed(g.m_trimmed), 
@@ -445,12 +435,12 @@ grid::grid(const grid& g) :
 // Initialize histogram that saves the correspondence obsvalue<->obsbin
 
 // constructor common internals 
-void grid::construct(int Nobs, 
-		     int NQ2,  double Q2min, double Q2max, int Q2order,
-		     int Nx,   double xmin,  double xmax,  int xorder, 
-		     int order, 
-		     string transform ) { 
-
+void appl::grid::construct(int Nobs, 
+			   int NQ2,  double Q2min, double Q2max, int Q2order,
+			   int Nx,   double xmin,  double xmax,  int xorder, 
+			   int order, 
+			   std::string transform ) { 
+  
   //  std::cout << "appl::grid::construct() m_order " << m_order << "\tNobs " << Nobs << std::endl; 
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) m_grids[iorder] = 0;
@@ -470,7 +460,7 @@ void grid::construct(int Nobs,
 
 
   // number of subprocesses 
-int grid::subProcesses(int i) const { 
+int appl::grid::subProcesses(int i) const { 
   if ( i<0 || i>=m_order ) throw exception( std::cerr << "grid::subProcess(int i) " << i << " out or range [0-" << m_order-1 << "]" << std::endl );
   return m_grids[i][0]->SubProcesses();     
 }  
@@ -478,13 +468,13 @@ int grid::subProcesses(int i) const {
 
 /// access the transform functions for the appl::igrid so that the 
 /// igrid can be hidden 
-double grid::transformvar()         { return igrid::transformvar(); }
-double grid::transformvar(double v) { return igrid::transformvar(v); }
+double appl::grid::transformvar()         { return igrid::transformvar(); }
+double appl::grid::transformvar(double v) { return igrid::transformvar(v); }
 
 
 
 // add a single grid
-void grid::add_igrid(int bin, int order, igrid* g) { 
+void appl::grid::add_igrid(int bin, int order, igrid* g) { 
 
   if ( !(order>=0 && order<m_order) ) { 
     std::cerr << "grid::add_igrid() order out of range " << order << std::endl; 
@@ -508,7 +498,7 @@ void grid::add_igrid(int bin, int order, igrid* g) {
 
 
 
-grid::~grid() {
+appl::grid::~grid() {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {  
     if( m_grids[iorder] ) { 
       for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) { 
@@ -533,7 +523,7 @@ grid::~grid() {
 
 // algebraic operators
 
-grid& grid::operator=(const grid& g) { 
+appl::grid& appl::grid::operator=(const appl::grid& g) { 
   // clear out the old...
   delete m_obs_bins;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
@@ -559,7 +549,7 @@ grid& grid::operator=(const grid& g) {
 } 
   
 
-grid& grid::operator*=(const double& d) { 
+appl::grid& appl::grid::operator*=(const double& d) { 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) (*m_grids[iorder][iobs])*=d; 
   }
@@ -567,7 +557,7 @@ grid& grid::operator*=(const double& d) {
 }
 
 
-grid& grid::operator+=(const grid& g) {
+appl::grid& appl::grid::operator+=(const appl::grid& g) {
   m_run      += g.m_run;
   m_optimised = g.m_optimised;
   m_trimmed   = g.m_trimmed;
@@ -582,7 +572,7 @@ grid& grid::operator+=(const grid& g) {
 
 
 /// check grids match
-bool grid::operator==(const grid& g) const {
+bool appl::grid::operator==(const appl::grid& g) const {
   
   bool match = true; 
 
@@ -598,34 +588,34 @@ bool grid::operator==(const grid& g) const {
 
 
 // fill the appropriate igrid with these weights
-void grid::fill(const double x1, const double x2, const double Q2, 
-		const double obs, 
-		const double* weight, const int iorder)  {  
+void appl::grid::fill(const double x1, const double x2, const double Q2, 
+		      const double obs, 
+		      const double* weight, const int iorder)  {  
   int iobs = m_obs_bins->FindBin(obs)-1;
   if ( iobs<0 || iobs>=Nobs() ) {
-    //    cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << endl;
-    //    cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << endl;
+    //    cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
+    //    cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
     return;
   }
   
-  //  cout << "iobs=" << iobs << "\tobs=" << obs;
-  //  for ( int i=0 ; i<subProcesses(iorder) ; i++ ) cout << "\t" << weight[i];
-  //  cout << endl;
+  //  std::cout << "iobs=" << iobs << "\tobs=" << obs;
+  //  for ( int i=0 ; i<subProcesses(iorder) ; i++ ) std::cout << "\t" << weight[i];
+  //  std::cout << std::endl;
 
-  //  cout << "\tiobs=" << iobs << endl;
+  //  std::cout << "\tiobs=" << iobs << std::endl;
   if ( m_symmetrise && x2<x1 )  m_grids[iorder][iobs]->fill(x2, x1, Q2, weight);
   else                          m_grids[iorder][iobs]->fill(x1, x2, Q2, weight);
 }
 
 
 // fast fill pre-optimisation don't perform the interpolation and so on
-void grid::fill_phasespace(const double x1, const double x2, const double Q2, 
-			   const double obs, 
-			   const double* weight, const int iorder) {
+void appl::grid::fill_phasespace(const double x1, const double x2, const double Q2, 
+				 const double obs, 
+				 const double* weight, const int iorder) {
   int iobs = m_obs_bins->FindBin(obs)-1;
   if ( iobs<0 || iobs>=Nobs() ) {
-    //  cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << endl;
-    //  cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << endl;
+    //  cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
+    //  cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
     return;
   }
   if ( m_symmetrise && x2<x1 )  m_grids[iorder][iobs]->fill_phasespace(x2, x1, Q2, weight);
@@ -636,13 +626,13 @@ void grid::fill_phasespace(const double x1, const double x2, const double Q2,
 
 
 // fast fill pre-optimisation don't perform the interpolation and so on
-void grid::fill_index(const int ix1, const int ix2, const int iQ2, 
-		      const int iobs, 
-		      const double* weight, const int iorder) {
+void appl::grid::fill_index(const int ix1, const int ix2, const int iQ2, 
+			    const int iobs, 
+			    const double* weight, const int iorder) {
 
   if ( iobs<0 || iobs>=Nobs() ) {
-    //  cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << endl;
-    //  cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << endl;
+    //  cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
+    //  cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
     return;
   }
   if ( m_symmetrise && ix2<ix1 )  m_grids[iorder][iobs]->fill_index(ix2, ix1, iQ2, weight);
@@ -650,26 +640,26 @@ void grid::fill_index(const int ix1, const int ix2, const int iQ2,
 }
 
 
-void grid::trim() {
+void appl::grid::trim() {
   m_trimmed = true;
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) m_grids[iorder][iobs]->trim(); 
   }
 }
 
-void grid::untrim() {
+void appl::grid::untrim() {
   m_trimmed = false;
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) m_grids[iorder][iobs]->untrim(); 
   }
 }
 
-void grid::print() const {
+void appl::grid::print() const {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {     
-      cout << iobs << "\t" 
-	   << setprecision(5) << setw(6) << getReference()->GetBinLowEdge(iobs+1) << "\t- " 
-	   << setprecision(5) << setw(6) << getReference()->GetBinLowEdge(iobs+2) << "\t"; 
+      std::cout << iobs << "\t" 
+	   << std::setprecision(5) << std::setw(6) << getReference()->GetBinLowEdge(iobs+1) << "\t- " 
+	   << std::setprecision(5) << std::setw(6) << getReference()->GetBinLowEdge(iobs+2) << "\t"; 
       m_grids[iorder][iobs]->print();       
     }
   }
@@ -679,7 +669,7 @@ void grid::print() const {
 
 
  /// get the required pdf combinations from those registered   
-void grid::findgenpdf( std::string s ) { 
+void appl::grid::findgenpdf( std::string s ) { 
     std::vector<std::string> names = parse( s, ":" );
     if ( names.size()==unsigned(m_order) ) for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[i] );
     else  if ( names.size()==1 )           for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[0] );
@@ -689,12 +679,12 @@ void grid::findgenpdf( std::string s ) {
 }
 
 
-void grid::addpdf( const std::string& s, const std::vector<int>& combinations ) {
+void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinations ) {
 
   std::cout << "addpdf() in " << std::endl;
 
     /// parse names, if they contain .dat, then create the new generic pdfs
-    /// they will be added to the pdf map automatically 
+    /// they will be added to the pdf std::map automatically 
     std::vector<std::string> names = parse( s, ":" );
 
     unsigned imax = unsigned(m_order); 
@@ -741,15 +731,21 @@ void grid::addpdf( const std::string& s, const std::vector<int>& combinations ) 
 
 }
 
-void grid::setckm( const std::vector<std::vector<double> >& ckm2 ) { 
+
+
+void appl::grid::setckm( const std::vector<std::vector<double> >& ckm2 ) { 
   for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i]->setckm2(ckm2);
 }
 
-void grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
+
+
+void appl::grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
 // void grid::pdfinterp(double x, double Q2, double* f) {  }
 
+
+
 // set the rewight flag of the internal grids
-bool grid::reweight(bool t) { 
+bool appl::grid::reweight(bool t) { 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {     
       m_grids[iorder][iobs]->reweight(t);       
@@ -758,31 +754,33 @@ bool grid::reweight(bool t) {
   return t;
 }
 
+
+
 // dump to file
-void grid::Write(const string& filename, const string& dirname) { 
+void appl::grid::Write(const std::string& filename, const std::string& dirname) { 
  
-  string _filename(filename);
+  std::string _filename(filename);
 
   if ( FILE* f=fopen(_filename.c_str(), "r") ) { 
     fclose(f);
     _filename += "-save";
-    string cmd = "mv " + filename + " " + _filename;
+    std::string cmd = "mv " + filename + " " + _filename;
     //    int i = 
     system(cmd.c_str());
   } 
 
-  //  cout << "grid::Write() writing to file " << _filename << endl;
+  //  std::cout << "grid::Write() writing to file " << _filename << std::endl;
   //  TFile rootfile(_filename.c_str(),"recreate");
 
-  //  cout << "grid::Write() writing to file " << filename << endl;
+  //  std::cout << "grid::Write() writing to file " << filename << std::endl;
   TFile rootfile(filename.c_str(),"recreate");
 
-  //  cout << "pwd=" << gDirectory->GetName() << endl;
+  //  std::cout << "pwd=" << gDirectory->GetName() << std::endl;
 
   Directory d(dirname);
   d.push();
   
-  //  cout << "pwd=" << gDirectory->GetName() << endl;
+  //  std::cout << "pwd=" << gDirectory->GetName() << std::endl;
 
   // write the name of the transform pair and the
   // generalised pdf
@@ -800,7 +798,7 @@ void grid::Write(const string& filename, const string& dirname) {
   //  _genpdfname->Write();
 
 
-  //  cout << "state vector=" << endl;
+  //  std::cout << "state std::vector=" << std::endl;
 
   // state information
   TVectorT<double>* setup=new TVectorT<double>(10); // add a few extra just in case 
@@ -861,23 +859,23 @@ void grid::Write(const string& filename, const string& dirname) {
   //  int _size     = 0;
   //  int trim_size = 0;
 
-  //  cout << "grids Nobs = " << Nobs() << endl;
+  //  std::cout << "grids Nobs = " << Nobs() << std::endl;
 
   // internal grids
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {
       char name[128];  sprintf(name, "weight[alpha-%d][%03d]", iorder, iobs);
-      // cout << "writing grid " << name << endl;
+      // std::cout << "writing grid " << name << std::endl;
       //   _size += m_grids[iorder][iobs]->size();
       m_grids[iorder][iobs]->write(name);
       //   trim_size += m_grids[iorder][iobs]->size();
     }
   }
-  //  cout <<"grid::Write() size(untrimmed)=" << _size 
-  //     << "\tsize(trimmed)="              << trim_size << endl;
+  //  std::cout <<"grid::Write() size(untrimmed)=" << _size 
+  //     << "\tsize(trimmed)="              << trim_size << std::endl;
   //  d.pop();
 
-  //  cout << "reference" << endl;
+  //  std::cout << "reference" << std::endl;
   
   TH1D* reference = (TH1D*)m_obs_bins->Clone("reference");
   
@@ -887,7 +885,7 @@ void grid::Write(const string& filename, const string& dirname) {
   reference->Write();
   delete reference;
 
-  //  cout << "corrections" << endl;
+  //  std::cout << "corrections" << std::endl;
 
   /// correction histograms
 
@@ -919,12 +917,12 @@ void grid::Write(const string& filename, const string& dirname) {
 // takes pdf as the pdf lib wrapper for the pdf set for the convolution.
 // type specifies which sort of partons should be included:
 
-std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, double* ), 
-				     double (*alphas)(const double& ), 
-				     int     nloops, 
-				     double  rscale_factor,
-				     double  fscale_factor,
-				     double Escale )
+std::vector<double> appl::grid::vconvolute(void (*pdf)(const double& , const double&, double* ), 
+					   double (*alphas)(const double& ), 
+					   int     nloops, 
+					   double  rscale_factor,
+					   double  fscale_factor,
+					   double Escale )
 { 
   
   //  struct timeval _ctimer = appl_timer_start();
@@ -953,10 +951,10 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
   }
 #endif
 
-  string label;
+  std::string label;
 
   if ( nloops>=m_order ) { 
-    cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << endl;   
+    std::cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << std::endl;   
     return hvec;
   } 
 
@@ -972,17 +970,17 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
     else if ( nloops==1 ) { 
       label = "nlo     ";
       // next to leading order cross section
-      // cout << "convolute() nloop=1" << endl;
+      // std::cout << "convolute() nloop=1" << std::endl;
       // leading order contribution and scale dependent born dependent terms
       double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf[0], alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
-      // cout << "dsigma_lo=" << dsigma_lo << endl;
+      // std::cout << "dsigma_lo=" << dsigma_lo << std::endl;
       // next to leading order contribution
       //      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
       // GPS: the NLO piece must use the same rscale_factor and fscale_factor as
       //      the LO piece -- that's the convention that defines how NLO calculations
       //      are done.
       double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
-      // cout << "dsigma_nlo=" << dsigma_nlo << endl;
+      // std::cout << "dsigma_nlo=" << dsigma_nlo << std::endl;
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) {
@@ -1018,11 +1016,11 @@ std::vector<double> grid::vconvolute(void (*pdf)(const double& , const double&, 
     hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
     // hvec.push_back( Escale2*dsigma/deltaobs );
 
-    //    cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << endl;
+    //    std::cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << std::endl;
   }  // iobs   
 
   //  double _ctime = appl_timer_stop(_ctimer);
-  //  cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << endl;
+  //  std::cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << std::endl;
 
   if ( getApplyCorrections() ) applyCorrections(hvec);
 
@@ -1045,11 +1043,11 @@ double grid::vconvolute(void (*pdf)(const double& , const double&, double* ),
 #endif
 
 
-std::vector<double> grid::vconvolute_subproc(int subproc,
-					     void (*pdf)(const double& , const double&, double* ), 
-					     double (*alphas)(const double& ), 
-					     int     nloops, 
-					     double  rscale_factor, double Escale )
+std::vector<double> appl::grid::vconvolute_subproc(int subproc,
+						   void (*pdf)(const double& , const double&, double* ), 
+						   double (*alphas)(const double& ), 
+						   int     nloops, 
+						   double  rscale_factor, double Escale )
 { 
   
   //  struct timeval _ctimer = appl_timer_start();
@@ -1082,11 +1080,11 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
 
   std::vector<double> hvec;
 
-  string label;
+  std::string label;
 
   int lo_order = m_leading_order;
   if ( nloops>=m_order ) { 
-    cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << endl;   
+    std::cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << std::endl;   
     return hvec;
   } 
 
@@ -1096,7 +1094,7 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
    
     if ( nloops==0 ) {
       label = "lo      ";
-      //      cout << "convolute() nloop=0" << iobs << endl;
+      //      std::cout << "convolute() nloop=0" << iobs << std::endl;
       // leading order cross section
       dsigma = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf[0], alphas, lo_order, 0, 1, 1, Escale);
     }
@@ -1136,16 +1134,16 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
     // hvec.push_back( Escale2*dsigma/deltaobs );
 
 
-    //    cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << endl;
+    //    std::cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << std::endl;
 
     
-    //    cout << "obs bin " << iobs 
+    //    std::cout << "obs bin " << iobs 
     //         << "\t" <<  h->GetBinLowEdge(iobs+1) << " - " << h->GetBinLowEdge(iobs+2)
-    //	       << "\tdsigma=" << dsigma << endl;
+    //	       << "\tdsigma=" << dsigma << std::endl;
   }  // iobs   
 
   //  double _ctime = appl_timer_stop(_ctimer);
-  //  cout << "grid::convolute_subproc(" << subproc << ") " << label << " convolution time=" << _ctime << " ms" << endl;
+  //  std::cout << "grid::convolute_subproc(" << subproc << ") " << label << " convolution time=" << _ctime << " ms" << std::endl;
 
   if ( getApplyCorrections() ) applyCorrections(hvec);
 
@@ -1154,12 +1152,12 @@ std::vector<double> grid::vconvolute_subproc(int subproc,
 
 
 
-TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ), 
-		      double (*alphas)(const double& ), 
-		      int     nloops, 
-		      double  rscale_factor,
-		      double  fscale_factor,
-		      double Escale ) {
+TH1D* appl::grid::convolute(void (*pdf)(const double& , const double&, double* ), 
+			    double (*alphas)(const double& ), 
+			    int     nloops, 
+			    double  rscale_factor,
+			    double  fscale_factor,
+			    double Escale ) {
 
     TH1D* h = new TH1D(*m_obs_bins);
     h->SetName("xsec");
@@ -1179,12 +1177,12 @@ TH1D* grid::convolute(void (*pdf)(const double& , const double&, double* ),
 
 
 
-TH1D* grid::convolute_subproc(int subproc,
-			      void (*pdf)(const double& , const double&, double* ), 
-			      double (*alphas)(const double& ), 
-			      int     nloops, 
-			      double  rscale_factor, double Escale ) {
-
+TH1D* appl::grid::convolute_subproc(int subproc,
+				    void (*pdf)(const double& , const double&, double* ), 
+				    double (*alphas)(const double& ), 
+				    int     nloops, 
+				    double  rscale_factor, double Escale ) {
+  
     TH1D* h = new TH1D(*m_obs_bins);
     h->SetName("xsec");
     
@@ -1203,23 +1201,23 @@ TH1D* grid::convolute_subproc(int subproc,
 
 
 
-void grid::optimise() {
+void appl::grid::optimise() {
   m_optimised = true;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
-      cout << "grid::optimise() bin " << iobs << "\t";
+      std::cout << "grid::optimise() bin " << iobs << "\t";
       m_grids[iorder][iobs]->optimise();
     }
   }
 }
 
-void grid::optimise(int NQ2, int Nx) {  optimise(NQ2, Nx, Nx);  }
+void appl::grid::optimise(int NQ2, int Nx) {  optimise(NQ2, Nx, Nx);  }
 
-void grid::optimise(int NQ2, int Nx1, int Nx2) {
+void appl::grid::optimise(int NQ2, int Nx1, int Nx2) {
   m_optimised = true;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
-      cout << "grid::optimise() bin " << iobs << "\t";
+      std::cout << "grid::optimise() bin " << iobs << "\t";
       m_grids[iorder][iobs]->optimise(NQ2, Nx1, Nx2);
     }
   }
@@ -1229,25 +1227,25 @@ void grid::optimise(int NQ2, int Nx1, int Nx2) {
 
 
 // redefine the limits by hand
-void grid::redefine(int iobs, int iorder,
-		    int NQ2, double Q2min, double Q2max, 
-		    int Nx,  double  xmin, double  xmax ) 
+void appl::grid::redefine(int iobs, int iorder,
+			  int NQ2, double Q2min, double Q2max, 
+			  int Nx,  double  xmin, double  xmax ) 
 { 
   
   if  ( iorder>=m_order ) { 
-    cerr << "grid does not extend to this order" << endl;
+    std::cerr << "grid does not extend to this order" << std::endl;
     return;
   }
   
   if ( iobs<0 || iobs>=Nobs() ) { 
-    cerr << "observable bin out of range" << endl;
+    std::cerr << "observable bin out of range" << std::endl;
     return;
   }
   
   if ( iorder==0 ) { 
-    cout << "grid::redefine() iobs=" << iobs 
+    std::cout << "grid::redefine() iobs=" << iobs 
 	 << "NQ2="  << NQ2 << "\tQmin=" << sqrt(Q2min) << "\tQmax=" << sqrt(Q2max) 
-	 << "\tNx=" << Nx  << "\txmin=" <<       xmin  << "\txmax=" <<       xmax << endl; 
+	 << "\tNx=" << Nx  << "\txmin=" <<       xmin  << "\txmax=" <<       xmax << std::endl; 
   }
   
   igrid* oldgrid =  m_grids[iorder][iobs];
@@ -1263,7 +1261,7 @@ void grid::redefine(int iobs, int iorder,
   
 
 
-void grid::setRange(int ilower, int iupper, double xScaleFactor) { 
+void appl::grid::setRange(int ilower, int iupper, double xScaleFactor) { 
   if ( ilower>=0 && iupper <Nobs() ) {  
     double lower = getReference()->GetBinLowEdge(ilower+1);
     double upper = getReference()->GetBinLowEdge(iupper+2); 
@@ -1272,7 +1270,7 @@ void grid::setRange(int ilower, int iupper, double xScaleFactor) {
 }
 
 
-void grid::setRange(double lower, double upper, double xScaleFactor) { 
+void appl::grid::setRange(double lower, double upper, double xScaleFactor) { 
   
   std::cout << "grid::SetRange() " << lower << " " << upper << std::endl; 
 
@@ -1321,7 +1319,7 @@ void grid::setRange(double lower, double upper, double xScaleFactor) {
 
   /// copy the igrids for the observable bins in the range 
 
-  igrid** grids[MAXGRIDS];
+  igrid** grids[appl::MAXGRIDS];
 
   /// save old grids
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) grids[iorder] = m_grids[iorder];
@@ -1343,8 +1341,8 @@ void grid::setRange(double lower, double upper, double xScaleFactor) {
 
 
 /// methods to handle the documentation
-void grid::setDocumentation(const std::string& s) { m_documentation = s; }
-void grid::addDocumentation(const std::string& s) {   
+void appl::grid::setDocumentation(const std::string& s) { m_documentation = s; }
+void appl::grid::addDocumentation(const std::string& s) {   
   if ( m_documentation.size() ) m_documentation += s;
   else                          setDocumentation(s);    
 }
@@ -1356,8 +1354,8 @@ void grid::addDocumentation(const std::string& s) {
 
 /// methods to handle bin-by-bin corrections
 
-/// add a correction as a vector
-void grid::addCorrection( std::vector<double>& v, const std::string& label) {
+/// add a correction as a std::vector
+void appl::grid::addCorrection( std::vector<double>& v, const std::string& label) {
   //  std::cout << "addCorrections(vector) " << v.size() << " " << m_obs_bins->GetNbinsX() << std::endl;
   if ( v.size()==unsigned(m_obs_bins->GetNbinsX()) ) {
     m_corrections.push_back(v);
@@ -1368,7 +1366,7 @@ void grid::addCorrection( std::vector<double>& v, const std::string& label) {
 
 
 /// add a correction by histogram
-void grid::addCorrection(TH1D* h, const std::string& label) {
+void appl::grid::addCorrection(TH1D* h, const std::string& label) {
   // std::cout << "addCorrections(TH1D*) " << h->GetNbinsX() << " " << m_obs_bins->GetNbinsX() << std::endl;
   if ( h->GetNbinsX()==m_obs_bins->GetNbinsX() ) {
     for ( int i=1 ; i<=h->GetNbinsX()+1 ; i++ ) { 
@@ -1392,7 +1390,7 @@ void grid::addCorrection(TH1D* h, const std::string& label) {
 
 
 // find the number of words used for storage
-int grid::size() const { 
+int appl::grid::size() const { 
     int _size = 0;
     for( int iorder=0 ; iorder<2 ; iorder++ ) {
       for( int iobs=0 ; iobs<Nobs() ; iobs++ ) _size += m_grids[iorder][iobs]->size();
@@ -1401,8 +1399,8 @@ int grid::size() const {
 }
 
 
-/// apply corrections to a vector
-void grid::applyCorrections(std::vector<double>& v) {
+/// apply corrections to a std::vector
+void appl::grid::applyCorrections(std::vector<double>& v) {
   //  std::cout << "grid::applyCorrections(vector) " << m_corrections.size() << std::endl;
   for ( unsigned i=0 ; i<m_corrections.size() ; i++ ) { 
     std::vector<double>& correction = m_corrections[i];
@@ -1415,41 +1413,41 @@ void grid::applyCorrections(std::vector<double>& v) {
 
 
 
-ostream& operator<<(ostream& s, const appl::grid& g) {
-  s << "==================================================" << endl;
-  //  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses(0) << " initial states, " << g.Nobs() << " observable bins)" << endl;
+std::ostream& operator<<(std::ostream& s, const appl::grid& g) {
+  s << "==================================================" << std::endl;
+  //  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses(0) << " initial states, " << g.Nobs() << " observable bins)" << std::endl;
 
   std::string basis[5] = {  "-LO, ",  "-NLO, ",  "-NNLO, ", "-Xtra0", "-Xtra1" };  
-  std::string order[MAXGRIDS];
-  for ( int i=0 ; i<MAXGRIDS ; i++ ) { 
+  std::string order[appl::MAXGRIDS];
+  for ( int i=0 ; i<appl::MAXGRIDS ; i++ ) { 
     if ( i<5) order[i] = basis[i];
     else      order[i] = "-Unknown";
   }
 
   s << "appl::grid version " << g.version() << "\t( "; 
   for ( int i=0 ; i<g.nloops()+1 ; i++ ) s << g.subProcesses(i) << order[i];
-  s << "initial states, " << g.Nobs() << " observable bins )" << endl;
-  if ( g.isOptimised() ) s << "Optimised grid" << endl;
-  if ( g.isSymmetric() ) s << "Symmetrised in x1, x2" << endl;
-  else                   s << "Unsymmetrised in x1, x2" << endl;
-  s << "leading order of processes  "  << g.leadingOrder() << endl;
-  s << "number of loops for grid    " << g.nloops() << endl;   
-  s << "x->y coordinate transform:  "  << g.getTransform() << endl;
-  s << "genpdf in use: " << g.getGenpdf() << endl;
-  s << "--------------------------------------------------" << endl;
+  s << "initial states, " << g.Nobs() << " observable bins )" << std::endl;
+  if ( g.isOptimised() ) s << "Optimised grid" << std::endl;
+  if ( g.isSymmetric() ) s << "Symmetrised in x1, x2" << std::endl;
+  else                   s << "Unsymmetrised in x1, x2" << std::endl;
+  s << "leading order of processes  "  << g.leadingOrder() << std::endl;
+  s << "number of loops for grid    " << g.nloops() << std::endl;   
+  s << "x->y coordinate transform:  "  << g.getTransform() << std::endl;
+  s << "genpdf in use: " << g.getGenpdf() << std::endl;
+  s << "--------------------------------------------------" << std::endl;
   s << "Observable binning: [ " << g.Nobs() 
-    << " bins : " << g.obsmin() << ",  " << g.obsmax() << " ]" << endl;
+    << " bins : " << g.obsmin() << ",  " << g.obsmax() << " ]" << std::endl;
 
   //  for( int iorder=0 ; iorder<1 ; iorder++ ) {
   for( int iobs=0 ; iobs<g.Nobs() ; iobs++ ) {
     s << iobs << "\t" 
-      << setprecision(5) << setw(5) << g.getReference()->GetBinLowEdge(iobs+1) << "\t- " 
-      << setprecision(5) << setw(5) << g.getReference()->GetBinLowEdge(iobs+2) << "\t"; 
-    s << "   " << *(g.weightgrid(0,iobs)) << endl;
+      << std::setprecision(5) << std::setw(5) << g.getReference()->GetBinLowEdge(iobs+1) << "\t- " 
+      << std::setprecision(5) << std::setw(5) << g.getReference()->GetBinLowEdge(iobs+2) << "\t"; 
+    s << "   " << *(g.weightgrid(0,iobs)) << std::endl;
   }
   //  }
 
-  s << endl;
+  s << std::endl;
   
   return s;
 }

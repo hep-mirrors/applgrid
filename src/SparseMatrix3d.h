@@ -13,10 +13,6 @@
 #define __SPARSEMATRIX3D_H
 
 #include <iostream>
-using std::ostream;
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include "axis.h"
 #include "sparse.h"
@@ -44,7 +40,7 @@ public:
 
   // utilities for file access and storage
 
-  TH3D* getTH3D(const string& s) const; 
+  TH3D* getTH3D(const std::string& s) const; 
 
   // axis accessors
   const axis<double>& xaxis() const { return m_xaxis; } 
@@ -94,9 +90,9 @@ public:
   // print out
   void print() const {
     sparse3d::print();
-    cout << m_xaxis << "\n"; 
-    cout << m_yaxis << "\n"; 
-    cout << m_zaxis << "\n"; 
+    std::cout << m_xaxis << "\n"; 
+    std::cout << m_yaxis << "\n"; 
+    std::cout << m_zaxis << "\n"; 
   }
 
   bool operator==(const SparseMatrix3d& s) const { 

@@ -14,16 +14,10 @@
 #define __AXIS_H
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 #include <iomanip>
-using std::setw;
-using std::setprecision;
 
 #include <vector>
-using std::vector;
 
 
 template<class T> 
@@ -74,7 +68,7 @@ public:
     return *this;
   }
   
-  const vector<T>& v() const { return m_v; }  
+  const std::vector<T>& v() const { return m_v; }  
   
   T&       operator()(int i)       { return m_v[i]; }
   const T& operator()(int i) const { return m_v[i]; }
@@ -87,9 +81,9 @@ public:
   
   void print(T (*f)(T)) const {
     for ( int i=0 ; i<m_N ; i++ ) { 
-      cout << "\t" << setprecision(3) << setw(5) << f(m_v[i]); 
+      std::cout << "\t" << std::setprecision(3) << std::setw(5) << f(m_v[i]); 
     }
-    cout << endl;
+    std::cout << std::endl;
   }
 
 
@@ -106,16 +100,16 @@ private:
   T   m_delta;
   T   m_idelta;
   
-  vector<T>  m_v;
+  std::vector<T>  m_v;
 };
 
 
 template<class T>
-ostream& operator<<(ostream& s, const axis<T>& a) { 
+std::ostream& operator<<(std::ostream& s, const axis<T>& a) { 
   s << "\t[ N=" << a.N(); 
-  // for ( int i=0 ; i<a.N() ; i++ )  s << "\t" << setprecision(3) << setw(5) << a[i]; 
-  s << ",\t"  << setprecision(3) << setw(5) << a[0];
-  s << " .. " << setprecision(3) << setw(5) << a[a.N()-1];
+  // for ( int i=0 ; i<a.N() ; i++ )  s << "\t" << std::setprecision(3) << std::setw(5) << a[i]; 
+  s << ",\t"  << std::setprecision(3) << std::setw(5) << a[0];
+  s << " .. " << std::setprecision(3) << std::setw(5) << a[a.N()-1];
   s << " ]";
   return s;
 } 

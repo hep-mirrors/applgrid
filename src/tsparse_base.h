@@ -15,9 +15,6 @@
 #define __TSPARSE_BASE_H
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 
 #include <cmath>
@@ -30,7 +27,7 @@ public:
   // range exception
   class out_of_range { 
   public: 
-    out_of_range(const string& s="out of range") { cerr << s << endl; }
+    out_of_range(const std::string& s="out of range") { std::cerr << s << std::endl; }
   };
 
 public:
@@ -57,7 +54,7 @@ public:
 
   // make sure index is not out of range
   void range_check(int i) const { if ( i<0 || i>m_Nx-1 ) { 
-      cerr << "index i=" << i << endl;
+      std::cerr << "index i=" << i << std::endl;
       throw out_of_range(); 
     }    
   } 

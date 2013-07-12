@@ -4,8 +4,6 @@
 #include <cmath>
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
-//using std::abs;
 
 #include "TFile.h"
 #include "TVectorT.h"
@@ -14,7 +12,7 @@ using namespace appl;
 //
 // MCFM Q - Qbar production
 //
-class mcfmQQ_pdf : public appl_pdf { 
+class mcfmQQ_pdf : public appl::appl_pdf { 
 
 public: 
 

@@ -15,7 +15,6 @@
 
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
 //
 // MCFM W production
@@ -25,11 +24,11 @@ using namespace appl;
 //
 //  W+
 //
-class mcfmwp_pdf : public appl_pdf { 
+class mcfmwp_pdf : public appl::appl_pdf { 
 
 public: 
 
-  mcfmwp_pdf(const string& s="mcfm-wp") : appl_pdf(s) { 
+  mcfmwp_pdf(const std::string& s="mcfm-wp") : appl_pdf(s) { 
     m_Nproc = 6; 
     make_ckm( true ); 
   } 
@@ -45,11 +44,11 @@ public:
 //
 //  W-
 //
-class mcfmwm_pdf : public appl_pdf { 
+class mcfmwm_pdf : public appl::appl_pdf { 
 
 public: 
 
-  mcfmwm_pdf(const string& s="mcfm-wm") : appl_pdf(s) { 
+  mcfmwm_pdf(const std::string& s="mcfm-wm") : appl_pdf(s) { 
     m_Nproc = 6; 
     make_ckm( false ); 
   } 

@@ -64,7 +64,7 @@ SparseMatrix3d::SparseMatrix3d(const TH3D* h) :
 
 // utilities for file access and storage
 
-TH3D* SparseMatrix3d::getTH3D(const string& s) const { 
+TH3D* SparseMatrix3d::getTH3D(const std::string& s) const { 
   
   double delx = xaxis().delta();
   double dely = yaxis().delta();
@@ -90,15 +90,15 @@ TH3D* SparseMatrix3d::getTH3D(const string& s) const {
       if ( s1d==NULL ) continue;
       for ( int k=s1d->lo() ; k<=s1d->hi() ; k++ ) {
 	N++;
-	// cout << "\tsm(" << i << "\t, " << j << "\t, " << k << ")=" << (*s1d)(k) << endl; 
+	// std::cout << "\tsm(" << i << "\t, " << j << "\t, " << k << ")=" << (*s1d)(k) << std::endl; 
 	// h->SetBinContent(i+1, j+1, k+1, sm(i,j,k) );
 	h->SetBinContent(i+1, j+1, k+1, (*s1d)(k) );
       }
     }
   }
   
-  //  cout << "SparseMatrix3d::getTH3D() s=" << s 
-  //       << "\tN=" << N << "\tfilled bins" << endl;
+  //  std::cout << "SparseMatrix3d::getTH3D() s=" << s 
+  //       << "\tN=" << N << "\tfilled bins" << std::endl;
   
   return h;
 }

@@ -1,6 +1,5 @@
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
 #include "mcfmwc_pdf.h"
 

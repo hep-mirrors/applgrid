@@ -14,9 +14,6 @@
 #define __SPARSE3D_H
 
 #include <iostream>
-using std::cout;
-using std::cerr;
-using std::endl;
 
 
 #include "TMatrixDSparse.h"

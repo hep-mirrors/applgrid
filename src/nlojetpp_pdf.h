@@ -12,13 +12,12 @@
 #define __NLOJETPP_PDF_H
 
 #include "appl_grid/appl_pdf.h" 
-using namespace appl;
 
 
 
 // nlojet pdf combination class 
 
-class nlojetpp_pdf : public appl_pdf {
+class nlojetpp_pdf : public appl::appl_pdf {
 
 public:
 

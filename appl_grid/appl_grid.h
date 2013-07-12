@@ -66,6 +66,8 @@ class igrid;
 class appl_pdf;
 
 
+const int MAXGRIDS = 5;
+
 
 /// externally visible grid class
 class grid {
@@ -502,7 +504,7 @@ protected:
   int  m_order;
 
   // the actual weight grids themselves
-  igrid** m_grids[5]; /// up to 5 grids LO, NLO, NNLO, Real virtual, etc 
+  igrid** m_grids[MAXGRIDS]; /// up to MAXGRIDS grids LO, NLO, NNLO, Real virtual, etc 
 
   // total cross section qand uncertainty
   double m_total;
@@ -522,7 +524,7 @@ protected:
   string m_genpdfname; 
 
   // pdf combination class
-  appl_pdf* m_genpdf[5];
+  appl_pdf* m_genpdf[MAXGRIDS];
 
   static const string m_version;
 

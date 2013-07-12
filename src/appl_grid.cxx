@@ -453,7 +453,7 @@ void grid::construct(int Nobs,
 
   //  std::cout << "appl::grid::construct() m_order " << m_order << "\tNobs " << Nobs << std::endl; 
 
-  for ( int iorder=0 ; iorder<3 ; iorder++ ) m_grids[iorder] = 0;
+  for ( int iorder=0 ; iorder<m_order ; iorder++ ) m_grids[iorder] = 0;
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     m_grids[iorder] = new igrid*[Nobs];
@@ -681,8 +681,8 @@ void grid::print() const {
  /// get the required pdf combinations from those registered   
 void grid::findgenpdf( std::string s ) { 
     std::vector<std::string> names = parse( s, ":" );
-    if ( names.size()==unsigned(m_order) ) for ( int i=0 ; i<3 ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[i] );
-    else  if ( names.size()==1 ) m_genpdf[0] = m_genpdf[1] = m_genpdf[2] = appl_pdf::getpdf( names[0] );
+    if ( names.size()==unsigned(m_order) ) for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[i] );
+    else  if ( names.size()==1 )           for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[0] );
     else  { 
       throw exception( std::cerr << "requested " << m_order << " pdf combination but given " << names.size() << std::endl );
     }
@@ -742,7 +742,7 @@ void grid::addpdf( const std::string& s, const std::vector<int>& combinations ) 
 }
 
 void grid::setckm( const std::vector<std::vector<double> >& ckm2 ) { 
-  for ( int i=0 ; i<3 ; i++ ) m_genpdf[i]->setckm2(ckm2);
+  for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i]->setckm2(ckm2);
 }
 
 void grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
@@ -1321,7 +1321,7 @@ void grid::setRange(double lower, double upper, double xScaleFactor) {
 
   /// copy the igrids for the observable bins in the range 
 
-  igrid** grids[3];
+  igrid** grids[MAXGRIDS];
 
   /// save old grids
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) grids[iorder] = m_grids[iorder];
@@ -1419,7 +1419,12 @@ ostream& operator<<(ostream& s, const appl::grid& g) {
   s << "==================================================" << endl;
   //  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses(0) << " initial states, " << g.Nobs() << " observable bins)" << endl;
 
-  std::string order[3] = {  "-LO, ",  "-NLO, ",  "-NNLO, " };  
+  std::string basis[5] = {  "-LO, ",  "-NLO, ",  "-NNLO, ", "-Xtra0", "-Xtra1" };  
+  std::string order[MAXGRIDS];
+  for ( int i=0 ; i<MAXGRIDS ; i++ ) { 
+    if ( i<5) order[i] = basis[i];
+    else      order[i] = "-Unknown";
+  }
 
   s << "appl::grid version " << g.version() << "\t( "; 
   for ( int i=0 ; i<g.nloops()+1 ; i++ ) s << g.subProcesses(i) << order[i];

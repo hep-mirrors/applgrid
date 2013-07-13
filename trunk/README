@@ -1,0 +1,21 @@
+APPLgrid
+--------
+
+./configure
+make clean
+make
+make install
+
+These are standard targets in the usual way, so the 
+library and headers will be installed in the usual place 
+(ie change location with 
+
+ ./configure --prefix=<my_installation_path>
+ 
+if you want it somewhere else.
+
+You may need the 
+
+ make clean 
+
+to remove the root Dictionary files 

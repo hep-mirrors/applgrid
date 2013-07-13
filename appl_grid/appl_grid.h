@@ -21,19 +21,10 @@
 #define __APPL_GRID_H
 
 #include <vector>
-
 #include <iostream>
-
 #include <cmath>
-
 #include <string>
-
 #include <exception>
-
-// now use a forward declaration
-// #include "appl_grid/appl_igrid.h"
-
-// #include "generic_pdf.h"
 
 
 #include "TH1D.h"
@@ -120,16 +111,14 @@ public:
 		       const double obs, 
 		       const double* weight, const int iorder);
   
+  
   void fill_grid(const double x1, const double x2, const double Q2, 
 		 const double obs, 
-		 const double* weight, const int iorder)
-  {
-    if (isOptimised())
-      fill(x1, x2, Q2, obs, weight, iorder);
-    else
-      fill_phasespace(x1, x2, Q2, obs, weight, iorder);
-    return;
+		 const double* weight, const int iorder)  {
+    if (isOptimised())   fill(x1, x2, Q2, obs, weight, iorder);
+    else                 fill_phasespace(x1, x2, Q2, obs, weight, iorder);
   }
+
 
   void fill_index(const int ix1, const int ix2, const int iQ2, 
 		  const int iobs, 
@@ -176,6 +165,7 @@ public:
 				 double (*alphas)(const double& ) )   { 
     return vconvolute( pdf, alphas, m_order-1 ); 
   } 
+
 
   // perform the convolution to the max number of loops in grid
   std::vector<double> vconvolute(double Escale, 

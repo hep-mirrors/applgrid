@@ -25,18 +25,16 @@
 #define __APPL_IGRID_H
 
 #include <iostream>
-
 #include <vector>
-
 #include <map>
-
 #include <string>
-
 #include <cmath>
 
+
 #include "appl_grid/Directory.h"
-#include "SparseMatrix3d.h"
 #include "appl_grid/appl_pdf.h"
+
+#include "SparseMatrix3d.h"
 
 
 namespace appl {
@@ -51,7 +49,7 @@ private:
   class exception { 
   public:
     exception(const std::string& s) { std::cerr << s << std::endl; }; 
-    exception(ostream& s)           { std::cerr << s << std::endl; }; 
+    exception(std::ostream& s)      { std::cerr << s << std::endl; }; 
   };
 
 
@@ -96,7 +94,7 @@ public:
       m_weight[i]->print();
     }
   }
-
+  
   // return the number of words used for storage
   int size() const {
     int _size = 0;
@@ -364,7 +362,7 @@ public:
   
 
   // ouput header
-  ostream& header(ostream& s) const;
+  std::ostream& header(std::ostream& s) const;
 
 
 private:

@@ -658,8 +658,8 @@ void appl::grid::print() const {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {     
       std::cout << iobs << "\t" 
-	   << std::setprecision(5) << std::setw(6) << getReference()->GetBinLowEdge(iobs+1) << "\t- " 
-	   << std::setprecision(5) << std::setw(6) << getReference()->GetBinLowEdge(iobs+2) << "\t"; 
+		<< std::setprecision(5) << std::setw(6) << getReference()->GetBinLowEdge(iobs+1) << "\t- " 
+		<< std::setprecision(5) << std::setw(6) << getReference()->GetBinLowEdge(iobs+2) << "\t"; 
       m_grids[iorder][iobs]->print();       
     }
   }

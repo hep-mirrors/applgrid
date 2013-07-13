@@ -18,13 +18,14 @@
 
 
 int usage(std::ostream& s, int argc, char** argv) { 
-  s << argv[0] << " combines " << PACKAGE_STRING << " files together into a single grid\n\n"; 
-  s << "Usage: " << argv[0] << " [-s|--scale VALUE] -o output_grid.root  input_grid.root [input_grid1.root ... input_gridN.root]\n\n";
+  s << "Usage: " << argv[0] << " [OPTIONS] -o output_grid.root  input_grid.root [input_grid1.root ... input_gridN.root]\n\n";
+  s << "  APPLgrid \'" << argv[0] << "\' adds " << PACKAGE_STRING << " grid files together into a single grid\n\n"; 
   s << "Configuration: \n";
-  s << "\t-o\t\tname of output grid (required)\n\n";
+  s << "    -o filename\t\tname of output grid (filename required)\n\n";
   s << "Options: \n";
-  s << "\t-s,--scale\tscale output grid by value\n";
-  s << "\t-h,--help\tthis help\n";
+  s << "    -s, --scale value\tscale output grid by value, \n";
+  s << "    -v, --version\tdisplays the APPLgrid version\n";
+  s << "    -h, --help\t\tdisplay this help\n";
   s << "\nSee " << PACKAGE_URL << " for more details\n"; 
   s << "\nReport bugs to <" << PACKAGE_BUGREPORT << ">";
   s << std::endl;
@@ -43,7 +44,11 @@ int main(int argc, char** argv) {
   /// read in the parameters 
   std::vector<std::string> grids;
   for ( int i=1 ; i<argc ; i++ ) { 
-    if ( std::string(argv[i])=="-h" || std::string(argv[i])=="-h" ) return usage( std::cout, argc, argv ); 
+    if ( std::string(argv[i])=="-h" || std::string(argv[i])=="--help" )    return usage( std::cout, argc, argv ); 
+    if ( std::string(argv[i])=="-v" || std::string(argv[i])=="--version" ) {
+      std::cout << argv[0] << " APPLgrid version " << PACKAGE_VERSION << std::endl; 
+      return 0;
+    }
   }
 
   double d = 1;

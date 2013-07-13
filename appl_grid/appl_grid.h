@@ -130,7 +130,7 @@ public:
   void untrim();
  
   // formatted output 
-  void print() const;
+  std::ostream& print(std::ostream& s=std::cout) const;
 
   // don't do anything anymore
   void setuppdf(void (*pdf)(const double& , const double&, double* ) );

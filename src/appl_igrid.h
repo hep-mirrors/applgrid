@@ -87,12 +87,13 @@ public:
   }
 
   // formatted print
-  void print() const {
+  std::ostream&  print(std::ostream& s=std::cout) const {
     header(std::cout);
     for ( int i=0 ; i<m_Nproc ; i++ ) { 
-      std::cout << "sub process " << i << std::endl; 
+      s << "sub process " << i << std::endl; 
       m_weight[i]->print();
     }
+    return s;
   }
   
   // return the number of words used for storage

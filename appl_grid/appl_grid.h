@@ -472,7 +472,7 @@ protected:
 
 protected:
 
-  // histograms for saving the grid:  TH3D* m_weight[iorder][iinitial][iobs]
+  // histograms for saving the observable
   TH1D*  m_obs_bins;
 
   // order in alpha_s of tree level contribution 
@@ -493,7 +493,7 @@ protected:
   bool     m_optimised;
   bool     m_trimmed;
 
-  bool  m_normalised;
+  bool   m_normalised;
 
   bool   m_symmetrise; 
  

@@ -63,7 +63,7 @@ void Splitting(const double& x, const double& Q, double* xf) {
 #else
 
 void Splitting(const double& x, const double& Q, double* xf) {
-  throw grid::exception( std::cerr << "hoppet library not included - cannot call splitting function"  ); 
+  throw appl::grid::exception( std::cerr << "hoppet library not included - cannot call splitting function"  ); 
   return; // technically, don't need this - should throw an exception
 }
 

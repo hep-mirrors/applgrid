@@ -22,8 +22,6 @@
 
 lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) : appl_pdf(s), m_filename(s) {
 
-  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << std::endl; 
-
   /// need to decode the input std::vector
 
   if ( combinations.size() ) { 
@@ -43,7 +41,7 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
       }
 
       combination c(v);
-      if ( c.size() ) { add(c); std::cout << c << std::endl; }
+      if ( c.size() ) add(c); 
     } 
   }
   else { 
@@ -56,13 +54,15 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
     while (std::getline(infile, line)) {
       //    std::cout << "line: " << line << std::endl;
       combination c( line );
-      if ( c.size() ) { add(c); std::cout << c << std::endl; }
+      if ( c.size() ) add(c); 
     }
     
   }
  
   // some checking
 
+  /// should really check that no pdf combinations are used 
+  /// twice and so on
   //  for ( int i=0 ; i<m_combinations.size() ; i++ ) { 
   //    if ( m_combinations[i].
   //  }

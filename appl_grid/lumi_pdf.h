@@ -81,7 +81,7 @@ private:
 
 
 inline std::ostream& operator<<( std::ostream& s, const lumi_pdf& _g ) { 
-  s << "lumi_pdf: \n";
+  s << "lumi_pdf:   " << _g.name() << "\t processes " << _g.Nproc() << "\n";
   for ( int i=0 ; i<_g.Nproc() ; i++ ) s << _g[i] << std::endl;
   return s;
 }

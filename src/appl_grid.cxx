@@ -347,7 +347,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   /// returieve the pdf routine 
   findgenpdf( m_genpdfname );
 
-  std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
+  //  std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
 
   // set the ckm matrices 
   if ( _ckm2.size()>0 )  setckm( _ckm2 );
@@ -681,7 +681,7 @@ void appl::grid::findgenpdf( std::string s ) {
 
 void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinations ) {
 
-  std::cout << "addpdf() in " << std::endl;
+  //  std::cout << "addpdf() in " << std::endl;
 
     /// parse names, if they contain .dat, then create the new generic pdfs
     /// they will be added to the pdf std::map automatically 
@@ -697,14 +697,14 @@ void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinati
       }
     }
 
-    std::cout << "imax " << imax << std::endl; 
+    //    std::cout << "imax " << imax << std::endl; 
 
     /// loop through all the required pdfs checking whether they exist already,
     /// if not (from thrown exception) then create it, otherwise, don't need to 
     /// do anything 
     for ( unsigned i=0 ; i<imax ; i++ ) { 
 
-      std::cout << "\ti " << i<< std::endl; 
+      //      std::cout << "\ti " << i<< std::endl; 
 
       if ( names[i].find(".dat")!=std::string::npos ) { 
 	try {
@@ -722,7 +722,7 @@ void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinati
 	catch ( appl_pdf::exception e ) { 
 	  std::cout << "creating new lumi_pdf " << names[i] << std::endl;
 	  new lumi_pdf(names[i], combinations);
-	  std::cout << "created" << names[i] << std::endl;
+	  //	  std::cout << "created" << names[i] << std::endl;
 
 	}
       }

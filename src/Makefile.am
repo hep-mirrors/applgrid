@@ -67,10 +67,10 @@ AM_SOFLAGS= -shared
 CINT= rootcint
 clean-local:
 	rm -rf *.o *.lo *Dict*
-%.o : %.cxx 
+.cxx.o : 
 	@ echo ROOTARCH $(ROOTARCH) 
 	$(CXX) $(AM_CXXFLAGS) -c $<
-%.o : %.c 
+.c.o : 
 	$(CC) $(AM_CFLAGS) -c $<
 %Dict.cxx : %.h %.cxx
 	$(CINT) -f $@ -c $< 

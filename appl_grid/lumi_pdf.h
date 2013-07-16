@@ -76,6 +76,13 @@ private:
   std::vector<combination> m_combinations;
 
   bool m_ckmflag;
+
+  /// flag that this is an amcatnlo pdf
+  //  bool m_amcflag;
+
+  /// lookup table for decideSubprocess
+  std::vector<std::vector<int> >  m_lookup;
+
 };
 
 

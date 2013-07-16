@@ -313,6 +313,21 @@ public:
 		   double  rscale_factor=1,
 		   double  fscale_factor=1,
 		   double Escale=1 );
+  
+
+  
+  /// convolute method for amcatnlo grids
+  double amc_convolute(void   (*pdf)(const double& , const double&, double* ), 
+		       appl_pdf* genpdf, 
+ 		       double (*alphas)(const double& ), 
+ 		       int     lo_order=0,  
+ 		       int     nloop=0, 
+ 		       double  rscale_factor=1,
+ 		       double  fscale_factor=1,
+ 		       double Escale=1 );
+  
+  
+
 
 
   double convolute_subproc(int subproc, 

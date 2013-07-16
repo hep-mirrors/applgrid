@@ -1106,6 +1106,166 @@ double appl::igrid::convolute_subproc(int subproc,
 
 
 
+
+
+
+/// this is the convolute routine for the amcatnlo convolution - essentially it 
+/// is the same as for the standard calculation, but the amcatnlo calculation
+/// stores weights for the NLO born contribution, and counterterms, so we need
+/// more grids than the usual two, 
+double appl::igrid::amc_convolute(void   (*pdf)(const double& , const double&, double* ), 
+				  appl_pdf*  genpdf,
+				  double (*alphas)(const double& ), 
+				  int     lo_order,  
+				  int     nloop, 
+				  double  rscale_factor,
+				  double  fscale_factor,
+				  double Escale) 
+{ 
+
+  //char name[]="appl_grid:igrid::convolute(): ";
+  static const double twopi = 2*M_PI;
+  // static const int nc = 3;
+  //TC   const int nf = 6;
+  // static const int nf = 5;
+  //  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
+  //const bool debug=false;  
+
+  double alphas_tmp = 0.;  
+  double dsigma  = 0.; //, xsigma = 0.;
+  double _alphas = 1.;
+  double  alphaplus1 = 0.;
+  // do the convolution  
+  // if (debug) std::cout<<name<<" nloop= "<<nloop<<endl;
+  //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
+  // is the grid empty
+  int size=0;
+   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
+    if ( !m_weight[ip]->trimmed() )  {
+      //  std::cout << "igrid::convolute() naughty, naughty!" << std::endl;
+      m_weight[ip]->trim();
+    }
+    size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
+  }
+
+
+
+  // grid is empty
+  if ( size==0 )  return 0;
+
+  // 
+  //  if ( m_fg1==NULL ) setuppdf(pdf);
+  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, Escale);
+
+  double* sig = new double[m_Nproc];  // weights from grid
+  double* H   = new double[m_Nproc];  // generalised pdf  
+  double* HA  = NULL;  // generalised splitting functions
+  double* HB  = NULL;  // generalised splitting functions
+  if ( nloop==1 && fscale_factor!=1 ) { 
+    HA  = new double[m_Nproc];  // generalised splitting functions
+    HB  = new double[m_Nproc];  // generalised splitting functions
+  }
+
+  // cross section for this igrid  
+
+  // loop over the grid 
+  // 
+  for ( int itau=0 ; itau<Ntau() ; itau++  ) {
+    _alphas  = 1;    
+    alphas_tmp = m_alphas[itau]*8*M_PI*M_PI;
+    for ( int iorder=0 ; iorder<lo_order ; iorder++ ) _alphas *= alphas_tmp;
+    alphaplus1 = _alphas*alphas_tmp;
+
+    for ( int iy1=Ny1() ; iy1-- ;  ) {            
+      for ( int iy2=Ny2() ; iy2-- ;  ) { 
+ 	// test if this element is actually filled
+	// if ( !m_weight[0]->trimmed(itau,iy1,iy2) ) continue; 
+	bool nonzero = false;
+	// basic convolution order component for either the born level
+	// or the convolution of the nlo grid with the pdf 
+	for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
+	  if ( (sig[ip] = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2)) ) nonzero = true;
+	}
+	
+	//	for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << sig[ip]; 
+	//	std::cout << std::endl;
+
+	if ( nonzero ) { 	
+
+	  // build the generalised pdfs from the actual pdfs
+	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
+	
+	  // do the convolution
+
+          double xsigma=0.;
+	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
+	  // dsigma+= _alphas*xsigma;
+
+	  // now do the convolution for the variation of factorisation and 
+	  // renormalisation scales, proportional to the leading order weights
+	
+	  // renormalisation scale dependent bit
+	  if ( rscale_factor!=1 ) { 
+	    // nlo relative ln mu_R^2 term 
+	    dsigma+= alphaplus1*log(rscale_factor*rscale_factor)*xsigma;
+	    
+	  }
+	  else if ( fscale_factor!=1 ) {
+	    // factorisation scale dependent bit
+	    // nlo relative ln mu_F^2 term 
+	    dsigma += alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
+	    //if (debug) 
+	    //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
+	  }
+	  else { 
+	    dsigma+= _alphas*xsigma;
+	  }
+	
+	}  // nonzero
+      }  // iy2
+    }  // iy1
+  }  // itau
+  
+  //if (debug)  std::cout << name<<"     convoluted dsigma=" << dsigma << std::endl; 
+  
+  delete[] sig;
+  delete[] H;
+  delete[] HA;
+  delete[] HB;
+  
+  deletepdftable();
+  
+  //  std::cout << "dsigma " << dsigma << std::endl;
+
+  // NB!!! the return value dsigma must be scaled by Escale*Escale which 
+  // is done in grid::vconvolute. It would be better here, but is reduces 
+  // the number of operations if done in grid. 
+  return dsigma; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // FIXME: this has lots of legacy code and stuff commented which
 // is no longer needed or even correct, so it should be tidied.
 // the point of the algorithm here is to find the extent of the filled

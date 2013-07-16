@@ -20,7 +20,11 @@
 
 
 
-lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) : appl_pdf(s), m_filename(s) {
+lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) :  //, bool amcflag ) : 
+  appl_pdf(s), m_filename(s) //,  m_amcflag(amcflag)
+{
+
+  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << std::endl; 
 
   /// need to decode the input std::vector
 
@@ -61,8 +65,6 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
  
   // some checking
 
-  /// should really check that no pdf combinations are used 
-  /// twice and so on
   //  for ( int i=0 ; i<m_combinations.size() ; i++ ) { 
   //    if ( m_combinations[i].
   //  }
@@ -87,9 +89,18 @@ void lumi_pdf::evaluate(const double* xfA, const double* xfB, double* H) {
 int  lumi_pdf::decideSubProcess(const int iflav1, const int iflav2) { 
   /// do we really need this? in any case, need to sort though each subprocess
   /// checking if the provided flavours are in any of the pairs
-  /// maybe quicker to set up a reverse lookup - leave it for the time being
+  /// so quicker to set up a reverse 13x13 lookup when needed, and not 
+  /// otherwise
+  if ( m_lookup.size()==0 ) { 
+    /// create a 13 x 13 lookup table 
+    m_lookup = std::vector<std::vector<int> >(13, std::vector<int>(13, -1) ); 
+    for ( unsigned i=size() ; i-- ; ) { 
+      const combination& c = m_combinations[i];
+      for ( unsigned j=c.size() ; j-- ; ) m_lookup[ c[j].first+6 ][ c[j].second+6 ] = i;
+    } 
+  }
 
-  return 0;
+  return m_lookup[iflav1+6][iflav2+6];
 }
 
 

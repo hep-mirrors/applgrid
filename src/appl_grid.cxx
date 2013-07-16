@@ -363,6 +363,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
 
+
+
   //  std::cout << "grid::grid() read obs bins" << std::endl;
 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
@@ -557,6 +559,7 @@ appl::grid& appl::grid::operator*=(const double& d) {
 }
 
 
+
 appl::grid& appl::grid::operator+=(const appl::grid& g) {
   m_run      += g.m_run;
   m_optimised = g.m_optimised;
@@ -567,8 +570,23 @@ appl::grid& appl::grid::operator+=(const appl::grid& g) {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) (*m_grids[iorder][iobs]) += (*g.m_grids[iorder][iobs]); 
   }
+
+  TH1D* h0 = getReference();
+  const TH1D* h1 = g.getReference();
+
+  for ( int i=1 ; i<=h0->GetNbinsX() ; i++ ) { 
+    h0->SetBinContent( i, h0->GetBinContent(i)+h1->GetBinContent(i) );
+    double e0 = h0->GetBinError(i);
+    double e1 = h1->GetBinError(i);
+    h0->SetBinError( i, std::sqrt( e0*e0 + e1*e1 ) );
+
+    std::cout << i << " " << h0->GetBinContent(i) << std::endl;
+  }
+  
   return *this;
 }
+
+
 
 
 /// check grids match
@@ -1007,6 +1025,20 @@ std::vector<double> appl::grid::vconvolute(void (*pdf)(const double& , const dou
       // next to next to leading order contribution
       dsigma = m_grids[2][iobs]->convolute(pdf, m_genpdf[2], alphas, m_leading_order+2, 0);
     }
+    else if ( nloops==3 ) { 
+        /// this is the amcatnlo NLO calculation (without FKS shower)
+        label = "nlo";
+        /// work out how to call from the igrid - maybe just implement additional 
+        /// convolution routines and call them here
+        double dsigma_0 = m_grids[0][iobs]->amc_convolute(pdf, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
+        double dsigma_R = m_grids[1][iobs]->amc_convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
+        double dsigma_F = m_grids[2][iobs]->amc_convolute(pdf, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
+        double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+  
+        dsigma = dsigma_0 + dsigma_R + dsigma_F + dsigma_B;
+    }
+
+
 
     //   double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
     //   h->SetBinContent(iobs+1, dsigma/(deltaobs));

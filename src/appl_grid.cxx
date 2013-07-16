@@ -256,6 +256,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   std::string _version = _tags[2];
 
+  std::cout << "tags:: transform: " << m_transform << "\tpdfname: " << m_genpdfname << "\tdoc: " << m_documentation << std::endl;  
+
   if ( _tags.size()>3 ) m_documentation = _tags[3];
 
   // check it has the correct version
@@ -360,10 +362,13 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  gridfile.GetObject("obs_bins", m_obs_bins );
   m_obs_bins = (TH1D*)gridfilep->Get((dirname+"/reference").c_str());
   m_obs_bins->SetDirectory(0);
-  m_obs_bins->Scale(run());
+  //  m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
 
 
+  for ( int iref=1 ; iref<=m_obs_bins->GetNbinsX() ; iref++ ) { 
+    std::cout << "iref " << iref << "\t" << m_obs_bins->GetBinContent(iref) << " " << run() << std::endl; 
+  }
 
   //  std::cout << "grid::grid() read obs bins" << std::endl;
 

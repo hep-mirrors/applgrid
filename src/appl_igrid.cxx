@@ -1124,7 +1124,8 @@ double appl::igrid::amc_convolute(void   (*pdf)(const double& , const double&, d
 { 
 
   //char name[]="appl_grid:igrid::convolute(): ";
-  static const double twopi = 2*M_PI;
+  //  static const double twopi = 2*M_PI;
+  static const double eightpisquared = 8*M_PI*M_PI;
   // static const int nc = 3;
   //TC   const int nf = 6;
   // static const int nf = 5;
@@ -1134,7 +1135,7 @@ double appl::igrid::amc_convolute(void   (*pdf)(const double& , const double&, d
   double alphas_tmp = 0.;  
   double dsigma  = 0.; //, xsigma = 0.;
   double _alphas = 1.;
-  double  alphaplus1 = 0.;
+  //  double  alphaplus1 = 0.;
   // do the convolution  
   // if (debug) std::cout<<name<<" nloop= "<<nloop<<endl;
   //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
@@ -1172,9 +1173,9 @@ double appl::igrid::amc_convolute(void   (*pdf)(const double& , const double&, d
   // 
   for ( int itau=0 ; itau<Ntau() ; itau++  ) {
     _alphas  = 1;    
-    alphas_tmp = m_alphas[itau]*8*M_PI*M_PI;
+    alphas_tmp = m_alphas[itau]*eightpisquared;
     for ( int iorder=0 ; iorder<lo_order ; iorder++ ) _alphas *= alphas_tmp;
-    alphaplus1 = _alphas*alphas_tmp;
+    //   alphaplus1 = _alphas*alphas_tmp;
 
     for ( int iy1=Ny1() ; iy1-- ;  ) {            
       for ( int iy2=Ny2() ; iy2-- ;  ) { 
@@ -1199,7 +1200,7 @@ double appl::igrid::amc_convolute(void   (*pdf)(const double& , const double&, d
 
           double xsigma=0.;
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
-	  // dsigma+= _alphas*xsigma;
+	  // dsigma += _alphas*xsigma;
 
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
@@ -1207,18 +1208,18 @@ double appl::igrid::amc_convolute(void   (*pdf)(const double& , const double&, d
 	  // renormalisation scale dependent bit
 	  if ( rscale_factor!=1 ) { 
 	    // nlo relative ln mu_R^2 term 
-	    dsigma+= alphaplus1*log(rscale_factor*rscale_factor)*xsigma;
+	    dsigma += _alphas*std::log(rscale_factor*rscale_factor)*xsigma;
 	    
 	  }
 	  else if ( fscale_factor!=1 ) {
 	    // factorisation scale dependent bit
 	    // nlo relative ln mu_F^2 term 
-	    dsigma += alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
+	    dsigma += _alphas*std::log(fscale_factor*fscale_factor)*xsigma;
 	    //if (debug) 
 	    //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
 	  }
 	  else { 
-	    dsigma+= _alphas*xsigma;
+	    dsigma += _alphas*xsigma;
 	  }
 	
 	}  // nonzero

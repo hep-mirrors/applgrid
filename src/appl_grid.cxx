@@ -362,7 +362,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  gridfile.GetObject("obs_bins", m_obs_bins );
   m_obs_bins = (TH1D*)gridfilep->Get((dirname+"/reference").c_str());
   m_obs_bins->SetDirectory(0);
-  //  m_obs_bins->Scale(run());
+  m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
 
 

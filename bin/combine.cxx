@@ -84,10 +84,13 @@ int main(int argc, char** argv) {
   
   appl::grid  g( grids[0] );
 
+  g.untrim();
+
   if ( verbose ) std::cout << g.getDocumentation() << std::endl;
 
   for ( unsigned i=1 ; i<grids.size() ; i++ ) { 
     appl::grid  _g( grids[i] );
+    _g.untrim();
     if ( verbose ) std::cout << _g.getDocumentation() << std::endl;
     g += _g;
   }

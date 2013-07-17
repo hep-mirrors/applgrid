@@ -14,10 +14,10 @@
 #define __AXIS_H
 
 #include <iostream>
-
 #include <iomanip>
-
 #include <vector>
+#include <cmath>
+
 
 
 template<class T> 
@@ -86,9 +86,12 @@ public:
     std::cout << std::endl;
   }
 
-
+  /// NB: to avoid rounding errors, allow differences in the bin 
+  ///     limits of 1e-10 the distance between the nodes   
   bool operator==(const axis& ax) const { 
-    return ( m_N==ax.m_N && m_min==ax.m_min && m_max==ax.m_max );
+    return ( m_N==ax.m_N 
+	     && (std::fabs(m_min-ax.m_min)<m_delta*1e-10) 
+	     && (std::fabs(m_max-ax.m_max)<m_delta*1e-10) );
   }
 
 private:

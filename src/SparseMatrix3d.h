@@ -96,9 +96,38 @@ public:
   }
 
   bool operator==(const SparseMatrix3d& s) const { 
+
+#if 0
+
+    std::cout << "SparseMatrix: " 
+	      << "\tx " << m_xaxis 
+	      << "\ty " << m_yaxis 
+	      << "\tz " << m_zaxis << std::endl; 
+
+    std::cout << "SparseMatrix: " 
+	      << "\tx " << s.m_xaxis 
+	      << "\ty " << s.m_yaxis 
+	      << "\tz " << s.m_zaxis << std::endl; 
+
+    std::cout << "SparseMatrix: " 
+	      << "\tx " << ( m_xaxis == s.m_xaxis ) 
+	      << "\ty " << ( m_yaxis == s.m_yaxis )
+	      << "\tz " << ( m_zaxis == s.m_zaxis ) << std::endl; 
+
+
+    std::cout << "SparseMatrix: " 
+	      << "\tx " << ( m_xaxis.N() - s.m_xaxis.N() ) 
+	      << "\tmin "   << m_xaxis.min()   << " " << ( m_xaxis.min() - s.m_xaxis.min() )
+	      << "\tmax "   << m_xaxis.max()   << " " << ( m_xaxis.max() - s.m_xaxis.max() )
+	      << "\tdelta " << m_xaxis.delta() << " " << ( m_xaxis.delta() - s.m_xaxis.delta() )
+	      << "\tz " << std::endl; 
+
+#endif
+
     return ( m_xaxis == s.m_xaxis &&  
 	     m_yaxis == s.m_yaxis &&
 	     m_zaxis == s.m_zaxis );
+   
   }
 
   bool operator!=(const SparseMatrix3d& s) const { 

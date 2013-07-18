@@ -97,7 +97,7 @@ int main(int argc, char** argv) {
 
   if ( d!=1 ) g *= d;
 
-  std::cout << "writing " << output_grid << std::endl;
+  //  std::cout << "writing " << output_grid << std::endl;
   g.Write(output_grid);
 
   std::cout << argv[0] << ": added " << grids.size() << " grids" << std::endl; 

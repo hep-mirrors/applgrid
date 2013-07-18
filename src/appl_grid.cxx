@@ -227,7 +227,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
     throw exception(std::cerr << "grid::grid() cannot open file " << filename << std::endl ); 
   }
 
-  std::cout << "grid() reading grid from file " << filename << std::endl;
+  std::cout << "appl::grid() reading grid from file " << filename << std::endl;
   
   TFile* gridfilep = TFile::Open(filename.c_str());
   
@@ -256,7 +256,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   std::string _version = _tags[2];
 
-  std::cout << "tags:: transform: " << m_transform << "\tpdfname: " << m_genpdfname << "\tdoc: " << m_documentation << std::endl;  
+  //  std::cout << "tags:: transform: " << m_transform << "\tpdfname: " << m_genpdfname << "\tdoc: " << m_documentation << std::endl;  
 
   if ( _tags.size()>3 ) m_documentation = _tags[3];
 
@@ -266,7 +266,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   // }
   //  m_version = _version;
   
-  std::cout << "appl::grid " << m_version << "\t" << m_documentation << std::endl; 
+  //  std::cout << "appl::grid " << m_version << "\t" << m_documentation << std::endl; 
   
   //  std::cout << "Tags=" << _tags << std::endl;
 
@@ -365,10 +365,6 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
 
-
-  for ( int iref=1 ; iref<=m_obs_bins->GetNbinsX() ; iref++ ) { 
-    std::cout << "iref " << iref << "\t" << m_obs_bins->GetBinContent(iref) << " " << run() << std::endl; 
-  }
 
   //  std::cout << "grid::grid() read obs bins" << std::endl;
 
@@ -584,8 +580,6 @@ appl::grid& appl::grid::operator+=(const appl::grid& g) {
     double e0 = h0->GetBinError(i);
     double e1 = h1->GetBinError(i);
     h0->SetBinError( i, std::sqrt( e0*e0 + e1*e1 ) );
-
-    std::cout << i << " " << h0->GetBinContent(i) << std::endl;
   }
   
   return *this;
@@ -1042,7 +1036,18 @@ std::vector<double> appl::grid::vconvolute(void (*pdf)(const double& , const dou
   
         dsigma = dsigma_0 + dsigma_R + dsigma_F + dsigma_B;
     }
-
+    else if ( nloops==-3 ) { 
+        /// this is the amcatnlo NLO calculation (without FKS shower)
+        label = "lo";
+        /// work out how to call from the igrid - maybe just implement additional 
+        /// convolution routines and call them here
+        double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+  
+        dsigma = dsigma_B;
+    }
+    else { 
+      throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 
+    }
 
 
     //   double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);

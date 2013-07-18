@@ -10,10 +10,13 @@ ROOTCFLAGS= $(shell root-config --cflags)
 ROOTLIBS= $(shell root-config --nonew --libs)
 ROOTGLIBS= $(shell root-config --nonew --glibs)
 
+FRTLIB   = $(shell gfortran -print-file-name=libgfortran.a)
+FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
+
 APPLCFLAGS= -I../src -I../appl_grid
 APPLLIBS= -L../src -lAPPLgrid
 
-AM_LDFLAGS= $(ROOTARCH) -O2  $(ROOTLIBS) $(APPLLIBS)
+AM_LDFLAGS= $(ROOTARCH) -O2  $(ROOTLIBS) $(APPLLIBS) $(FRTLLIB)
 AM_CXXFLAGS= -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS) $(APPLCFLAGS)
 
 

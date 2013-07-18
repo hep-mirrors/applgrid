@@ -576,8 +576,6 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS
 clean-local:
 	rm -rf *.o *.lo 
 .cxx.o :   
-	@echo $(FRTLIB)
-	@echo $(FRTLLIB)
 	$(CXX) $(AM_CXXFLAGS) -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

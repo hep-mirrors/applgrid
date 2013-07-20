@@ -1,3 +1,4 @@
+
 ##########################################################################
 #
 #   File:         Makefile.am
@@ -13,9 +14,17 @@
 #                   
 #########################################################################
 
- 
+FRTLIB   = $(shell gfortran -print-file-name=libgfortran.a)
+FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
+
+
+bin_PROGRAMS = applgrid-combine
+applgrid_combine_SOURCES = combine.cxx
+applgrid_combine_LDADD   = libAPPLgrid.la
+applgrid_combine_LDFLAGS = $(FRTLLIB) 
+
+
 lib_LTLIBRARIES= libAPPLgrid.la libfAPPLgrid.la 
-#bin_PROGRAMS = 
 libAPPLgrid_la_SOURCES = \
 	appl_grid.cxx		appl_igrid.cxx  	appl_pdf.cxx 		appl_timer.cxx \
 	fastnlo.cxx 		SparseMatrix3d.cxx	hoppet_init.cxx	\
@@ -29,10 +38,8 @@ libAPPLgrid_la_SOURCES = \
 	TFileVector.cxx		TFileVectorDict.cxx \
 	*.h
 
-#	fappl_grid.cxx
-
-#bin_PROGRAMS = 
 libfAPPLgrid_la_SOURCES = fappl_grid.cxx
+
 library_includedir=$(includedir)/appl_grid
 # library_include_HEADERS=../appl_grid/{Directory.h,appl_grid.h,appl_pdf.h,appl_timer.h,fastnlo.h} 
 library_include_HEADERS=../appl_grid/*.h
@@ -41,30 +48,33 @@ library_include_HEADERS=../appl_grid/*.h
 # docdir = ${datadir}/doc/${PACKAGE}
 
 
-ROOTCFLAGS= $(shell root-config --cflags)
-ROOTLIBS= $(shell root-config --nonew --libs)
-ROOTGLIBS= $(shell root-config --nonew --glibs)
-# LHAPDFDIR= $(shell lhapdf-config --prefix)
-HOPPETDIR= $(shell hoppet-config --prefix)
-HOPPETCFLAGS= $(shell hoppet-config --cxxflags)
-HOPPETLIBS= $(shell hoppet-config --libs)
-ROOTARCH = $(findstring -m64, $(ROOTCFLAGS) )
+ROOTCFLAGS = $(shell root-config --cflags)
+ROOTLIBS   = $(shell root-config --nonew --libs)
+ROOTGLIBS  = $(shell root-config --nonew --glibs)
+ROOTARCH   = $(shell root-config --ldflags)
+
+HOPPETDIR    = $(shell hoppet-config --prefix)
+HOPPETCFLAGS = $(shell hoppet-config --cxxflags)
+HOPPETLIBS   = $(shell hoppet-config --libs)
+
+
 # GSLLIBS=$(shell gsl-config --libs)
 # WDIR = $(shell pwd)
+
 ROOTCINT=rootcint
-# AM_CXXFLAGS= $(ROOTARCH) -O2 -Wall -fPIC  -I../appl_grid $(ROOTCFLAGS) -I$(LHAPDFDIR)/include $(HOPPETCFLAGS) 
-# AM_CFLAGS=   $(ROOTARCH) -O2 -Wall -fPIC  -I../appl_grid $(ROOTCFLAGS) -I$(LHAPDFDIR)/include $(HOPPETCFLAGS) 
-AM_CXXFLAGS=  $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
-AM_CFLAGS=    $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
+AM_CXXFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
+AM_CFLAGS   = $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
 AM_CPPFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
-#INCLUDES=-I$(LHAPDFDIR)/include
-# AM_LDFLAGS= -O -L$(LHAPDFDIR)/lib -lLHAPDF  $(ROOTLIBS) $(GSLLIBS) $(FCLIBS)
-AM_LDFLAGS= $(ROOTARCH) -O  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS)
-# program_LDFLAGS= $(AM_LDFLAGS) 
-AM_FCFLAGS= -c
-AM_FCLIBS= -lg2c
-AM_SOFLAGS= -shared
-CINT= rootcint
+
+#INCLUDES = -I$(LHAPDFDIR)/include
+AM_LDFLAGS = $(ROOTARCH) -O2  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FTRLLIB) $(FTRLIB)
+
+
+AM_FCFLAGS = -c
+AM_FCLIBS  = -lg2c
+AM_SOFLAGS = -shared
+CINT       = rootcint
+
 clean-local:
 	rm -rf *.o *.lo *Dict*
 .cxx.o : 

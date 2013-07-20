@@ -1,4 +1,3 @@
-
 ##########################################################################
 #
 #   File:         Makefile.am
@@ -13,6 +12,16 @@
 #   $Id: makefile 20 2008-05-05 01:55:42Z sutt $                
 #                   
 #########################################################################
+
+
+ROOTCFLAGS = $(shell root-config --cflags)
+ROOTLIBS   = $(shell root-config --nonew --libs)
+ROOTGLIBS  = $(shell root-config --nonew --glibs)
+ROOTARCH   = $(shell root-config --ldflags)
+
+HOPPETDIR    = $(shell hoppet-config --prefix)
+HOPPETCFLAGS = $(shell hoppet-config --cxxflags)
+HOPPETLIBS   = $(shell hoppet-config --libs)
 
 FRTLIB   = $(shell gfortran -print-file-name=libgfortran.a)
 FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
@@ -41,21 +50,8 @@ libAPPLgrid_la_SOURCES = \
 libfAPPLgrid_la_SOURCES = fappl_grid.cxx
 
 library_includedir=$(includedir)/appl_grid
-# library_include_HEADERS=../appl_grid/{Directory.h,appl_grid.h,appl_pdf.h,appl_timer.h,fastnlo.h} 
+
 library_include_HEADERS=../appl_grid/*.h
-#include_HEADERS=../appl_grid/*.h
-# stupid definition because of (old) autoconf versions on lxplus 
-# docdir = ${datadir}/doc/${PACKAGE}
-
-
-ROOTCFLAGS = $(shell root-config --cflags)
-ROOTLIBS   = $(shell root-config --nonew --libs)
-ROOTGLIBS  = $(shell root-config --nonew --glibs)
-ROOTARCH   = $(shell root-config --ldflags)
-
-HOPPETDIR    = $(shell hoppet-config --prefix)
-HOPPETCFLAGS = $(shell hoppet-config --cxxflags)
-HOPPETLIBS   = $(shell hoppet-config --libs)
 
 
 # GSLLIBS=$(shell gsl-config --libs)

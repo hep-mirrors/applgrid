@@ -94,6 +94,7 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
   m_obs_bins->SetDirectory(0);
+  m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -124,6 +125,7 @@ appl::grid::grid(int Nobs, const double* obsbins,
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
   m_obs_bins->SetDirectory(0);
+  m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -138,7 +140,7 @@ appl::grid::grid(int Nobs, const double* obsbins,
 
 
 
-appl::grid::grid(const std::vector<double> obs, 
+appl::grid::grid(const std::vector<double>& obs, 
 		 int NQ2, double Q2min, double Q2max, int Q2order,
 		 int Nx,  double xmin,  double xmax,  int xorder, 
 		 std::string genpdfname,
@@ -156,14 +158,15 @@ appl::grid::grid(const std::vector<double> obs,
     exit(0);
   } 
   
-  double* obsbins = new double[obs.size()];  
-  for ( unsigned i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
-  int Nobs = obs.size()-1;
+  //  double* obsbins = new double[obs.size()];  
+  //  for ( unsigned i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
+  //  int Nobs = obs.size()-1;
 
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
-  m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
+  m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", obs.size()-1, &obs[0] );
   m_obs_bins->SetDirectory(0);
-  delete[] obsbins;
+  m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
+  //  delete[] obsbins;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -171,12 +174,12 @@ appl::grid::grid(const std::vector<double> obs,
   if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
-  construct(Nobs, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
+  construct( obs.size()-1, NQ2, Q2min, Q2max, Q2order, Nx, xmin, xmax, xorder, m_order, m_transform); 
 }
 
 
 
-appl::grid::grid(const std::vector<double> obs, 
+appl::grid::grid(const std::vector<double>& obs, 
 		 std::string genpdfname,
 		 int leading_order, int nloops, 
 		 std::string transform )  :
@@ -192,14 +195,15 @@ appl::grid::grid(const std::vector<double> obs,
     exit(0);
   } 
   
-  double* obsbins = new double[obs.size()];  
-  for ( unsigned i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
-  int Nobs = obs.size()-1;
+  //  double* obsbins = new double[obs.size()];  
+  //  for ( unsigned i=0 ; i<obs.size() ; i++ ) obsbins[i] = obs[i];
+  //  int Nobs = obs.size()-1;
 
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
-  m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
+  m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", obs.size()-1, &obs[0] );
   m_obs_bins->SetDirectory(0);
-  delete[] obsbins;
+  m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
+  //  delete[] obsbins;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -207,7 +211,7 @@ appl::grid::grid(const std::vector<double> obs,
   if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
   findgenpdf( m_genpdfname );
 
-  for ( int iorder=0 ; iorder<m_order ; iorder++ ) m_grids[iorder] = new igrid*[Nobs];
+  for ( int iorder=0 ; iorder<m_order ; iorder++ ) m_grids[iorder] = new igrid*[obs.size()-1];
 
 }
 
@@ -422,6 +426,9 @@ appl::grid::grid(const grid& g) :
   m_ckmsum(g.m_ckmsum), /// need a deep copy of the contents
   m_ckm2(g.m_ckm2)      /// need a deep copy of the contents
 {
+  m_obs_bins->SetDirectory(0);
+  m_obs_bins->Sumw2();
+
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
   //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
@@ -501,6 +508,7 @@ void appl::grid::add_igrid(int bin, int order, igrid* g) {
 
 
 
+
 appl::grid::~grid() {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {  
     if( m_grids[iorder] ) { 
@@ -536,6 +544,9 @@ appl::grid& appl::grid::operator=(const appl::grid& g) {
   
   // copy the new
   m_obs_bins = new TH1D(*g.m_obs_bins);
+  m_obs_bins->SetDirectory(0);
+  m_obs_bins->Sumw2();
+
   // copy the state
   m_leading_order = g.m_leading_order;
   m_order         = g.m_order;
@@ -556,6 +567,7 @@ appl::grid& appl::grid::operator*=(const double& d) {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) (*m_grids[iorder][iobs])*=d; 
   }
+  getReference()->Scale( d );
   return *this;
 }
 
@@ -572,16 +584,9 @@ appl::grid& appl::grid::operator+=(const appl::grid& g) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) (*m_grids[iorder][iobs]) += (*g.m_grids[iorder][iobs]); 
   }
 
-  TH1D* h0 = getReference();
-  const TH1D* h1 = g.getReference();
+  /// grrr use root TH1::Add() even though I don't like it. 
+  getReference()->Add( g.getReference() );
 
-  for ( int i=1 ; i<=h0->GetNbinsX() ; i++ ) { 
-    h0->SetBinContent( i, h0->GetBinContent(i)+h1->GetBinContent(i) );
-    double e0 = h0->GetBinError(i);
-    double e1 = h1->GetBinError(i);
-    h0->SetBinError( i, std::sqrt( e0*e0 + e1*e1 ) );
-  }
-  
   return *this;
 }
 

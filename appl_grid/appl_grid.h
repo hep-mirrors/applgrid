@@ -77,7 +77,7 @@ public:
 	int leading_order=0, int nloops=1, 
 	std::string transform="f2" );
 
-  grid( const std::vector<double> obs,
+  grid( const std::vector<double>& obs,
 	int NQ2=50,  double Q2min=10000.0, double Q2max=25000000.0,   int Q2order=5, 
         int Nx=50,   double xmin=1e-5,     double xmax=0.9,           int xorder=5, 
 	std::string genpdf="mcfm_pdf", 
@@ -85,7 +85,7 @@ public:
 	std::string transform="f2" );
 
   // build a grid but don't build the internal igrids - these can be added later
-  grid( const std::vector<double> obs,
+  grid( const std::vector<double>& obs,
 	std::string genpdf="nlojet_pdf", 
 	int leading_order=0, int nloops=1, 
 	std::string transform="f2" );

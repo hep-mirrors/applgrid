@@ -283,7 +283,7 @@ public:
 
 
   // optimise the bin limits
-  void optimise();
+  void optimise(bool force=false);
   void optimise(int NQ2, int Nx);
   void optimise(int NQ2, int Nx1, int Nx2);
 

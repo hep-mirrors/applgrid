@@ -1249,7 +1249,8 @@ TH1D* appl::grid::convolute_subproc(int subproc,
 
 
 
-void appl::grid::optimise() {
+void appl::grid::optimise(bool force) {
+  if ( !force && m_optimised ) return;
   m_optimised = true;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
@@ -1257,6 +1258,7 @@ void appl::grid::optimise() {
       m_grids[iorder][iobs]->optimise();
     }
   }
+  m_obs_bins->Reset();
 }
 
 void appl::grid::optimise(int NQ2, int Nx) {  optimise(NQ2, Nx, Nx);  }
@@ -1269,6 +1271,7 @@ void appl::grid::optimise(int NQ2, int Nx1, int Nx2) {
       m_grids[iorder][iobs]->optimise(NQ2, Nx1, Nx2);
     }
   }
+  m_obs_bins->Reset();
 }
 
 

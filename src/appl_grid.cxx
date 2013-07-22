@@ -902,8 +902,7 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   
   TH1D* reference = (TH1D*)m_obs_bins->Clone("reference");
   
-  if ( !getNormalised() )
-    if ( run() ) reference->Scale(1/double(run()));
+  if ( !getNormalised() )  if ( run() ) reference->Scale(1/double(run()));
   
   reference->Write();
   delete reference;

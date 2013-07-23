@@ -57,7 +57,7 @@ private:
 }; 
 
 
-ostream& operator<<(ostream& s, const TFileVector& fv);
+std::ostream& operator<<(std::ostream& s, const TFileVector& fv);
 
 
 

@@ -1294,8 +1294,8 @@ void appl::grid::redefine(int iobs, int iorder,
   
   if ( iorder==0 ) { 
     std::cout << "grid::redefine() iobs=" << iobs 
-	 << "NQ2="  << NQ2 << "\tQmin=" << sqrt(Q2min) << "\tQmax=" << sqrt(Q2max) 
-	 << "\tNx=" << Nx  << "\txmin=" <<       xmin  << "\txmax=" <<       xmax << std::endl; 
+	      << "NQ2="  << NQ2 << "\tQmin=" << std::sqrt(Q2min) << "\tQmax=" << std::sqrt(Q2max) 
+	      << "\tNx=" << Nx  << "\txmin=" <<            xmin  << "\txmax=" <<            xmax << std::endl; 
   }
   
   igrid* oldgrid =  m_grids[iorder][iobs];

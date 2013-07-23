@@ -156,22 +156,22 @@ public:
   }
 
   // define all these so that ymin=fy(xmin) rather than ymin=fy(xmax)
-  static double _fy(double x) { return log(1/x-1); } 
-  static double _fx(double y) { return 1/(1+exp(y)); } 
+  static double _fy(double x) { return std::log(1/x-1); } 
+  static double _fx(double y) { return 1/(1+std::exp(y)); } 
 
-  static double _fy0(double x) { return -log(x); } 
-  static double _fx0(double y) { return exp(-y); } 
+  static double _fy0(double x) { return -std::log(x); } 
+  static double _fx0(double y) { return  std::exp(-y); } 
 
-  static double _fy1(double x) { return sqrt(-log(x)); } 
-  static double _fx1(double y) { return exp(-y*y); } 
+  static double _fy1(double x) { return std::sqrt(-log(x)); } 
+  static double _fx1(double y) { return std::exp(-y*y); } 
 
-  static double _fy2(double x) { return -log(x)+m_transvar*(1-x); }
+  static double _fy2(double x) { return -std::log(x)+m_transvar*(1-x); }
   static double _fx2(double y) {
     // use Newton-Raphson: y = ln(1/x)
     // solve   y - yp - a(1 - exp(-yp)) = 0
     // deriv:  - 1 -a exp(-yp)
 
-    if ( m_transvar==0 )  return exp(-y); 
+    if ( m_transvar==0 )  return std::exp(-y); 
         
     const double eps  = 1e-12;  // our accuracy goal
     const int    imax = 100;    // for safety (avoid infinite loops)
@@ -179,7 +179,7 @@ public:
     double yp = y;
     double x, delta, deriv;
     for ( int iter=imax ; iter-- ; ) {
-      x = exp(-yp);
+      x = std::exp(-yp);
       delta = y - yp - m_transvar*(1-x);
       if ( std::fabs(delta)<eps ) return x; // we have found good solution
       deriv = -1 - m_transvar*x;
@@ -188,7 +188,7 @@ public:
     // exceeded maximum iterations 
     std::cerr << "_fx2() iteration limit reached y=" << y << std::endl; 
     std::cout << "_fx2() iteration limit reached y=" << y << std::endl; 
-    return exp(-yp); 
+    return std::exp(-yp); 
   }
   
   static double _fy3(double x) { return std::sqrt(-log10(x)); }
@@ -211,8 +211,8 @@ public:
 
   // using log(log(Q2/mLambda)) or just log(log(Q2)) makes 
   // little difference for the LHC range
-  static double ftau(double Q2) { return log(log(Q2/0.0625)); }
-  static double fQ2(double tau) { return 0.0625*exp(exp(tau)); }
+  static double ftau(double Q2) { return std::log(std::log(Q2/0.0625)); }
+  static double fQ2(double tau) { return 0.0625*std::exp(std::exp(tau)); }
 
   
   // grid value accessors

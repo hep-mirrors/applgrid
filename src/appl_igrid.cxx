@@ -628,7 +628,7 @@ void appl::igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
     
     double tau = gettau(itau);
     double Q2  = fQ2(tau);
-    double Q   = sqrt(Q2); 
+    double Q   = std::sqrt(Q2); 
     
     // alpha_s table 
     m_alphas[itau] = alphas(rscale_factor*Q)*invtwopi;

@@ -105,7 +105,7 @@ TH3D* SparseMatrix3d::getTH3D(const std::string& s) const {
 
 
 
-ostream& operator<<(ostream& s, const SparseMatrix3d& sm) { 
+std::ostream& operator<<(std::ostream& s, const SparseMatrix3d& sm) { 
   const tsparse3d<double>* sp = &sm;
   s << "x:" << sm.xaxis() << "\ny:" << sm.yaxis() << "\nz:" << sm.zaxis()
     << "\n" << *sp;

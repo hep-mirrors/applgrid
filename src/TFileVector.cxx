@@ -16,7 +16,7 @@
 ClassImp(TFileVector)
 
 
-ostream& operator<<(ostream& s, const TFileVector& fs) { 
+std::ostream& operator<<(std::ostream& s, const TFileVector& fs) { 
   return s;
 }
 

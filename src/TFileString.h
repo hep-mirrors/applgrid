@@ -58,7 +58,7 @@ private:
 }; 
 
 
-ostream& operator<<(ostream& s, const TFileString& fs);
+std::ostream& operator<<(std::ostream& s, const TFileString& fs);
 
 
 

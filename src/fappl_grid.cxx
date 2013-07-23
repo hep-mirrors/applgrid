@@ -64,8 +64,15 @@ extern "C" void convolutewrap_(int& id, double* data,
 extern "C" void fullconvolutewrap_(int& id, double* data, 
 				   void (*pdf)(const double& , const double&, double* ),
 				   double (*alphas)(const double& ),
-				   int nloops,
-				   double rscale, double fscale  );
+				   int& nloops,
+				   double& rscale, double& fscale  );
+
+extern "C" void escaleconvolutewrap_(int& id, double* data, 
+				     void (*pdf)(const double& , const double&, double* ),
+				     double (*alphas)(const double& ),
+				     int& nloops,
+				     double& rscale, double& fscale,
+				     double Escale );
 
 /// print a grid
 extern "C" void printgrid_(int& id);
@@ -227,12 +234,28 @@ void convolutewrap_(int& id, double* data,
 void fullconvolutewrap_(int& id, double* data, 
 			void (*pdf)(const double& , const double&, double* ),  
 			double (*alphas)(const double& ),
-			int nloops,
-			double rscale, double fscale  ) {  
+			int& nloops,
+			double& rscale, double& fscale  ) {  
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
     std::vector<double> v = g->vconvolute( pdf, alphas, nloops, rscale, fscale);
+    for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
+
+void escaleconvolutewrap_(int& id, double* data, 
+			  void (*pdf)(const double& , const double&, double* ),  
+			  double (*alphas)(const double& ),
+			  int& nloops,
+			  double& rscale, double& fscale,
+			  double& Escale ) {  
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    appl::grid*    g = gitr->second;
+    std::vector<double> v = g->vconvolute( pdf, alphas, nloops, rscale, fscale, Escale);
     for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
   }
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );

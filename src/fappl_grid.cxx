@@ -67,12 +67,21 @@ extern "C" void fullconvolutewrap_(int& id, double* data,
 				   int& nloops,
 				   double& rscale, double& fscale  );
 
+extern "C" void escaleconvolute_(int& id, double* data, double& Escale);
+
+extern "C" void escaleconvolutewrap_(int& id, double* data, 
+				     void (*pdf)(const double& , const double&, double* ),
+				     double (*alphas)(const double& ), double& Escale );
+
+#if 0
 extern "C" void escaleconvolutewrap_(int& id, double* data, 
 				     void (*pdf)(const double& , const double&, double* ),
 				     double (*alphas)(const double& ),
 				     int& nloops,
 				     double& rscale, double& fscale,
-				     double Escale );
+				     double& Escale );
+#endif
+
 
 /// print a grid
 extern "C" void printgrid_(int& id);
@@ -207,6 +216,8 @@ void convolute_(int& id, double* data) {
 }
 
 
+
+
 void convoluteorder_(int& id, int& nloops, double* data) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
@@ -246,6 +257,25 @@ void fullconvolutewrap_(int& id, double* data,
 }
 
 
+void escaleconvolute_(int& id, double* data, double& Escale) { 
+  escaleconvolutewrap_(id, data, fnpdf_, fnalphas_, Escale); 
+}
+
+void escaleconvolutewrap_(int& id, double* data, 
+			  void (*pdf)(const double& , const double&, double* ),  
+			  double (*alphas)(const double& ), 
+			  double& Escale ) {  
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    appl::grid*    g = gitr->second;
+    std::vector<double> v = g->vconvolute( pdf, alphas, g->nloops(), 1, 1, Escale );
+    for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];      
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
+
+#if 0
 void escaleconvolutewrap_(int& id, double* data, 
 			  void (*pdf)(const double& , const double&, double* ),  
 			  double (*alphas)(const double& ),
@@ -261,6 +291,7 @@ void escaleconvolutewrap_(int& id, double* data,
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
 
+#endif
 
 void writegrid_(int& id, const char* s) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);

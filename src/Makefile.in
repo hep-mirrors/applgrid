@@ -102,7 +102,7 @@ libfAPPLgrid_la_OBJECTS = $(am_libfAPPLgrid_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
 am_applgrid_combine_OBJECTS = combine.$(OBJEXT)
 applgrid_combine_OBJECTS = $(am_applgrid_combine_OBJECTS)
-applgrid_combine_DEPENDENCIES = libAPPLgrid.la
+applgrid_combine_DEPENDENCIES =
 applgrid_combine_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(applgrid_combine_LDFLAGS) $(LDFLAGS) -o $@
@@ -266,8 +266,10 @@ HOPPETLIBS = $(shell hoppet-config --libs)
 FRTLIB = $(shell gfortran -print-file-name=libgfortran.a)
 FRTLLIB = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
 applgrid_combine_SOURCES = combine.cxx
-applgrid_combine_LDADD = libAPPLgrid.la
-applgrid_combine_LDFLAGS = $(FRTLLIB) 
+applgrid_combine_LDADD = 
+applgrid_combine_LDFLAGS = $(ROOTARCH) -L. -lAPPLgrid $(ROOTLIBS) $(HOPPETLIBS) $(FRTLLIB)  $(FRTLIB) 
+
+# $(FRTLIB)$(HOPPETLIBS) $(FRTLLIB) $(FRTLIB) 
 lib_LTLIBRARIES = libAPPLgrid.la libfAPPLgrid.la 
 libAPPLgrid_la_SOURCES = \
 	appl_grid.cxx		appl_igrid.cxx  	appl_pdf.cxx 		appl_timer.cxx \
@@ -294,7 +296,10 @@ AM_CFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(
 AM_CPPFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
 
 #INCLUDES = -I$(LHAPDFDIR)/include
-AM_LDFLAGS = $(ROOTARCH) -O2  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FTRLLIB) $(FTRLIB)
+AM_LDFLAGS = $(ROOTARCH) -O2  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FRTLLIB)
+#  $(FRTLIB) $(FRTLIB)
+
+# $(FRTLLIB) $(FRTLIB) $(FRTLIB)
 AM_FCFLAGS = -c
 AM_FCLIBS = -lg2c
 AM_SOFLAGS = -shared

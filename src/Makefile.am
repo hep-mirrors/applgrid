@@ -29,8 +29,10 @@ FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran
 
 bin_PROGRAMS = applgrid-combine
 applgrid_combine_SOURCES = combine.cxx
-applgrid_combine_LDADD   = libAPPLgrid.la
-applgrid_combine_LDFLAGS = $(FRTLLIB) 
+applgrid_combine_LDADD   = 
+applgrid_combine_LDFLAGS = $(ROOTARCH) -L. -lAPPLgrid $(ROOTLIBS) $(HOPPETLIBS) $(FRTLLIB)  $(FRTLIB) 
+
+# $(FRTLIB)$(HOPPETLIBS) $(FRTLLIB) $(FRTLIB) 
 
 
 lib_LTLIBRARIES= libAPPLgrid.la libfAPPLgrid.la 
@@ -63,7 +65,10 @@ AM_CFLAGS   = $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  
 AM_CPPFLAGS = $(ROOTARCH) -O2 -Wall -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
 
 #INCLUDES = -I$(LHAPDFDIR)/include
-AM_LDFLAGS = $(ROOTARCH) -O2  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FTRLLIB) $(FTRLIB)
+AM_LDFLAGS = $(ROOTARCH) -O2  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FRTLLIB)
+#  $(FRTLIB) $(FRTLIB)
+
+# $(FRTLLIB) $(FRTLIB) $(FRTLIB)
 
 
 AM_FCFLAGS = -c

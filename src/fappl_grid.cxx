@@ -52,14 +52,16 @@ extern "C" void redefine_(int& id,
 /// get number of observable bins for a grid 
 extern "C" int getnbins_(int& id);
 
+
 /// do the convolution!! hooray!!
+
 extern "C" void convolute_(int& id, double* data);
+
 extern "C" void convoluteorder_(int& id, int& nloops, double* data);
 
 extern "C" void convolutewrap_(int& id, double* data, 
 			       void (*pdf)(const double& , const double&, double* ),
 			       double (*alphas)(const double& ) );
-
 
 extern "C" void fullconvolutewrap_(int& id, double* data, 
 				   void (*pdf)(const double& , const double&, double* ),
@@ -67,20 +69,20 @@ extern "C" void fullconvolutewrap_(int& id, double* data,
 				   int& nloops,
 				   double& rscale, double& fscale  );
 
+
+
 extern "C" void escaleconvolute_(int& id, double* data, double& Escale);
 
 extern "C" void escaleconvolutewrap_(int& id, double* data, 
 				     void (*pdf)(const double& , const double&, double* ),
 				     double (*alphas)(const double& ), double& Escale );
 
-#if 0
-extern "C" void escaleconvolutewrap_(int& id, double* data, 
-				     void (*pdf)(const double& , const double&, double* ),
-				     double (*alphas)(const double& ),
-				     int& nloops,
-				     double& rscale, double& fscale,
-				     double& Escale );
-#endif
+extern "C" void escalefullconvolutewrap_(int& id, double* data, 
+					 void (*pdf)(const double& , const double&, double* ),
+					 double (*alphas)(const double& ),
+					 int& nloops,
+					 double& rscale, double& fscale,
+					 double& Escale );
 
 
 /// print a grid
@@ -257,6 +259,9 @@ void fullconvolutewrap_(int& id, double* data,
 }
 
 
+
+/// convolute functions with beam energy scaling 
+
 void escaleconvolute_(int& id, double* data, double& Escale) { 
   escaleconvolutewrap_(id, data, fnpdf_, fnalphas_, Escale); 
 }
@@ -275,13 +280,12 @@ void escaleconvolutewrap_(int& id, double* data,
 }
 
 
-#if 0
-void escaleconvolutewrap_(int& id, double* data, 
-			  void (*pdf)(const double& , const double&, double* ),  
-			  double (*alphas)(const double& ),
-			  int& nloops,
-			  double& rscale, double& fscale,
-			  double& Escale ) {  
+void escalefullconvolutewrap_(int& id, double* data, 
+			      void (*pdf)(const double& , const double&, double* ),  
+			      double (*alphas)(const double& ),
+			      int& nloops,
+			      double& rscale, double& fscale,
+			      double& Escale ) {  
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
@@ -291,7 +295,8 @@ void escaleconvolutewrap_(int& id, double* data,
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
 
-#endif
+
+
 
 void writegrid_(int& id, const char* s) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);

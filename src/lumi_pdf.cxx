@@ -20,18 +20,21 @@
 
 
 
-lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) :  //, bool amcflag ) : 
+lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) : // , int Wcharge ) :  //, bool amcflag ) : 
   appl_pdf(s), m_filename(s) //,  m_amcflag(amcflag)
 {
-
+  
   std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << std::endl; 
 
   /// need to decode the input std::vector
 
   if ( combinations.size() ) { 
+
     /// std::vector initialised from serialised std::vector
     unsigned iv = 0;
+
     unsigned nproc = combinations[iv++];
+
     for ( unsigned i=0 ; i<nproc && iv<combinations.size() ; i++ ) {
       int index  = combinations[iv++];
       int npairs = combinations[iv++];
@@ -47,6 +50,11 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
       combination c(v);
       if ( c.size() ) add(c); 
     } 
+
+    /// extra value on the end for the W+- charge (if required) - flags that 
+    /// ckm matrix is to be used    
+    if ( iv<combinations.size() ) m_ckmcharge = combinations[iv];
+
   }
   else { 
     /// else read from file ...
@@ -55,6 +63,10 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
 
     std::string   line;
 
+    infile >> m_ckmcharge;
+    
+    std::cout << "ckmcharge " << m_ckmcharge << std::endl;  
+
     while (std::getline(infile, line)) {
       //    std::cout << "line: " << line << std::endl;
       combination c( line );
@@ -62,9 +74,19 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
     }
     
   }
- 
-  // some checking
 
+  if ( m_ckmcharge>0 ) { 
+    std::cout << "lumi_pdf::lumi_pdf() setting W+ cmk matrix" << std::endl;
+    make_ckm(true);
+  }
+  else if ( m_ckmcharge<0  ) { 
+    std::cout << "lumi_pdf::lumi_pdf() setting W- cmk matrix" << std::endl;
+    make_ckm(false);
+  }
+
+  
+  // some checking
+  
   //  for ( int i=0 ; i<m_combinations.size() ; i++ ) { 
   //    if ( m_combinations[i].
   //  }
@@ -78,8 +100,16 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
 
 
 void lumi_pdf::evaluate(const double* xfA, const double* xfB, double* H) { 
-  for ( unsigned i=size() ; i-- ; ) { 
-    H[i] = m_combinations[i].evaluate( xfA, xfB ); 
+  /// if need to include the ckm matrix ...
+  if ( m_ckmcharge==0 )  {
+    for ( unsigned i=size() ; i-- ; ) { 
+      H[i] = m_combinations[i].evaluate( xfA, xfB ); 
+    }
+  }
+  else { 
+   for ( unsigned i=size() ; i-- ; ) { 
+     H[i] = m_combinations[i].evaluate( xfA, xfB, m_ckmsum, m_ckm2 ); 
+    }
   }
 }
 
@@ -120,6 +150,9 @@ std::vector<int> lumi_pdf::serialise() const {
     }
   }  
   
+  if      ( m_ckmcharge>0 ) v.push_back(1);
+  else if ( m_ckmcharge<0 ) v.push_back(-1);
+			 
   return v;
 }
 

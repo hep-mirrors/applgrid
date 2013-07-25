@@ -50,7 +50,6 @@ typedef std::map<const std::string, appl_pdf*> pdfmap;
 
 class appl_pdf { 
 
-
 public:
 
   // pdf error exception
@@ -128,6 +127,11 @@ public:
   void make_ckm( bool Wp=true );
 
   void SetNProc(int Nsub){ m_Nproc=Nsub; return;};
+
+
+  /// set some useful names for the different subprocesses
+  void setnames( const std::vector<std::string>& names) { m_names = names; } 
+  std::vector<std::string> getnames() const  { return m_names; } 
   
 private:
 
@@ -154,10 +158,12 @@ protected:
   std::vector<double>               m_ckmsum;
   std::vector<std::vector<double> > m_ckm2;
 
+  /// some strings for more useful name if required
+  std::vector<std::string>          m_names;
 };
 
 
-};
+}
 
 
 #endif  // __APPL_PDF_H 

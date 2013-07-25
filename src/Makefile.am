@@ -30,23 +30,23 @@ FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran
 bin_PROGRAMS = applgrid-combine
 applgrid_combine_SOURCES = combine.cxx
 applgrid_combine_LDADD   = 
-applgrid_combine_LDFLAGS = $(ROOTARCH) -L. -lAPPLgrid $(ROOTLIBS) $(HOPPETLIBS) $(FRTLLIB)  $(FRTLIB) 
+applgrid_combine_LDFLAGS = $(ROOTARCH) -L. -lAPPLgrid $(ROOTLIBS) $(HOPPETLIBS) $(FRTLLIB) $(FRTLIB) 
 
-# $(FRTLIB)$(HOPPETLIBS) $(FRTLLIB) $(FRTLIB) 
 
 
 lib_LTLIBRARIES= libAPPLgrid.la libfAPPLgrid.la 
 libAPPLgrid_la_SOURCES = \
-	appl_grid.cxx		appl_igrid.cxx  	appl_pdf.cxx 		appl_timer.cxx \
-	fastnlo.cxx 		SparseMatrix3d.cxx	hoppet_init.cxx	\
-	nlojet_pdf.cxx		nlojetpp_pdf.cxx 	mcfmz_pdf.cxx 		mcfmw_pdf.cxx  \
-	mcfmwc_pdf.cxx \
-	mcfmQQ_pdf.cxx \
-	jetrad_pdf.cxx		dis_pdf.cxx \
-	generic_pdf.cxx basic_pdf.cxx \
-	combination.cxx lumi_pdf.cxx \
-	TFileString.cxx		TFileStringDict.cxx \
-	TFileVector.cxx		TFileVectorDict.cxx \
+	appl_grid.cxx		appl_igrid.cxx       fastnlo.cxx \
+	appl_timer.cxx          appl_pdf.cxx         \
+	nlojet_pdf.cxx		nlojetpp_pdf.cxx     \
+	mcfmw_pdf.cxx           mcfmwc_pdf.cxx       \
+	mcfmz_pdf.cxx           mcfmQQ_pdf.cxx       \
+	jetrad_pdf.cxx		dis_pdf.cxx          \
+	generic_pdf.cxx         basic_pdf.cxx        \
+	combination.cxx         lumi_pdf.cxx         \
+	SparseMatrix3d.cxx	hoppet_init.cxx	     \
+	TFileString.cxx		TFileStringDict.cxx  \
+	TFileVector.cxx		TFileVectorDict.cxx  \
 	*.h
 
 libfAPPLgrid_la_SOURCES = fappl_grid.cxx

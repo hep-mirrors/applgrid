@@ -33,7 +33,7 @@ class lumi_pdf : public appl::appl_pdf {
 
 public:
 
-  lumi_pdf(const std::string& s="", const std::vector<int>& combinations=std::vector<int>() );
+  lumi_pdf(const std::string& s="", const std::vector<int>& combinations=std::vector<int>() );   // , int Wcharge=0 );
 
   virtual ~lumi_pdf() {   } 
 
@@ -75,7 +75,7 @@ private:
 
   std::vector<combination> m_combinations;
 
-  bool m_ckmflag;
+  int  m_ckmcharge;
 
   /// flag that this is an amcatnlo pdf
   //  bool m_amcflag;

@@ -25,7 +25,6 @@
 
 
 
-
 class combination { 
 
 public:
@@ -43,7 +42,9 @@ public:
 
   /// evaluate the actual combination
 
-  double evaluate( const double* xfA, const double* xfB ) const;
+  double evaluate( const double* xfA, const double* xfB,
+		   const std::vector<double>& ckmsum=std::vector<double>(), 
+		   const std::vector<std::vector<double> >& ckm2=std::vector<std::vector<double> >()  ) const;  
 
   /// number of pairs
   unsigned size() const { return m_pairs.size(); }  

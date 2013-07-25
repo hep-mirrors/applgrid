@@ -69,16 +69,76 @@ void combination::construct(const std::vector<int>& v) { // : m_index(v.at(0)), 
 
 /// evaluate the sum over all the (paired) subprocesses
 
-double combination::evaluate( const double* xfA, const double* xfB) const { 
+double combination::evaluate( const double* xfA, const double* xfB,  
+			      const std::vector<double>& _ckmsum, 
+			      const std::vector<std::vector<double> >& _ckm2 ) const {  
 
   xfA += 6;  /// offset the pointer for xf1 and xf2 so can use 
   xfB += 6;  /// lhapdf code for indexing
 
   double H = 0; 
-  for ( unsigned i=size() ; i-- ; ) { 
-    H += xfA[m_pairs[i].first]*xfB[m_pairs[i].second]; 
-  }
 
+  // std::cout << "_ckmsum.size() " << _ckmsum.size() << std::endl;
+
+  if ( _ckmsum.size()==0 ) { 
+    for ( unsigned i=size() ; i-- ; ) { 
+      H += xfA[m_pairs[i].first]*xfB[m_pairs[i].second]; 
+    }
+  }
+  else {
+ 
+
+
+    for ( unsigned i=size() ; i-- ; ) { 
+
+      //      std::cout << i << "   combination " << m_pairs[i].first << " " << m_pairs[i].second << std::endl;
+
+      if ( m_pairs[i].first!=0  ) {
+	if ( m_pairs[i].second!=0  ) { 
+	  H += 
+	    xfA[m_pairs[i].first]*
+	    xfB[m_pairs[i].second]*
+	    _ckm2[m_pairs[i].first+6][m_pairs[i].second+6]; 
+	}
+	else {
+
+	  H += 
+	    xfA[m_pairs[i].first]*
+	    xfB[m_pairs[i].second]*
+	    _ckmsum[m_pairs[i].first+6]; 
+	  
+	  //	  std::cout << i << " 0 combination " << m_pairs[i].first << " " << m_pairs[i].second << "\tH " << H << std::endl;
+	 
+	}
+
+      }
+      else {
+	
+	if ( m_pairs[i].second!=0  ) { 
+	  
+	  H += 
+	    xfA[m_pairs[i].first]*
+	    xfB[m_pairs[i].second]*
+	    _ckmsum[m_pairs[i].second+6]; 
+	  
+	  //	  std::cout << i << " 1 combination " << m_pairs[i].first << " " << m_pairs[i].second << "\tH " << H << std::endl;
+
+	}
+	else {
+	 
+	  H += xfA[m_pairs[i].first]*xfB[m_pairs[i].second];
+	  //	  std::cout << i << " 2 combination " << m_pairs[i].first << " " << m_pairs[i].second << "\tH " << H << std::endl;
+
+	} 
+      }
+      
+    }  /// looop over pais 
+    
+
+  } /// use ckm matrix 
+
+  //  std::cout << "    combination H " << H << std::endl;
+  
   return H;
 }
 

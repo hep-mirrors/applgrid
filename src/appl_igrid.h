@@ -295,8 +295,9 @@ public:
   // interpolation - needed if you actually want 
   // the interpolated values for the pdf's or if you want 
   // the grid to calculate the cross section for you
-  void setuppdf(void (*pdf)(const double& , const double&, double* ),
-		double (*alphas)(const double&),
+  void setuppdf(double (*alphas)(const double&),
+		void (*pdf0)(const double& , const double&, double* ),
+		void (*pdf1)(const double& , const double&, double* )=0,
 		int nloop=0, 
 		double rscale_factor=1,
 		double fscale_factor=1,
@@ -305,7 +306,8 @@ public:
   // get the interpolated pdf's
   //  void pdfinterp(double x1, double Q2, double* f);
 
-  double convolute(void   (*pdf)(const double& , const double&, double* ), 
+  double convolute(void   (*pdf0)(const double& , const double&, double* ), 
+		   void   (*pdf1)(const double& , const double&, double* ), 
 		   appl_pdf* genpdf, 
 		   double (*alphas)(const double& ), 
 		   int     lo_order=0,  
@@ -317,7 +319,8 @@ public:
 
   
   /// convolute method for amcatnlo grids
-  double amc_convolute(void   (*pdf)(const double& , const double&, double* ), 
+  double amc_convolute(void   (*pdf0)(const double& , const double&, double* ), 
+		       void   (*pdf1)(const double& , const double&, double* ), 
 		       appl_pdf* genpdf, 
  		       double (*alphas)(const double& ), 
  		       int     lo_order=0,  
@@ -331,7 +334,8 @@ public:
 
 
   double convolute_subproc(int subproc, 
-			   void   (*pdf)(const double& , const double&, double* ), 
+			   void   (*pdf0)(const double& , const double&, double* ), 
+			   void   (*pdf1)(const double& , const double&, double* ), 
 			   appl_pdf* genpdf, 
 			   double (*alphas)(const double& ), 
 			   int     lo_order=0,  

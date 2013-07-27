@@ -564,13 +564,16 @@ void appl::igrid::fill_index(const int ix1, const int ix2, const int iQ2, const 
 
 
 
-void appl::igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
-			   double (*alphas)(const double&),
+void appl::igrid::setuppdf(double (*alphas)(const double&),
+			   void (*pdf0)(const double&, const double&, double* ),
+			   void (*pdf1)(const double&, const double&, double* ),
 			   int nloop,
 			   double rscale_factor,
 			   double fscale_factor,
 			   double beam_scale ) 
 {
+
+  if ( pdf1==0 ) pdf1 = pdf0;
 
   void (*splitting)(const double& , const double&, double* ) = Splitting;
 		     
@@ -673,7 +676,7 @@ void appl::igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 	}    
       }
 
-      pdf(x, fscale_factor*Q, m_fg1[itau][iy]);
+      pdf0(x, fscale_factor*Q, m_fg1[itau][iy]);
       
       double invx = 1/x;
       for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
@@ -709,7 +712,7 @@ void appl::igrid::setuppdf(void (*pdf)(const double&, const double&, double* ),
 	  }
 	}
 	
-	pdf(x, fscale_factor*Q, m_fg2[itau][iy]);
+	pdf1(x, fscale_factor*Q, m_fg2[itau][iy]);
 	
 	double invx = 1/x;
 	for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
@@ -780,7 +783,8 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 // grids are seperate from the nlo grids, if nloop=1 then we must be calculating 
 // {r,f}scale_factor ie f*mu then *scale_factor=f
 // splitting, is the splitting function 
-double appl::igrid::convolute(void   (*pdf)(const double& , const double&, double* ), 
+double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, double* ), 
+			      void   (*pdf1)(const double& , const double&, double* ), 
 			      appl_pdf*  genpdf,
 			      double (*alphas)(const double& ), 
 			      int     lo_order,  
@@ -789,6 +793,7 @@ double appl::igrid::convolute(void   (*pdf)(const double& , const double&, doubl
 			      double  fscale_factor,
 			      double Escale) 
 { 
+  if ( pdf1==0 ) pdf1 = pdf0; 
 
   //char name[]="appl_grid:igrid::convolute(): ";
   static const double twopi = 2*M_PI;
@@ -822,7 +827,7 @@ double appl::igrid::convolute(void   (*pdf)(const double& , const double&, doubl
 
   // 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, Escale);
+  setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
 
   double* sig = new double[m_Nproc];  // weights from grid
   double* H   = new double[m_Nproc];  // generalised pdf  
@@ -971,7 +976,8 @@ double appl::igrid::convolute(void   (*pdf)(const double& , const double&, doubl
 
 
 double appl::igrid::convolute_subproc(int subproc,
-				      void   (*pdf)(const double& , const double&, double* ), 
+				      void   (*pdf0)(const double& , const double&, double* ), 
+				      void   (*pdf1)(const double& , const double&, double* ), 
 				      appl::appl_pdf*  genpdf,
 				      double (*alphas)(const double& ), 
 				      int     lo_order,  
@@ -1011,7 +1017,7 @@ double appl::igrid::convolute_subproc(int subproc,
   if ( size==0 )  return 0;
 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, Escale);
+  setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
 
   
   double  sig = 0;  // weights from grid
@@ -1113,7 +1119,8 @@ double appl::igrid::convolute_subproc(int subproc,
 /// is the same as for the standard calculation, but the amcatnlo calculation
 /// stores weights for the NLO born contribution, and counterterms, so we need
 /// more grids than the usual two, 
-double appl::igrid::amc_convolute(void   (*pdf)(const double& , const double&, double* ), 
+double appl::igrid::amc_convolute(void   (*pdf0)(const double& , const double&, double* ), 
+				  void   (*pdf1)(const double& , const double&, double* ), 
 				  appl_pdf*  genpdf,
 				  double (*alphas)(const double& ), 
 				  int     lo_order,  
@@ -1156,7 +1163,7 @@ double appl::igrid::amc_convolute(void   (*pdf)(const double& , const double&, d
 
   // 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( pdf, alphas, nloop, rscale_factor, fscale_factor, Escale);
+  setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
 
   double* sig = new double[m_Nproc];  // weights from grid
   double* H   = new double[m_Nproc];  // generalised pdf  

@@ -188,7 +188,7 @@ void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {
   }
   
   pdfA[0]=fA[0]; // gluon
-  pdfB[0]=fA[0];
+  pdfB[0]=fB[0];
   
   /*
     std::vector<double> myckmsum = std::vector<double>(myckm2.size(),0);

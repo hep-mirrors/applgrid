@@ -987,28 +987,28 @@ std::vector<double> appl::grid::vconvolute(void (*pdf)(const double& , const dou
     if ( nloops==0 ) {
       label = "lo      ";
       // leading order cross section
-      dsigma = m_grids[0][iobs]->convolute(pdf, m_genpdf[0], alphas, m_leading_order, 0, 1, 1, Escale);
+      dsigma = m_grids[0][iobs]->convolute(pdf, 0, m_genpdf[0], alphas, m_leading_order, 0, 1, 1, Escale);
     }
     else if ( nloops==1 ) { 
       label = "nlo     ";
       // next to leading order cross section
       // std::cout << "convolute() nloop=1" << std::endl;
       // leading order contribution and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf[0], alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
+      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, 0, m_genpdf[0], alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
       // std::cout << "dsigma_lo=" << dsigma_lo << std::endl;
       // next to leading order contribution
       //      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
       // GPS: the NLO piece must use the same rscale_factor and fscale_factor as
       //      the LO piece -- that's the convention that defines how NLO calculations
       //      are done.
-      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, 0, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
       // std::cout << "dsigma_nlo=" << dsigma_nlo << std::endl;
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) {
       label = "nlo only";
       // nlo contribution only (only strict nlo contributions) 
-      dsigma = m_grids[1][iobs]->convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+      dsigma = m_grids[1][iobs]->convolute(pdf, 0, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
     } 
     else if ( nloops==2 ) {
       // FIXME: not implemented completely yet 
@@ -1016,27 +1016,27 @@ std::vector<double> appl::grid::vconvolute(void (*pdf)(const double& , const dou
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts so only  muR=muF=mu
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, m_genpdf[0], alphas, m_leading_order, 0);
+      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf, 0, m_genpdf[0], alphas, m_leading_order, 0);
       // next to leading order contribution      
-      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0);
+      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, 0, m_genpdf[1], alphas, m_leading_order+1, 0);
       // next to next to leading order contribution
-      double dsigma_nnlo = m_grids[2][iobs]->convolute(pdf, m_genpdf[2], alphas, m_leading_order+2, 0);
+      double dsigma_nnlo = m_grids[2][iobs]->convolute(pdf, 0, m_genpdf[2], alphas, m_leading_order+2, 0);
       dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
     }
     else if ( nloops==-2 ) {
       label = "nnlo only";
       // next to next to leading order contribution
-      dsigma = m_grids[2][iobs]->convolute(pdf, m_genpdf[2], alphas, m_leading_order+2, 0);
+      dsigma = m_grids[2][iobs]->convolute(pdf, 0, m_genpdf[2], alphas, m_leading_order+2, 0);
     }
     else if ( nloops==3 ) { 
         /// this is the amcatnlo NLO calculation (without FKS shower)
         label = "nlo";
         /// work out how to call from the igrid - maybe just implement additional 
         /// convolution routines and call them here
-        double dsigma_0 = m_grids[0][iobs]->amc_convolute(pdf, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
-        double dsigma_R = m_grids[1][iobs]->amc_convolute(pdf, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
-        double dsigma_F = m_grids[2][iobs]->amc_convolute(pdf, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
-        double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+        double dsigma_0 = m_grids[0][iobs]->amc_convolute(pdf, 0, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
+        double dsigma_R = m_grids[1][iobs]->amc_convolute(pdf, 0, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
+        double dsigma_F = m_grids[2][iobs]->amc_convolute(pdf, 0, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
+        double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf, 0, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
   
         dsigma = dsigma_0 + dsigma_R + dsigma_F + dsigma_B;
     }
@@ -1045,7 +1045,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf)(const double& , const dou
         label = "lo";
         /// work out how to call from the igrid - maybe just implement additional 
         /// convolution routines and call them here
-        double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+        double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf, 0, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
   
         dsigma = dsigma_B;
     }
@@ -1143,20 +1143,20 @@ std::vector<double> appl::grid::vconvolute_subproc(int subproc,
       label = "lo      ";
       //      std::cout << "convolute() nloop=0" << iobs << std::endl;
       // leading order cross section
-      dsigma = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf[0], alphas, lo_order, 0, 1, 1, Escale);
+      dsigma = m_grids[0][iobs]->convolute_subproc(subproc, pdf, 0, m_genpdf[0], alphas, lo_order, 0, 1, 1, Escale);
     }
     else if ( nloops==1 ) { 
       label = "nlo     ";
       // next to leading order cross section
       // leading and next to order contributions and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf[0], alphas, lo_order,   1, rscale_factor, 1,  Escale );
-      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf[1], alphas, lo_order+1, 0, rscale_factor, 1,  Escale );
+      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, 0, pdf, m_genpdf[0], alphas, lo_order,   1, rscale_factor, 1,  Escale );
+      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, 0, pdf, m_genpdf[1], alphas, lo_order+1, 0, rscale_factor, 1,  Escale );
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) { 
       label = "nlo only";
       // nlo contribution only (only strict nlo contributions)
-      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf[1], alphas, lo_order+1, 0, rscale_factor, 1, Escale );
+      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, pdf, 0, m_genpdf[1], alphas, lo_order+1, 0, rscale_factor, 1, Escale );
     }
     else if ( nloops==2 ) { 
       // FIXME: not implemented completely yet 
@@ -1164,9 +1164,9 @@ std::vector<double> appl::grid::vconvolute_subproc(int subproc,
       label = "nnlo    ";
       // next to next to leading order contribution 
       // NB: NO scale dependendent parts, so only muR=muF=mu
-      double dsigma_lo   = m_grids[0][iobs]->convolute_subproc(subproc, pdf, m_genpdf[0], alphas, lo_order,   0);
-      double dsigma_nlo  = m_grids[1][iobs]->convolute_subproc(subproc, pdf, m_genpdf[1], alphas, lo_order+1, 0);
-      double dsigma_nnlo = m_grids[2][iobs]->convolute_subproc(subproc, pdf, m_genpdf[2], alphas, lo_order+2, 0);
+      double dsigma_lo   = m_grids[0][iobs]->convolute_subproc(subproc, pdf, 0, m_genpdf[0], alphas, lo_order,   0);
+      double dsigma_nlo  = m_grids[1][iobs]->convolute_subproc(subproc, pdf, 0, m_genpdf[1], alphas, lo_order+1, 0);
+      double dsigma_nnlo = m_grids[2][iobs]->convolute_subproc(subproc, pdf, 0, m_genpdf[2], alphas, lo_order+2, 0);
       dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
     }
     

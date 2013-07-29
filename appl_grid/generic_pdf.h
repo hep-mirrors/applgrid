@@ -143,7 +143,7 @@ private:
 
 
 inline std::ostream& operator<<( std::ostream& s, const generic_pdf& _g ) { 
-  return s;
+  return s << "generic_pdf " << _g.name() << " " << _g.Nproc();  
 }
 
 

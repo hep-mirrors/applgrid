@@ -19,6 +19,7 @@
 
 
 int usage(std::ostream& s, int argc, char** argv) { 
+  if ( argc<1 ) return -1; /// should never be the case 
   s << "Usage: " << argv[0] << " [OPTIONS] -o output_grid.root  input_grid.root [input_grid1.root ... input_gridN.root]\n\n";
   s << "  APPLgrid \'" << argv[0] << "\' adds " << PACKAGE_STRING << " grid files together into a single grid\n\n"; 
   s << "Configuration: \n";

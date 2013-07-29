@@ -28,7 +28,7 @@ public:
 };  
 
 
-inline void  dis_pdf::evaluate(const double* fA, const double* fB, double* H) {  
+inline void  dis_pdf::evaluate(const double* fA, const double* , double* H) {  
 
   fA += 6;  // offset internal pointers so can use fA[-6]..fA[6] for simplicity
 

@@ -453,6 +453,8 @@ void appl::grid::construct(int Nobs,
   
   //  std::cout << "appl::grid::construct() m_order " << m_order << "\tNobs " << Nobs << std::endl; 
 
+  if ( m_order!=order ) std::cerr << "appl::grid::construct() order mismatch" << std::endl;
+
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) m_grids[iorder] = 0;
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
@@ -762,7 +764,7 @@ void appl::grid::setckm( const std::vector<std::vector<double> >& ckm2 ) {
 
 
 
-void appl::grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
+// void appl::grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
 // void grid::pdfinterp(double x, double Q2, double* f) {  }
 
 

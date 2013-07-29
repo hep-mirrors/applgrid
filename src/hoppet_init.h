@@ -17,7 +17,7 @@
 
 
 
-class hoppet_init {
+class hoppet_init : public std::vector<double> {
 
 public:
 
@@ -29,16 +29,12 @@ public:
   
   bool compareCache( void (*pdf)(const double&, const double&, double* )  );
 
-private:
-
-  std::vector<double> m_cache;
-
 };
 
 
 
 inline std::ostream& operator<<( std::ostream& s, const hoppet_init& _h ) { 
-  return s;
+  return s << "hoppet_init size: " << _h.size();
 }
 
 

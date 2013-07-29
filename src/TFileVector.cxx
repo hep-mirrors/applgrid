@@ -17,6 +17,10 @@ ClassImp(TFileVector)
 
 
 std::ostream& operator<<(std::ostream& s, const TFileVector& fs) { 
+  for ( unsigned i=0 ; i<fs.size() ; i++ ) { 
+    for ( unsigned j=0 ; j<fs[i].size() ; j++ ) s << "\t" << fs[i][j]; 
+    s << std::endl;
+  }
   return s;
 }
 

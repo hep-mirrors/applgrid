@@ -133,7 +133,7 @@ public:
   std::ostream& print(std::ostream& s=std::cout) const;
 
   // don't do anything anymore
-  void setuppdf(void (*pdf)(const double& , const double&, double* ) );
+  // void setuppdf(void (*pdf)(const double& , const double&, double* ) );
 
   // get the interpolated pdf's
   //  void pdfinterp(double x1, double Q2, double* f);

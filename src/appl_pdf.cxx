@@ -45,7 +45,7 @@ appl_pdf::~appl_pdf() {
 
 
 /// retrieve an instance from the std::map 
-appl_pdf* appl_pdf::getpdf(const std::string& s, bool printout) {
+appl_pdf* appl_pdf::getpdf(const std::string& s, bool ) {
   /// initialise the factory
   if ( m_pdfmap.size()==0 ) appl::appl_pdf::create_map(); 
   pdfmap::iterator itr = m_pdfmap.find(s);

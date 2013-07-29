@@ -47,8 +47,8 @@ public:
     
     int xmin = m_lx;  int xmax = m_ux;
     
-    for ( ; xmin<xmax+1 && m_v[xmin-m_lx]==0 ; xmin++ );
-    for ( ; xmin<xmax   && m_v[xmax-m_lx]==0 ; xmax-- );
+    for ( ; xmin<xmax+1 && m_v[xmin-m_lx]==0 ; xmin++ ) { } 
+    for ( ; xmin<xmax   && m_v[xmax-m_lx]==0 ; xmax-- ) { } 
 
     // don't need to change anything 
     if ( xmin==m_lx && xmax==m_ux )  return m_v;    

@@ -33,8 +33,12 @@ public:
     }
   } 
 
+  unsigned size() const { return m_grid.size(); }
+
   std::vector<appl::grid*> grids() { return m_grid; }
-  
+
+  const appl::grid* operator[](int i) const { return m_grid[i]; }
+
   void manageGrids(bool b=true) { m_manage_grids=b; }  
 
 private:
@@ -46,7 +50,8 @@ private:
 };
 
 
-inline std::ostream& operator<<( std::ostream& s, const fastnlo& _f ) { 
+inline std::ostream& operator<<( std::ostream& s, const fastnlo& _f) {
+  for ( unsigned i=0 ; i<_f.size() ; i++ ) s << _f[i] << "\n"; 
   return s;
 }
 

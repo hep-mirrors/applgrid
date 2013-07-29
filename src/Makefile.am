@@ -61,14 +61,8 @@ library_include_HEADERS=../appl_grid/*.h
 
 ROOTCINT=rootcint
 AM_CXXFLAGS = $(ROOTARCH) -O2 -Wall -Wextra -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
-AM_CFLAGS   = $(ROOTARCH) -O2 -Wall -Wextra -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
-AM_CPPFLAGS = $(ROOTARCH) -O2 -Wall -Wextra -fPIC  -I. -I.. -I$(srcdir)  $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
 
-#INCLUDES = -I$(LHAPDFDIR)/include
 AM_LDFLAGS = $(ROOTARCH) -O2  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FRTLLIB)
-#  $(FRTLIB) $(FRTLIB)
-
-# $(FRTLLIB) $(FRTLIB) $(FRTLIB)
 
 
 AM_FCFLAGS = -c

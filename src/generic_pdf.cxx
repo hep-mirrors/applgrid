@@ -104,7 +104,7 @@ void generic_pdf::initialise(const std::string& filename) {
 #endif
 
   std::string _names[13] = { "tbar", "bbar", "cbar", "sbar", "ubar", "dbar", 
-			    "g", "d", "u", "s" "c", "b", "t" };
+		             "g", "d", "u", "s", "c", "b", "t" };
 
  
   std::string* names = (&_names[0])+6; /// so we can use -6..6 indexing

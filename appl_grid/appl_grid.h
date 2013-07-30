@@ -148,6 +148,15 @@ public:
 				  double  fscale_factor=1,
 				  double  Escale=1 );
 
+  std::vector<double>  vconvolute(void   (*pdf1)(const double& , const double&, double* ), 
+				  void   (*pdf2)(const double& , const double&, double* ), 
+				  double (*alphas)(const double& ), 
+				  int     nloops, 
+				  double  rscale_factor=1,
+				  double  fscale_factor=1,
+				  double  Escale=1 );
+
+
   // perform the convolution to a specified number of loops
   // nloops=-1 gives the nlo part only
   std::vector<double>  vconvolute(double Escale,
@@ -224,6 +233,17 @@ public:
 		  double  rscale_factor=1,
 		  double  fscale_factor=1,
 		  double  Escale=1 );
+
+  // perform the convolution to a specified number of loops
+  // nloops=-1 gives the nlo part only
+  TH1D* convolute(void   (*pdf1)(const double& , const double&, double* ), 
+		  void   (*pdf2)(const double& , const double&, double* ), 
+		  double (*alphas)(const double& ), 
+		  int     nloops, 
+		  double  rscale_factor=1,
+		  double  fscale_factor=1,
+		  double  Escale=1 );
+
 
   TH1D* convolute(double Escale,
 		  void   (*pdf)(const double& , const double&, double* ), 

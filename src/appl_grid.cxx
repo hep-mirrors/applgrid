@@ -51,7 +51,7 @@ const std::string appl::grid::m_version = "version-3.1";
 
 // include hoppet splitting function code
 
-static hoppet_init* hoppet = NULL;
+static hoppet_init* hoppet = 0;
 
 void Splitting(const double& x, const double& Q, double* xf) {
   static const int nLoops    = 1;
@@ -980,9 +980,17 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
   // check if we need to use the splitting function, and if so see if we 
   // need to initialise it again, and do so if required
   if ( fscale_factor!=1 ) {
-    if ( hoppet == NULL ) hoppet = new hoppet_init();
-    bool newpdf = hoppet->compareCache(pdf1);
-    if ( newpdf ) hoppet->fillCache( pdf1 );
+
+    if ( pdf2==0 || pdf1==pdf2 ) { 
+
+      if ( hoppet == 0 ) hoppet = new hoppet_init();
+ 
+      bool newpdf = hoppet->compareCache(pdf1);
+      
+      if ( newpdf ) hoppet->fillCache( pdf1 );
+
+    }
+
   }
 #endif
 
@@ -1162,8 +1170,8 @@ std::vector<double> appl::grid::vconvolute_subproc(int subproc,
       label = "nlo     ";
       // next to leading order cross section
       // leading and next to order contributions and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, 0, pdf, m_genpdf[0], alphas, lo_order,   1, rscale_factor, 1,  Escale );
-      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, 0, pdf, m_genpdf[1], alphas, lo_order+1, 0, rscale_factor, 1,  Escale );
+      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, pdf, 0, m_genpdf[0], alphas, lo_order,   1, rscale_factor, 1,  Escale );
+      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, pdf, 0, m_genpdf[1], alphas, lo_order+1, 0, rscale_factor, 1,  Escale );
       dsigma = dsigma_lo + dsigma_nlo;
     }
     else if ( nloops==-1 ) { 

@@ -29,6 +29,8 @@ public:
   
   bool compareCache( void (*pdf)(const double&, const double&, double* )  );
 
+  static void assign( void (*pdf)(const double&, const double&, double* )  );
+
 };
 
 

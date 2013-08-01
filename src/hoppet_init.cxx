@@ -51,6 +51,8 @@ void hoppet_init::fillCache( void (*pdf)(const double&, const double&, double* )
 
   //  hoppetassign_( pdf );
 
+  //  std::cout << "hoppet_init::fillCache()" << std::endl; 
+
   clear();
 
   for ( double lQ=2 ; lQ<=6 ; lQ+=2 ) { 
@@ -83,6 +85,9 @@ bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double
 
   // flag whether the cache has changed
   bool changed = false;
+
+  //  std::cout << "hoppet_init::compareCache()" << std::endl; 
+
 
   // is the cahche empty?
   if ( size()==0 ) {
@@ -126,9 +131,8 @@ bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double
   // cache (and hence the pdf) has changed, so replace the old cached 
   // values with the new and reinitialise hoppet with this new pdf 
   if ( changed ) { 
-#   ifdef HAVE_HOPPET 
-    hoppetassign_( pdf );
-#   endif
+    
+    assign( pdf );
     (*(std::vector<double>*)this) = ccache;
   }
   
@@ -136,4 +140,13 @@ bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double
 
   return changed;
   
+}
+
+
+
+void hoppet_init::assign( void (*pdf)(const double&, const double&, double* )  ) { 
+  //  std::cout << "hoppet_init::assign()" << std::endl; 
+#   ifdef HAVE_HOPPET 
+    hoppetassign_( pdf );
+#   endif
 }

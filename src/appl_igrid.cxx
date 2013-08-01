@@ -15,6 +15,7 @@
 
 
 #include "appl_igrid.h"
+#include "hoppet_init.h"
 
 
 #include "TFile.h"
@@ -575,6 +576,16 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 
   if ( pdf1==0 ) pdf1 = pdf0;
 
+  bool initialise_hoppet = false;
+
+#ifdef HAVE_HOPPET
+  // check if we need to use the splitting function, and if so see if we 
+  // need to initialise it again, and do so if required
+  if ( fscale_factor!=1 ) {
+    if ( pdf1 && pdf1!=pdf0 ) inititialise_hoppet = false;
+  }
+#endif
+
   void (*splitting)(const double& , const double&, double* ) = Splitting;
 		     
   const int n_tau = Ntau();
@@ -623,6 +634,9 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
   
   bool scale_beams = false;
   if ( beam_scale!=1 ) scale_beams = true;
+
+
+  if ( initialise_hoppet ) hoppet_init::assign( pdf0 );
   
   // set up pdf grid, splitting function grid 
   // and alpha_s grid
@@ -689,9 +703,21 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= fun;
       }
     }
+  }
+
+  if ( initialise_hoppet ) hoppet_init::assign( pdf1 );
+  
+  if ( ( !isSymmetric() && !isDISgrid() ) || ( pdf1 && pdf1!=pdf0 ) ) {
     
-    if ( !isSymmetric() && !isDISgrid() ) {
- 
+    for ( int itau=0 ; itau<m_Ntau ; itau++  ) {
+    
+      double tau = gettau(itau);
+      double Q2  = fQ2(tau);
+      double Q   = std::sqrt(Q2); 
+      
+      /// alpha_s table has already been filled  
+      /// m_alphas[itau] = alphas(rscale_factor*Q)*invtwopi;
+      
       // y2 tables
       //    for ( int iy=iymin2 ; iy<=iymax2 ; iy++ ) { 
       for ( int iy=n_y2 ; iy-- ;  ) { 

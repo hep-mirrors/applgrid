@@ -2,6 +2,8 @@
 
 # These variables need to exist
 prefix=@prefix@
+# datadir = @datadir@
+
 
 if [[ $# -eq 0 || -n $( echo $* | egrep -- "--help|-h" ) ]]; then
     echo "applgrid-config: configuration tool for the APPLgrid"
@@ -47,7 +49,7 @@ tmp=$( echo "$*" | egrep -- '--\<ldflags\>')
 test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lAPPLgrid"
 
 tmp=$( echo "$*" | egrep -- '--\<share\>')
-test -n "$tmp" && OUT="$OUT @datadir@/@PACKAGE@"
+test -n "$tmp" && OUT="$OUT @datarootdir@/@PACKAGE@"
 
 
 ## Version

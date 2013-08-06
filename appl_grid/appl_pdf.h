@@ -1,4 +1,3 @@
-
 // emacs: this is -*- c++ -*-
 //
 //   appl_pdf.h        
@@ -14,16 +13,12 @@
 #define __APPL_PDF_H
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 
-// #include <sstream>
-
 #include <vector> 
-
 #include <map> 
-
 #include <string> 
-
 
 #include <exception> 
 
@@ -72,14 +67,14 @@ public:
   
   /// print out the pdf std::map
   static void printmap(std::ostream& s=std::cout) {
-    pdfmap::iterator itr = m_pdfmap.begin();
-    while ( itr!=m_pdfmap.end() )  {
+    pdfmap::iterator itr = __pdfmap.begin();
+    while ( itr!=__pdfmap.end() )  {
       s << "pdfmap " << itr->first << "\t\t" << itr->second << std::endl;
       itr++;
     } 
   }
 
-  /// initiqlise the factory  
+  /// initialise the factory  
   static bool create_map(); 
 
   virtual void evaluate(const double* fA, const double* fB, double* H) = 0; 
@@ -89,8 +84,8 @@ public:
 
   std::string  rename(const std::string& name) { 
     /// remove my entry from the std::map, and add me again with my new name
-    if ( m_pdfmap.find(m_name)!=m_pdfmap.end() ) { 
-      m_pdfmap.erase(m_pdfmap.find(m_name));
+    if ( __pdfmap.find(m_name)!=__pdfmap.end() ) { 
+      __pdfmap.erase(__pdfmap.find(m_name));
     }
     else { 
       std::cout << "appl_pdf::rename() " << m_name << " not in std::map" << std::endl;
@@ -133,15 +128,20 @@ public:
   void setnames( const std::vector<std::string>& names) { m_names = names; } 
   std::vector<std::string> getnames() const  { return m_names; } 
   
+protected:
+
+  /// search the path for configuration files
+  static  std::ifstream& openpdf( const std::string& filename ); 
+
 private:
 
   static void addtopdfmap(const std::string& s, appl_pdf* f) { 
-    if ( m_pdfmap.find(s)==m_pdfmap.end() ) { 
-      m_pdfmap.insert( pdfmap::value_type( s, f ) );
+    if ( __pdfmap.find(s)==__pdfmap.end() ) { 
+      __pdfmap.insert( pdfmap::value_type( s, f ) );
       //      std::cout << "appl_pdf::addtomap() registering " << s << " in std::map addr \t" << f << std::endl;
     }
     else { 
-      throw exception( std::cerr << "appl_pdf::addtopdfmap() " << s << " already in std::map\t0x" << m_pdfmap.find(s)->second  );
+      throw exception( std::cerr << "appl_pdf::addtopdfmap() " << s << " already in std::map\t0x" << __pdfmap.find(s)->second  );
     }
   }
   
@@ -152,14 +152,15 @@ protected:
 
   std::vector<std::string> m_subnames;
   
-  static pdfmap  m_pdfmap;
-
   // ckm matrix related information 
   std::vector<double>               m_ckmsum;
   std::vector<std::vector<double> > m_ckm2;
 
   /// some strings for more useful name if required
-  std::vector<std::string>          m_names;
+  std::vector<std::string>           m_names;
+
+  static pdfmap                     __pdfmap;
+  static std::vector<std::string>   __pdfpath;
 };
 
 

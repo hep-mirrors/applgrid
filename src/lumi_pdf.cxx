@@ -24,7 +24,7 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   appl_pdf(s), m_filename(s) //,  m_amcflag(amcflag)
 {
   
-  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << std::endl; 
+  ///  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << std::endl; 
 
   /// need to decode the input std::vector
 
@@ -59,13 +59,16 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   else { 
     /// else read from file ...
     
-    std::ifstream infile(m_filename.c_str());
+    std::ifstream& infile = openpdf( m_filename  );
 
+    /// will never fail, appl_pdf::open() would have thrown already
+    ///  if ( infile.fail() ) throw exception( std::cerr << "lumi_pdf::lumi_pdf() cannot open file " << m_filename << std::endl ); 
+ 
     std::string   line;
 
     infile >> m_ckmcharge;
     
-    std::cout << "ckmcharge " << m_ckmcharge << std::endl;  
+    ///    std::cout << "ckmcharge " << m_ckmcharge << std::endl;  
 
     while (std::getline(infile, line)) {
       //    std::cout << "line: " << line << std::endl;
@@ -73,6 +76,7 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
       if ( c.size() ) add(c); 
     }
     
+    infile.close();
   }
 
   if ( m_ckmcharge>0 ) { 

@@ -8,6 +8,7 @@
 //
 //   $Id: appl_pdf.cxx, v1.0   Mon Dec 10 01:36:04 GMT 2007 sutt $
 
+#include <fstream>
 
 #include "appl_grid/appl_pdf.h" 
 
@@ -23,13 +24,17 @@
 // #include "generic_pdf.h"
 
 
+
+
 namespace appl { 
 
 
 // initialise the std::map with some default instances
 // although the user could create these themselves
 // if they wanted
-pdfmap appl_pdf::m_pdfmap; 
+pdfmap appl_pdf::__pdfmap; 
+
+std::vector<std::string> appl_pdf::__pdfpath; 
 
 
 /// constructor and destructor
@@ -39,27 +44,59 @@ appl_pdf::appl_pdf(const std::string& name) : m_Nproc(0), m_name(name) {
   
 appl_pdf::~appl_pdf() { 
   // when I'm destroyed, remove my entry from the std::map 
-  pdfmap::iterator mit = m_pdfmap.find(m_name);
-  if ( mit!=m_pdfmap.end() ) m_pdfmap.erase(mit);
+  pdfmap::iterator mit = __pdfmap.find(m_name);
+  if ( mit!=__pdfmap.end() ) __pdfmap.erase(mit);
 } 
 
 
 /// retrieve an instance from the std::map 
 appl_pdf* appl_pdf::getpdf(const std::string& s, bool ) {
   /// initialise the factory
-  if ( m_pdfmap.size()==0 ) appl::appl_pdf::create_map(); 
-  pdfmap::iterator itr = m_pdfmap.find(s);
-  if ( itr!=m_pdfmap.end() ) return itr->second; 
+  if ( __pdfmap.size()==0 ) appl::appl_pdf::create_map(); 
+  pdfmap::iterator itr = __pdfmap.find(s);
+  if ( itr!=__pdfmap.end() ) return itr->second; 
   /// not found in std::map
   throw exception( std::cerr << "getpdf() " << s << " not instantiated in std::map " );
 }
+
+
+
+
+
+std::ifstream& appl_pdf::openpdf( const std::string& filename ) { 
+
+  /// if not set up yet, set up the search path for 
+  /// the pdf config files
+  if ( __pdfpath.size()==0 ) { 
+    __pdfpath.push_back("./");
+    __pdfpath.push_back(std::string(DATADIR)+"/");
+    __pdfpath.push_back("");
+  }
+
+  static std::ifstream infile;
+
+  for ( unsigned i=0 ; i<__pdfpath.size() ; i++ ) { 
+    /// try file
+    infile.open( (__pdfpath[i]+filename).c_str() );
+    /// if found return
+    if ( !infile.fail() ) return infile;
+  }
+
+  /// haven't found the config file, so throw an exception ...
+  throw exception( std::cerr << "appl_pdf::appl_pdf() cannot open file " << filename << std::endl ); 
+	
+  /// this should never be executed - just here so the function doesn't fall off the end
+  return infile;
+} 
+
+
 
 
 bool appl_pdf::create_map() { 
 
   std::cout << "appl_pdf::create_map() creating pdf combination factory" << std::endl;
 
-  if ( m_pdfmap.size()==0 ) { 
+  if ( __pdfmap.size()==0 ) { 
     
     /// the appl_pdf add their own pointers to the 
     /// pdf std::map so we don;t need to remember their 
@@ -161,6 +198,9 @@ void appl_pdf::setckm2( const std::vector<std::vector<double> >& ckm2 ) {
       for ( unsigned j=0 ; j<m_ckm2[i].size() ; j++ ) m_ckmsum[i] += m_ckm2[i][j]; 
     }
 } 
+
+
+
 
 
 };

@@ -272,7 +272,7 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
   if ( !infile ) { // Check open
     //    std::cerr << "Can't open " << fname << std::endl;
     infile.close(); /// why close it if it can't open?
-    throw exception( std::cerr << "generic_pdf() cqannot open file " << fname << std::endl );  
+    throw exception( std::cerr << "generic_pdf() cannot open file " << fname << std::endl );  
   } else {
     std::cout <<" generic_pdf:ReadData: read data file: " << fname << std::endl;
   }

@@ -301,13 +301,13 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  std::vector<double> _ckmsum;
   std::vector<std::vector<double> > _ckm2;
 
-  bool savedckm = false;
+  //  bool savedckm = false;
 
   if ( setup->GetNoElements()>8 && (*setup)(8)!=0 ) {
 
     std::cout << "grid::grid() read ckm matrices" << std::endl;
     
-    savedckm = true;
+    //    savedckm = true;
 
     //    TVectorT<double>* ckmsum=(TVectorT<double>*)gridfilep->Get((dirname+"/CKMSUM").c_str());
 
@@ -791,7 +791,7 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
     _filename += "-save";
     std::string cmd = "mv " + filename + " " + _filename;
     //    int i = 
-    system(cmd.c_str());
+    if ( system(cmd.c_str()) ) std::cerr << "could not rename grid file " << filename << std::endl;
   } 
 
   //  std::cout << "grid::Write() writing to file " << _filename << std::endl;

@@ -89,7 +89,8 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false), 
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
-  m_documentation("")
+  m_documentation(""),
+  m_type(STANDARD)
 {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
@@ -119,7 +120,8 @@ appl::grid::grid(int Nobs, const double* obsbins,
   m_run(0), m_optimised(false), m_trimmed(false),  m_normalised(false), m_symmetrise(false),
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
-  m_documentation("")
+  m_documentation(""),
+  m_type(STANDARD)
 {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
@@ -150,7 +152,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
-  m_documentation("")
+  m_documentation(""),
+  m_type(STANDARD)
 {
   
   if ( obs.size()==0 ) { 
@@ -187,7 +190,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),  
-  m_documentation("")
+  m_documentation(""),
+  m_type(STANDARD)
 { 
 
   if ( obs.size()==0 ) { 
@@ -223,7 +227,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_normalised(false),
   m_symmetrise(false), m_transform(""), 
   m_applyCorrections(false),
-  m_documentation("")
+  m_documentation(""),
+  m_type(STANDARD)
 {
   
   struct stat stfileinfo;
@@ -297,7 +302,6 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   if ( setup->GetNoElements()>7 ) m_applyCorrections = ( (*setup)(7)!=0 ? true : false );
   else                            m_applyCorrections = false;
 
-
   //  std::vector<double> _ckmsum;
   std::vector<std::vector<double> > _ckm2;
 
@@ -323,7 +327,10 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   }
 
+  if ( setup->GetNoElements()>9 ) m_type = (CALCULATION)int( (*setup)(9)+0.5 );
+  else                            m_type = STANDARD;
 
+  std::cout << "appl::grid() reading grid calculation: " << m_type << std::endl;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf (or lumi_pdf for amcatnlo)
@@ -424,7 +431,8 @@ appl::grid::grid(const grid& g) :
   m_applyCorrections(g.m_applyCorrections), 
   m_documentation(g.m_documentation),
   m_ckmsum(g.m_ckmsum), /// need a deep copy of the contents
-  m_ckm2(g.m_ckm2)      /// need a deep copy of the contents
+  m_ckm2(g.m_ckm2),      /// need a deep copy of the contents
+  m_type(g.m_type)
 {
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2();
@@ -826,7 +834,7 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   //  std::cout << "state std::vector=" << std::endl;
 
   // state information
-  TVectorT<double>* setup=new TVectorT<double>(10); // add a few extra just in case 
+  TVectorT<double>* setup=new TVectorT<double>(12); // add a few extra just in case 
   (*setup)(0) = m_run;
   (*setup)(1) = ( m_optimised  ? 1 : 0 );
   (*setup)(2) = ( m_symmetrise ? 1 : 0 );
@@ -838,6 +846,8 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
 
   if ( m_genpdf[0]->getckmsum().size()==0 ) (*setup)(8) = 0;
   else                                      (*setup)(8) = 1;
+
+  (*setup)(9) = (int)m_type;
 
   setup->Write("State");
   
@@ -995,103 +1005,169 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 #endif
 
   std::string label;
-
+  
   if ( nloops>=m_order ) { 
     std::cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << std::endl;   
     return hvec;
   } 
-
-  for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
-
-    double dsigma = 0;
-   
-    if ( nloops==0 ) {
-      label = "lo      ";
-      // leading order cross section
-      dsigma = m_grids[0][iobs]->convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order, 0, 1, 1, Escale);
-    }
-    else if ( nloops==1 ) { 
-      label = "nlo     ";
-      // next to leading order cross section
-      // std::cout << "convolute() nloop=1" << std::endl;
-      // leading order contribution and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
-      // std::cout << "dsigma_lo=" << dsigma_lo << std::endl;
-      // next to leading order contribution
-      //      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
-      // GPS: the NLO piece must use the same rscale_factor and fscale_factor as
-      //      the LO piece -- that's the convention that defines how NLO calculations
-      //      are done.
-      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
-      // std::cout << "dsigma_nlo=" << dsigma_nlo << std::endl;
-      dsigma = dsigma_lo + dsigma_nlo;
-    }
-    else if ( nloops==-1 ) {
-      label = "nlo only";
-      // nlo contribution only (only strict nlo contributions) 
-      dsigma = m_grids[1][iobs]->convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
-    } 
-    else if ( nloops==2 ) {
-      // FIXME: not implemented completely yet 
-      //      return hvec;
-      label = "nnlo    ";
-      // next to next to leading order contribution 
-      // NB: NO scale dependendent parts so only  muR=muF=mu
-      double dsigma_lo  = m_grids[0][iobs]->convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order, 0);
-      // next to leading order contribution      
-      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0);
-      // next to next to leading order contribution
-      double dsigma_nnlo = m_grids[2][iobs]->convolute(pdf1, pdf2, m_genpdf[2], alphas, m_leading_order+2, 0);
-      dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
-    }
-    else if ( nloops==-2 ) {
-      label = "nnlo only";
-      // next to next to leading order contribution
-      dsigma = m_grids[2][iobs]->convolute(pdf1, pdf2, m_genpdf[2], alphas, m_leading_order+2, 0);
-    }
-    else if ( nloops==3 ) { 
-        /// this is the amcatnlo NLO calculation (without FKS shower)
-        label = "nlo";
-        /// work out how to call from the igrid - maybe just implement additional 
-        /// convolution routines and call them here
-        double dsigma_0 = m_grids[0][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
-        double dsigma_R = m_grids[1][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
-        double dsigma_F = m_grids[2][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
-        double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
   
-        dsigma = dsigma_0 + dsigma_R + dsigma_F + dsigma_B;
+  
+ 
+  if ( m_type==STANDARD ) { 
+
+    //    std::cout << "standard convolution" << std::endl;
+
+    for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
+
+      double dsigma = 0;
+     
+      if ( nloops==0 ) {
+	label = "lo      ";
+	// leading order cross section
+	dsigma = m_grids[0][iobs]->convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order, 0, 1, 1, Escale);
+      }
+      else if ( nloops==1 ) { 
+	label = "nlo     ";
+	// next to leading order cross section
+	// std::cout << "convolute() nloop=1" << std::endl;
+	// leading order contribution and scale dependent born dependent terms
+	double dsigma_lo  = m_grids[0][iobs]->convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
+	// std::cout << "dsigma_lo=" << dsigma_lo << std::endl;
+	// next to leading order contribution
+	//      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
+	// GPS: the NLO piece must use the same rscale_factor and fscale_factor as
+	//      the LO piece -- that's the convention that defines how NLO calculations
+	//      are done.
+	double dsigma_nlo = m_grids[1][iobs]->convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+	// std::cout << "dsigma_nlo=" << dsigma_nlo << std::endl;
+	dsigma = dsigma_lo + dsigma_nlo;
+      }
+      else if ( nloops==-1 ) {
+	label = "nlo only";
+	// nlo contribution only (only strict nlo contributions) 
+	dsigma = m_grids[1][iobs]->convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+      } 
+      else if ( nloops==2 ) {
+	// FIXME: not implemented completely yet 
+	//      return hvec;
+	label = "nnlo    ";
+	// next to next to leading order contribution 
+	// NB: NO scale dependendent parts so only  muR=muF=mu
+	double dsigma_lo  = m_grids[0][iobs]->convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order, 0);
+	// next to leading order contribution      
+	double dsigma_nlo = m_grids[1][iobs]->convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0);
+	// next to next to leading order contribution
+	double dsigma_nnlo = m_grids[2][iobs]->convolute(pdf1, pdf2, m_genpdf[2], alphas, m_leading_order+2, 0);
+	dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
+      }
+      else if ( nloops==-2 ) {
+	label = "nnlo only";
+	// next to next to leading order contribution
+	dsigma = m_grids[2][iobs]->convolute(pdf1, pdf2, m_genpdf[2], alphas, m_leading_order+2, 0);
+      }
+      else { 
+	throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 
+      }
+
+      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+      hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
     }
-    else if ( nloops==-3 ) { 
+    
+  }
+  else if ( m_type==AMCATNLO ) {  
+
+    //    std::cout << "amc@NLO convolution" << std::endl;
+    
+    for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
+
+      double dsigma = 0; 
+      
+      if ( nloops==0 ) {
+	/// this is the amcatnlo LO calculation (without FKS shower)
+	label = "lo";
+	/// work out how to call from the igrid - maybe just implement additional 
+	double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+ 
+	dsigma = dsigma_B;
+      }
+      else if ( nloops==1 ) {
+	if ( m_type==AMCATNLO ) { 
+	  /// this is the amcatnlo NLO calculation (without FKS shower)
+	  label = "nlo";
+	  /// work out how to call from the igrid - maybe just implement additional 
+	  /// convolution routines and call them here
+	  double dsigma_0 = m_grids[0][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
+	  double dsigma_R = m_grids[1][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
+	  double dsigma_F = m_grids[2][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
+	  double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+	  
+	  dsigma = dsigma_0 + dsigma_R + dsigma_F + dsigma_B;
+	}
+      }
+      else if ( nloops==-1 ) { 
         /// this is the amcatnlo NLO calculation (without FKS shower)
         label = "lo";
         /// work out how to call from the igrid - maybe just implement additional 
         /// convolution routines and call them here
         double dsigma_B = m_grids[3][iobs]->amc_convolute(pdf1, pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
-  
+	
         dsigma = dsigma_B;
+      }
+      else { 
+	throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 
+      }
+
+      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+      hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
     }
-    else { 
-      throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 
-    }
-
-
-    //   double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
-    //   h->SetBinContent(iobs+1, dsigma/(deltaobs));
-    //   h->SetBinError(iobs+1, 0);
-
-    double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);
+  }
+  else if ( m_type == SHERPA ) { 
     
-    hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
-    // hvec.push_back( Escale2*dsigma/deltaobs );
+    //    std::cout << "sherpa convolution" << std::endl;
 
-    //    std::cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << std::endl;
-  }  // iobs   
+    for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
+    
+      double dsigma = 0; 
+  
+      if ( nloops==0 ) {
+	label = "lo      ";
+	// leading order cross section
+	dsigma = m_grids[0][iobs]->convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order, 0, 1, 1, Escale);
+      }
+      else if ( nloops==1 ) { 
+	label = "nlo     ";
+	// next to leading order cross section
+	// leading order contribution and scale dependent born dependent terms
 
+	// will eventually add the other nlo terms ...
+	double dsigma_lo  = m_grids[0][iobs]->convolute(pdf1, pdf2, m_genpdf[0], alphas, m_leading_order, 0, rscale_factor, fscale_factor, Escale);
+	double dsigma_nlo = m_grids[1][iobs]->convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+  
+	dsigma = dsigma_lo + dsigma_nlo;
+      }
+      else if ( nloops==-1 ) { 
+	label = "nlo     ";
+	// next to leading order cross section
+	// leading order contribution and scale dependent born dependent terms
+
+	double dsigma_nlo = m_grids[1][iobs]->convolute(pdf1, pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+
+	dsigma = dsigma_nlo;
+      }
+
+
+      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+      hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+    }
+
+  }
+
+    
   //  double _ctime = appl_timer_stop(_ctimer);
   //  std::cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << std::endl;
-
+  
   if ( getApplyCorrections() ) applyCorrections(hvec);
-
+  
   return hvec;
 }
 

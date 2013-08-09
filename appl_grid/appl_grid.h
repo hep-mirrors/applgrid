@@ -61,6 +61,8 @@ public:
     virtual const char* what() const throw() { return "appl::grid::exception"; }
   };
 
+  typedef enum { STANDARD=0, AMCATNLO=1, SHERPA=2, LAST_TYPE=3 } CALCULATION; 
+
 public:
 
   grid(int NQ2=50,  double Q2min=10000.0, double Q2max=25000000.0,  int Q2order=5,  
@@ -448,6 +450,12 @@ public:
   /// set the ckm matrix values if need be
   void setckm( const std::vector<std::vector<double> >& ckm2 );
 
+  void sherpa()   { m_type = SHERPA; }
+  void amcatnlo() { m_type = AMCATNLO; }
+  void standard() { m_type = STANDARD; }
+
+  CALCULATION  calculation() const { return m_type; }
+
 protected:
 
   // internal common construct for the different types of constructor
@@ -540,6 +548,8 @@ protected:
   
   std::vector<double>                m_ckmsum;
   std::vector<std::vector<double> >  m_ckm2;
+
+  CALCULATION     m_type; 
 
 };
 

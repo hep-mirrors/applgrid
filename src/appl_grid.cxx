@@ -8,7 +8,7 @@
 
 // $Id: appl_grid.cxx, v1.00 2007/10/16 17:01:39 sutt $
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <stdio.h>
 #include <sys/stat.h>
 
@@ -158,7 +158,7 @@ appl::grid::grid(const std::vector<double>& obs,
   
   if ( obs.size()==0 ) { 
     std::cerr << "grid::not enough bins in observable" << std::endl;
-    exit(0);
+    std::exit(0);
   } 
   
   //  double* obsbins = new double[obs.size()];  
@@ -196,7 +196,7 @@ appl::grid::grid(const std::vector<double>& obs,
 
   if ( obs.size()==0 ) { 
     std::cerr << "grid::not enough bins in observable" << std::endl;
-    exit(0);
+    std::exit(0);
   } 
   
   //  double* obsbins = new double[obs.size()];  
@@ -231,8 +231,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_type(STANDARD)
 {
   
-  struct stat stfileinfo;
-  if ( stat(filename.c_str(),&stfileinfo) )   {    
+  struct stat _fileinfo;
+  if ( stat(filename.c_str(),&_fileinfo) )   {    
     throw exception(std::cerr << "grid::grid() cannot open file " << filename << std::endl ); 
   }
 
@@ -311,16 +311,10 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
     std::cout << "grid::grid() read ckm matrices" << std::endl;
     
-    //    savedckm = true;
-
-    //    TVectorT<double>* ckmsum=(TVectorT<double>*)gridfilep->Get((dirname+"/CKMSUM").c_str());
-
-    //    appl_pdf::make_ckmsum(_ckmsum);
-    //    for ( int ic=0 ; ic<13 ; ic++ ) _ckmsum[ic] = (*ckmsum)(ic); 
-
     TVectorT<double>* ckm2flat=(TVectorT<double>*)gridfilep->Get((dirname+"/CKM2").c_str());
 
     _ckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13) );
+ 
     for ( int ic=0 ; ic<13 ; ic++ ) { 
       for ( int id=0 ; id<13 ; id++ ) _ckm2[ic][id] = (*ckm2flat)(ic*13+id); 
     }
@@ -330,7 +324,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   if ( setup->GetNoElements()>9 ) m_type = (CALCULATION)int( (*setup)(9)+0.5 );
   else                            m_type = STANDARD;
 
-  std::cout << "appl::grid() reading grid calculation: " << m_type << std::endl;
+  std::cout << "appl::grid() reading grid calculation type: " << _calculation(m_type) << std::endl;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf (or lumi_pdf for amcatnlo)
@@ -341,7 +335,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
     /// again have to use TVectorT<double> because TVectorT<int> has no constructor!!!
     /// I ask you!! what's the point of a template if it doesn't actually instantiate
-    /// it's pathetic
+    /// it's pathetic!
     TVectorT<double>* _combinations = (TVectorT<double>*)gridfilep->Get((dirname+"/Combinations").c_str());
 
     std::vector<int> combinations(_combinations->GetNoElements());
@@ -792,18 +786,14 @@ bool appl::grid::reweight(bool t) {
 // dump to file
 void appl::grid::Write(const std::string& filename, const std::string& dirname) { 
  
-  std::string _filename(filename);
-
-  if ( FILE* f=fopen(_filename.c_str(), "r") ) { 
+  if ( FILE* f=fopen( filename.c_str(), "r") ) { 
     fclose(f);
-    _filename += "-save";
-    std::string cmd = "mv " + filename + " " + _filename;
-    //    int i = 
-    if ( system(cmd.c_str()) ) std::cerr << "could not rename grid file " << filename << std::endl;
+    std::string filename_save = filename + "-save";
+    //    std::string cmd = "mv " + filename + " " + _filename;
+    //    if ( std::system(cmd.c_str()) ) std::cerr << "could not rename grid file " << filename << std::endl;
+    if ( !std::rename( filename.c_str(), filename_save.c_str() ) ) std::cerr << "could not rename grid file " << filename << std::endl;
   } 
 
-  //  std::cout << "grid::Write() writing to file " << _filename << std::endl;
-  //  TFile rootfile(_filename.c_str(),"recreate");
 
   //  std::cout << "grid::Write() writing to file " << filename << std::endl;
   TFile rootfile(filename.c_str(),"recreate");

@@ -774,9 +774,7 @@ void appl::grid::setckm( const std::vector<std::vector<double> >& ckm2 ) {
 // set the rewight flag of the internal grids
 bool appl::grid::reweight(bool t) { 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {     
-      m_grids[iorder][iobs]->reweight(t);       
-    }
+    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) m_grids[iorder][iobs]->reweight(t);       
   }
   return t;
 }

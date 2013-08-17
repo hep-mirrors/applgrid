@@ -40,6 +40,7 @@ if test "$ROOTPATH" = "no"; then
     AC_MSG_WARN([])
     AC_MSG_WARN([****************************************************])
 else
+    ROOT_CXXFLAGS=$(root-config --cflags)
     ROOT_LDFLAGS=$(root-config --ldflags)
     ROOT_LDFLAGS+=" " 
     ROOT_LDFLAGS+=$(root-config --libs)
@@ -47,6 +48,7 @@ else
 fi
 
 AC_SUBST(ROOT_LDFLAGS)
+AC_SUBST(ROOT_CXXFLAGS)
 
 
 

@@ -34,7 +34,7 @@ tmp=$( echo "$*" | egrep -- '--\<incdir\>')
 test -n "$tmp" && OUT="$OUT @includedir@"
 
 tmp=$( echo "$*" | egrep -- '--\<cxxflags\>')
-test -n "$tmp" && OUT="$OUT -I@includedir@"
+test -n "$tmp" && OUT="$OUT -I@includedir@  @ROOT_CXXFLAGS@ "
 
 tmp=$( echo "$*" | egrep -- '--\<libdir\>')
 test -n "$tmp" && OUT="$OUT @exec_prefix@@libdir@"

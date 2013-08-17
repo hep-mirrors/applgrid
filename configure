@@ -615,7 +615,15 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+USE_LHAPDF_FALSE
+USE_LHAPDF_TRUE
+LHAPDF_CXXFLAGS
+LHAPDFPATH
+USE_HOPPET_FALSE
+USE_HOPPET_TRUE
+HOPPET_LDFLAGS
 HOPPETPATH
+ROOT_LDFLAGS
 ROOTPATH
 CXXCPP
 CPP
@@ -15130,6 +15138,9 @@ $as_echo "$as_me: WARNING: " >&2;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ****************************************************" >&5
 $as_echo "$as_me: WARNING: ****************************************************" >&2;}
 else
+    ROOT_LDFLAGS=$(root-config --ldflags)
+    ROOT_LDFLAGS+=" "
+    ROOT_LDFLAGS+=$(root-config --libs)
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_CERNROOT 1
@@ -15137,10 +15148,16 @@ _ACEOF
 
 fi
 
+
+
+
+
+
 # lhapdf isn't technically needed
 # AH_TEMPLATE([HAVE_LHAPDF],[Define 1 if lhapdf is installed])
 # AC_PATH_PROG(LHAPDFPATH,lhapdf-config,no)
 
+HOPPET_LDFLAGS=
 
 # Extract the first word of "hoppet-config", so it can be a program name with args.
 set dummy hoppet-config; ac_word=$2
@@ -15197,6 +15214,7 @@ $as_echo "$as_me: WARNING: " >&2;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ********************************************************************" >&5
 $as_echo "$as_me: WARNING: ********************************************************************" >&2;}
 else
+    HOPPET_LDFLAGS=$(hoppet-config --libs)
 
 cat >>confdefs.h <<_ACEOF
 #define HAVE_HOPPET 1
@@ -15205,8 +15223,102 @@ _ACEOF
 fi
 
 
-ac_config_files="$ac_config_files bin/Makefile bin/applgrid-config"
+ if test "$HOPPETPATH" != "no" ; then
+  USE_HOPPET_TRUE=
+  USE_HOPPET_FALSE='#'
+else
+  USE_HOPPET_TRUE='#'
+  USE_HOPPET_FALSE=
+fi
 
+
+
+
+
+LHAPDF_MAJOR_VERSION=0
+LHAPDF_CXXFLAGS=
+
+# Extract the first word of "lhapdf-config", so it can be a program name with args.
+set dummy lhapdf-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_LHAPDFPATH+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $LHAPDFPATH in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_LHAPDFPATH="$LHAPDFPATH" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_path_LHAPDFPATH="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_LHAPDFPATH" && ac_cv_path_LHAPDFPATH="no"
+  ;;
+esac
+fi
+LHAPDFPATH=$ac_cv_path_LHAPDFPATH
+if test -n "$LHAPDFPATH"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LHAPDFPATH" >&5
+$as_echo "$LHAPDFPATH" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+if test "$LHAPDFPATH" != "no"; then
+
+    # get LHAPDF major version - do nothing is version 6 not installed
+    LHAPDF_MAJOR_VERSION=$(lhapdf-config --version | sed 's/\..*//')
+
+    if test $LHAPDF_MAJOR_VERSION -gt 5; then
+
+       # find include path
+       LHAPDF_CXXFLAGS=$(lhapdf-config --libs)
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LHAPDF 1
+_ACEOF
+
+
+       LHAPDF_VERSION=$(lhapdf-config --version)
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define LHAPDF_VERSION "$LHAPDF_VERSION"
+_ACEOF
+
+
+    fi
+fi
+
+
+ if test $LHAPDF_MAJOR_VERSION -gt 5  ; then
+  USE_LHAPDF_TRUE=
+  USE_LHAPDF_FALSE='#'
+else
+  USE_LHAPDF_TRUE='#'
+  USE_LHAPDF_FALSE=
+fi
+
+
+
+ac_config_files="$ac_config_files bin/Makefile bin/applgrid-config"
 
 
 ac_config_files="$ac_config_files Makefile src/Makefile"
@@ -15338,6 +15450,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCXX_TRUE}" && test -z "${am__fastdepCXX_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCXX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_HOPPET_TRUE}" && test -z "${USE_HOPPET_FALSE}"; then
+  as_fn_error $? "conditional \"USE_HOPPET\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${USE_LHAPDF_TRUE}" && test -z "${USE_LHAPDF_FALSE}"; then
+  as_fn_error $? "conditional \"USE_LHAPDF\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -30,7 +30,6 @@
 #include "TH1D.h"
 
 
-
 double _fy(double x);
 double _fx(double y);
 double _fun(double y);
@@ -60,6 +59,8 @@ public:
     exception(std::ostream& s)      { std::cerr << what() << " " << s << std::endl; }; 
     virtual const char* what() const throw() { return "appl::grid::exception"; }
   };
+
+  typedef enum { STANDARD=0, AMCATNLO=1, SHERPA=2, LAST_TYPE=3 } CALCULATION; 
 
 public:
 
@@ -448,6 +449,27 @@ public:
   /// set the ckm matrix values if need be
   void setckm( const std::vector<std::vector<double> >& ckm2 );
 
+  void sherpa()   { m_type = SHERPA;   std::cout << "appl::grid::sherpa()   using SHERPA convolution" << std::endl; }
+  void amcatnlo() { m_type = AMCATNLO; std::cout << "appl::grid::amcatnlo() using aMC@NLO convolution" << std::endl; }
+  void standard() { m_type = STANDARD; std::cout << "appl::grid::standard() using standard convolution" << std::endl; }
+
+  CALCULATION  calculation() const { return m_type; }
+
+  static std::string _calculation(CALCULATION C) { 
+    switch (C) {
+    case STANDARD:
+      return "standard";
+    case SHERPA:
+      return "sherpa";
+    case AMCATNLO:
+      return "amcatnlo";
+    case LAST_TYPE:
+      return "last_type"; // NB: shouldn't ever be used
+    }
+    return "unknown";
+  }
+
+
 protected:
 
   // internal common construct for the different types of constructor
@@ -540,6 +562,8 @@ protected:
   
   std::vector<double>                m_ckmsum;
   std::vector<std::vector<double> >  m_ckm2;
+
+  CALCULATION     m_type; 
 
 };
 

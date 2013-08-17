@@ -838,7 +838,7 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
   //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
   // is the grid empty
   int size=0;
-   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
+  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
     if ( !m_weight[ip]->trimmed() )  {
       //  std::cout << "igrid::convolute() naughty, naughty!" << std::endl;
       m_weight[ip]->trim();
@@ -903,7 +903,9 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
 	  // do the convolution
 
           double xsigma=0.;
-	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
+	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+= sig[ip]*H[ip];
+    
+
 	  dsigma+= _alphas*xsigma;
 
 #if 0

@@ -40,13 +40,22 @@ if test "$ROOTPATH" = "no"; then
     AC_MSG_WARN([])
     AC_MSG_WARN([****************************************************])
 else
-    AC_DEFINE_UNQUOTED(HAVE_CERNROOT,1,[Define 1 if hoppet is installed]) 
+    ROOT_LDFLAGS=$(root-config --ldflags)
+    ROOT_LDFLAGS+=" " 
+    ROOT_LDFLAGS+=$(root-config --libs)
+    AC_DEFINE_UNQUOTED(HAVE_CERNROOT,1,[Define 1 if root is installed]) 
 fi
+
+AC_SUBST(ROOT_LDFLAGS)
+
+
+
 
 # lhapdf isn't technically needed 
 # AH_TEMPLATE([HAVE_LHAPDF],[Define 1 if lhapdf is installed])
 # AC_PATH_PROG(LHAPDFPATH,lhapdf-config,no)
 
+HOPPET_LDFLAGS=
 AH_TEMPLATE([HAVE_HOPPET],[Define 1 if the hoppet library is installed])
 AC_PATH_PROG(HOPPETPATH,hoppet-config,no)
 if test "$HOPPETPATH" = "no"; then
@@ -57,11 +66,44 @@ if test "$HOPPETPATH" = "no"; then
     AC_MSG_WARN([])
     AC_MSG_WARN([********************************************************************])
 else 
+    HOPPET_LDFLAGS=$(hoppet-config --libs)
     AC_DEFINE_UNQUOTED(HAVE_HOPPET,1,[Define 1 if hoppet is installed]) 
 fi
 
+AC_SUBST(HOPPET_LDFLAGS)
+AM_CONDITIONAL(USE_HOPPET, [test "$HOPPETPATH" != "no"] )
+
+
+
+
+LHAPDF_MAJOR_VERSION=0
+LHAPDF_CXXFLAGS=
+AH_TEMPLATE([HAVE_LHAPDF],[Define 1 if the LHAPDF library is installed])
+AC_PATH_PROG(LHAPDFPATH,lhapdf-config,no)
+if test "$LHAPDFPATH" != "no"; then
+
+    # get LHAPDF major version - do nothing is version 6 not installed	
+    LHAPDF_MAJOR_VERSION=$(lhapdf-config --version | sed 's/\..*//')
+
+    if test $LHAPDF_MAJOR_VERSION -gt 5; then
+
+       # find include path
+       LHAPDF_CXXFLAGS=$(lhapdf-config --libs)
+
+       AC_DEFINE_UNQUOTED(HAVE_LHAPDF,1,[Define 1 if LHAPDF is installed]) 
+    
+       LHAPDF_VERSION=$(lhapdf-config --version)
+
+       AH_TEMPLATE([LHAPDF_VERSION],[LHAPDF version])
+       AC_DEFINE_UNQUOTED(LHAPDF_VERSION,"$LHAPDF_VERSION",[LHAPDF version]) 
+
+    fi
+fi
+
+AC_SUBST(LHAPDF_CXXFLAGS)
+AM_CONDITIONAL(USE_LHAPDF, [test $LHAPDF_MAJOR_VERSION -gt 5 ] )
+
 
 AC_CONFIG_FILES([bin/Makefile bin/applgrid-config])
-
 
 AC_OUTPUT(Makefile src/Makefile)

@@ -68,9 +68,8 @@ std::ifstream& appl_pdf::openpdf( const std::string& filename ) {
   /// if not set up yet, set up the search path for 
   /// the pdf config files
   if ( __pdfpath.size()==0 ) { 
-    __pdfpath.push_back("./");
-    __pdfpath.push_back(std::string(DATADIR)+"/");
     __pdfpath.push_back("");
+    __pdfpath.push_back(std::string(DATADIR)+"/");
   }
 
   static std::ifstream infile;
@@ -79,7 +78,10 @@ std::ifstream& appl_pdf::openpdf( const std::string& filename ) {
     /// try file
     infile.open( (__pdfpath[i]+filename).c_str() );
     /// if found return
-    if ( !infile.fail() ) return infile;
+    if ( !infile.fail() ) { 
+      std::cout << "appl_pdf::openpdf() opening " << __pdfpath[i]+filename << std::endl;
+      return infile;
+    }
   }
 
   /// haven't found the config file, so throw an exception ...

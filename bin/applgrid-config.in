@@ -39,14 +39,15 @@ test -n "$tmp" && OUT="$OUT -I@includedir@"
 tmp=$( echo "$*" | egrep -- '--\<libdir\>')
 test -n "$tmp" && OUT="$OUT @exec_prefix@@libdir@"
 
+
 tmp=$( echo "$*" | egrep -- '--\<ldfflags\>')
-test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lfAPPLgrid -lAPPLgrid" 
+test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lfAPPLgrid -lAPPLgrid  @ROOT_LDFLAGS@ @HOPPET_LDFLAGS@" 
 
 tmp=$( echo "$*" | egrep -- '--\<ldcflags\>')
-test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lAPPLgrid"
+test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lAPPLgrid  @ROOT_LDFLAGS@ @HOPPET_LDFLAGS@"
 
 tmp=$( echo "$*" | egrep -- '--\<ldflags\>')
-test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lAPPLgrid"
+test -n "$tmp" && OUT="$OUT -L@exec_prefix@@libdir@ -lAPPLgrid @ROOT_LDFLAGS@ @HOPPET_LDFLAGS@"
 
 tmp=$( echo "$*" | egrep -- '--\<share\>')
 test -n "$tmp" && OUT="$OUT @datarootdir@/@PACKAGE@"

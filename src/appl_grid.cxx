@@ -324,7 +324,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
     for ( int ic=0 ; ic<13 ; ic++ ) { 
       for ( int id=0 ; id<13 ; id++ ) _ckm2[ic][id] = (*ckm2flat)(ic*13+id); 
     }
-
+  
   }
 
   if ( setup->GetNoElements()>9 ) m_type = (CALCULATION)int( (*setup)(9)+0.5 );
@@ -853,13 +853,6 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   
   if ( (*setup)(8) == 1 ) { 
     
-    //    TVectorT<double>* ckmsum = new TVectorT<double>(13);
-
-    //    const std::vector<double>& _ckmsum = m_genpdf[0]->getckmsum();
-    //    for ( int ic=0 ; ic<13 ; ic++ ) (*ckmsum)(ic) = _ckmsum[ic];
-
-    //    ckmsum->Write("CKMSUM");
-
     TVectorT<double>* ckm2flat = new TVectorT<double>(169);
     const std::vector<std::vector<double> >& _ckm2 = m_genpdf[0]->getckm2();
 

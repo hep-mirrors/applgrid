@@ -1,7 +1,7 @@
 /* amconfig.h.  Generated from amconfig.in by configure.  */
 /* amconfig.in.  Generated from configure.ac by autoheader.  */
 
-/* Define 1 if hoppet is installed */
+/* Define 1 if root is installed */
 #define HAVE_CERNROOT 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
@@ -12,6 +12,9 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
+
+/* Define 1 if LHAPDF is installed */
+/* #undef HAVE_LHAPDF */
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -42,6 +45,9 @@
 
 /* Define to 1 if `utime(file, NULL)' sets file's timestamp to the present. */
 #define HAVE_UTIME_NULL 1
+
+/* LHAPDF version */
+/* #undef LHAPDF_VERSION */
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

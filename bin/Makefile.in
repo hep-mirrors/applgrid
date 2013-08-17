@@ -136,6 +136,7 @@ PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 ROOTPATH = @ROOTPATH@
+ROOT_CXXFLAGS = @ROOT_CXXFLAGS@
 ROOT_LDFLAGS = @ROOT_LDFLAGS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -209,9 +210,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu bin/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign bin/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu bin/Makefile
+	  $(AUTOMAKE) --foreign bin/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

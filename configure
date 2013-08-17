@@ -623,6 +623,7 @@ USE_HOPPET_FALSE
 USE_HOPPET_TRUE
 HOPPET_LDFLAGS
 HOPPETPATH
+ROOT_CXXFLAGS
 ROOT_LDFLAGS
 ROOTPATH
 CXXCPP
@@ -15138,6 +15139,7 @@ $as_echo "$as_me: WARNING: " >&2;}
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: ****************************************************" >&5
 $as_echo "$as_me: WARNING: ****************************************************" >&2;}
 else
+    ROOT_CXXFLAGS=$(root-config --cflags)
     ROOT_LDFLAGS=$(root-config --ldflags)
     ROOT_LDFLAGS+=" "
     ROOT_LDFLAGS+=$(root-config --libs)
@@ -15147,6 +15149,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 fi
+
 
 
 

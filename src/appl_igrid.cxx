@@ -827,7 +827,7 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
   //TC   const int nf = 6;
   static const int nf = 5;
   static double beta0=(11.*nc-2.*nf)/(6.*twopi);
-  //const bool debug=false;  
+  //const bool debug=true;  
 
   double alphas_tmp = 0.;  
   double dsigma  = 0.; //, xsigma = 0.;
@@ -891,29 +891,53 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
 	//	std::cout << std::endl;
 
 	if ( nonzero ) { 	
+	 /*
+           std::cout << " itau= "<<itau << " iy1= "<<iy1 << " iy2= "<<iy2<<std::endl; 
+           double tau = gettau(itau);
+           std::cout<<" Q2= "<<fQ2(tau)<<" Q= "<<sqrt(fQ2(tau))<<" x1= "<<fx(gety1(iy1))<<" x2= "<<fx(gety2(iy2))<<std::endl;
+           for (int ifl=0; ifl<=6;ifl++) std::cout << " m_fg1["<<itau<<"]["<<iy1<<"]["<<ifl<<"]= "<<m_fg1[itau][iy1][ifl]; 
+           std::cout << std::endl;
+           std::cout << " f1["<<itau<<"]["<<iy1<<"][7]= "<<m_fg1[itau][iy1][7]<< std::endl;
+           for (int ifl=8; ifl<13;ifl++) std::cout << " f1["<<itau<<"]["<<iy1<<"]["<<ifl<<"]= "<<m_fg1[itau][iy1][ifl]; 
+           std::cout << std::endl;
+
+           for (int ifl=0; ifl<=6;ifl++)std::cout << " f2["<<itau<<"]["<<iy2<<"]["<<ifl<<"]= "<<m_fg2[itau][iy2][ifl]; 
+           std::cout << std::endl;
+           std::cout << " f2["<<itau<<"]["<<iy2<<"][7]= "<<m_fg2[itau][iy2][7]<< std::endl;
+           for (int ifl=8; ifl<13;ifl++)std::cout << " f2["<<itau<<"]["<<iy2<<"]["<<ifl<<"]= "<<m_fg2[itau][iy2][ifl]; 
+           std::cout << std::endl;
+         */
+         
 	  // build the generalised pdfs from the actual pdfs
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
-	
-	  //	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) H[ip] = 1;
-	  //    std::cout << "H return" << std::endl;
-	  //    for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << H[ip] << std::endl;
-
-	  //	  for  ( int ipp=0 ; ipp<m_Nproc ; ipp++ ) H[ipp]=1;
-  
+	  /*
+          if (debug) 
+	   for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
+	     //if (H[ip]!=0 || sig[ip]!=0) 	      
+            if (sig[ip]!=0) 
+             std::cout << "\t H["<<ip<<"]= " << H[ip] 
+                       << " sig["<<ip<<"]= " << sig[ip] 
+                       << std::endl;
+	  */ 
 	  // do the convolution
-
+          // 
           double xsigma=0.;
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+= sig[ip]*H[ip];
-    
-
 	  dsigma+= _alphas*xsigma;
-
+	 /*
+          if (debug) 
+           std::cout<<" nloop= "<<nloop
+                    <<" itau="<<itau
+                    <<" iy1= "<<iy1<<" iy2= "<<iy2
+                    <<" xsigma= "<<xsigma
+                    <<" alphas= "<<_alphas
+                    <<" as*xsigma=dsigma= "<<dsigma
+                    << std::endl;
+	 */
 #if 0
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
 	    xsigma+=sig[ip]*H[ip];
 	    dsigma+= _alphas*xsigma;
-	    // dsigma+= xsigma;
-
 	    //	    std::cout << "order " << nloop << "\talphas " << _alphas 
 	    //		      << "\tx "<< iy1 << " " << iy2 << " " << itau 
 	    //		      << "\tip " << ip << "\tpdf " << H[ip] << "\tc " << sig[ip]/BINWIDTH
@@ -921,15 +945,6 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
 	    //		      << "\tr "  << dsigma/BINWIDTH  << std::endl;
 	  } 
 #endif
-
-          //if (debug) 
-          // std::cout<<name<<" nloop= "<<nloop
-          //                     <<" itau="<<itau
-	  //	       <<" iy1= "<<iy1<<" iy2= "<<iy2
-          //                     <<" xsigma= "<<xsigma
-          //                     <<" dsigma= "<<dsigma
-          //                     << std::endl;
-	  
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
 	  if ( nloop==1 ) { 
@@ -948,7 +963,6 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
               //               << twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma
               //               <<endl;
 	      //
-
               //if (debug) std::cout<<name<<" rscale= " << rscale_factor << " dsigma= "<<dsigma<<endl;
 	    }
 
@@ -960,8 +974,7 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
 	      xsigma=0.;
 	      for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*(HA[ip]+HB[ip]);
 	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
-	      //if (debug) 
-              //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
+	      //if (debug) cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
 	    }
 	  }
 	}  // nonzero
@@ -969,7 +982,7 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
     }  // iy1
   }  // itau
   
-  //if (debug)  std::cout << name<<"     convoluted dsigma=" << dsigma << std::endl; 
+//  if (debug)  std::cout <<"igrid::convolute convoluted dsigma=" << dsigma << std::endl; 
   
   delete[] sig;
   delete[] H;

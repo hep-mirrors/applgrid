@@ -55,8 +55,10 @@ libAPPLgrid_la_SOURCES = \
 	appl_grid.cxx		appl_igrid.cxx       fastnlo.cxx \
 	appl_timer.cxx          appl_pdf.cxx         \
 	nlojet_pdf.cxx		nlojetpp_pdf.cxx     \
-	mcfmw_pdf.cxx           mcfmwc_pdf.cxx       \
-	mcfmz_pdf.cxx           mcfmQQ_pdf.cxx       \
+	mcfmw_pdf.cxx		mcfmwjet_pdf.cxx \
+	 mcfmwc_pdf.cxx       \
+	mcfmz_pdf.cxx mcfmzjet_pdf.cxx  \
+	 mcfmQQ_pdf.cxx       \
 	jetrad_pdf.cxx		dis_pdf.cxx          \
 	generic_pdf.cxx         basic_pdf.cxx        \
 	combination.cxx         lumi_pdf.cxx         \

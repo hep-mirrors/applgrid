@@ -14,7 +14,7 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define 1 if LHAPDF is installed */
-#define HAVE_LHAPDF 1
+/* #undef HAVE_LHAPDF */
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -47,7 +47,7 @@
 #define HAVE_UTIME_NULL 1
 
 /* LHAPDF version */
-#define LHAPDF_VERSION "6.0.1"
+/* #undef LHAPDF_VERSION */
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

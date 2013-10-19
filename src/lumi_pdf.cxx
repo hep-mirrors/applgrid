@@ -24,7 +24,7 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   appl_pdf(s), m_filename(s) //,  m_amcflag(amcflag)
 {
   
-  ///  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << std::endl; 
+  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << " lookup size " << m_lookup.size() << " " << this << std::endl; 
 
   /// need to decode the input std::vector
 
@@ -97,8 +97,13 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
 
   m_Nproc = m_combinations.size();
 
-  std::cout << *this << std::endl;
+  //  std::cout << "decideSuprocess " << decideSubProcess( 0, 0 ) << std::endl;
+  //  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << m_combinations.size() << " lookup size " << m_lookup.size() << std::endl; 
+  //  std::cout << *this << std::endl;
 
+  //  lumi_pdf* _pdf = dynamic_cast<lumi_pdf*>(appl::appl_pdf::getpdf(name()));
+  //  std::cout << "done " << _pdf << _pdf->decideSubProcess( 0, 0 ) << std::endl;
+  
 }
 
 
@@ -125,6 +130,9 @@ int  lumi_pdf::decideSubProcess(const int iflav1, const int iflav2) {
   /// checking if the provided flavours are in any of the pairs
   /// so quicker to set up a reverse 13x13 lookup when needed, and not 
   /// otherwise
+
+  //  std::cout << "lumi_pdf::decideSubProcess() " << name() << " " << m_lookup.size() << std::endl;
+
   if ( m_lookup.size()==0 ) { 
     /// create a 13 x 13 lookup table 
     m_lookup = std::vector<std::vector<int> >(13, std::vector<int>(13, -1) ); 

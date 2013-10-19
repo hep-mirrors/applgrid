@@ -3,8 +3,7 @@
 //  appl_grid.h       
 
 //  grid class header - all the functions needed to create and 
-//  fill the grid from an NLO calculation program, decreasingly 
-//  based on the class from D.Clements.
+//  fill the grid from an NLO calculation program
 //  
 //  Copyright (C) 2007 Mark Sutton (sutt@hep.ucl.ac.uk)    
 
@@ -25,7 +24,6 @@
 #include <cmath>
 #include <string>
 #include <exception>
-
 
 #include "TH1D.h"
 
@@ -435,7 +433,7 @@ public:
   //  TH1D* correction(int i) const;
 
 
-  /// shoule the corrections be applied?
+  /// will the corrections be applied? 
   bool getApplyCorrections() const { return m_applyCorrections; } 
   bool setApplyCorrections(bool b) { 
     std::cout << "appl::grid bin-by-bin corrections will " 
@@ -445,6 +443,24 @@ public:
 
   /// apply corrections to a std::vector
   void applyCorrections(std::vector<double>& v);
+
+
+  /// will the corrections be applied? 
+  bool getApplyCorrection(unsigned i) const { return m_applyCorrection.at(i); } 
+  bool setApplyCorrection(unsigned i, bool b) { 
+    if ( i>=m_corrections.size() ) return false; 
+    std::cout << "appl::grid bin-by-bin correction will " 
+	      << ( b ? "" : "not " ) << "be applied to correction " << i;
+    if ( m_correctionLabels[i]!="" ) std::cout << " ("  << m_correctionLabels[i] << ")";
+ 
+    std::cout << std::endl;
+    return m_applyCorrection[i]=b;
+  } 
+  
+  /// apply corrections to a std::vector
+  void applyCorrection(unsigned i, std::vector<double>& v);
+  
+
 
   /// set the ckm matrix values if need be
   void setckm( const std::vector<std::vector<double> >& ckm2 );
@@ -558,12 +574,24 @@ protected:
   /// should we apply the corrections?
   bool m_applyCorrections;
 
+  /// flag vector to determine whether each individual 
+  /// correction should be applied
+  std::vector<bool>  m_applyCorrection;
+
   std::string m_documentation;
   
   std::vector<double>                m_ckmsum;
   std::vector<std::vector<double> >  m_ckm2;
 
   CALCULATION     m_type; 
+
+  /// pdf cache - will add quite some space to memory footprint, 
+  /// but should speed up convolution by ~ 40 times (!!!)
+
+  //  bool m_useCache;
+
+  //  NodeCache m_cache1;
+  //  NodeCache m_cache2;
 
 };
 

@@ -36,6 +36,7 @@
 
 #include "SparseMatrix3d.h"
 
+#include "Cache.h"
 
 namespace appl {
 
@@ -296,8 +297,10 @@ public:
   // the interpolated values for the pdf's or if you want 
   // the grid to calculate the cross section for you
   void setuppdf(double (*alphas)(const double&),
-		void (*pdf0)(const double& , const double&, double* ),
-		void (*pdf1)(const double& , const double&, double* )=0,
+		//		void (*pdf0)(const double& , const double&, double* ),
+		//		void (*pdf1)(const double& , const double&, double* )=0,
+		NodeCache* pdf0,
+		NodeCache* pdf1=0,
 		int nloop=0, 
 		double rscale_factor=1,
 		double fscale_factor=1,
@@ -306,8 +309,10 @@ public:
   // get the interpolated pdf's
   //  void pdfinterp(double x1, double Q2, double* f);
 
-  double convolute(void   (*pdf0)(const double& , const double&, double* ), 
-		   void   (*pdf1)(const double& , const double&, double* ), 
+  double convolute(NodeCache* pdf0,
+		   NodeCache* pdf1,
+		   // void   (*pdf0)(const double& , const double&, double* ), 
+		   // void   (*pdf1)(const double& , const double&, double* ), 
 		   appl_pdf* genpdf, 
 		   double (*alphas)(const double& ), 
 		   int     lo_order=0,  
@@ -319,8 +324,10 @@ public:
 
   
   /// convolute method for amcatnlo grids
-  double amc_convolute(void   (*pdf0)(const double& , const double&, double* ), 
-		       void   (*pdf1)(const double& , const double&, double* ), 
+  double amc_convolute(NodeCache* pdf0,
+		       NodeCache* pdf1,
+		       // void   (*pdf0)(const double& , const double&, double* ), 
+		       // void   (*pdf1)(const double& , const double&, double* ), 
 		       appl_pdf* genpdf, 
  		       double (*alphas)(const double& ), 
  		       int     lo_order=0,  
@@ -334,8 +341,10 @@ public:
 
 
   double convolute_subproc(int subproc, 
-			   void   (*pdf0)(const double& , const double&, double* ), 
-			   void   (*pdf1)(const double& , const double&, double* ), 
+			   NodeCache* pdf0,
+			   NodeCache* pdf1,
+			   // void   (*pdf0)(const double& , const double&, double* ), 
+			   // void   (*pdf1)(const double& , const double&, double* ), 
 			   appl_pdf* genpdf, 
 			   double (*alphas)(const double& ), 
 			   int     lo_order=0,  

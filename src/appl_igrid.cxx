@@ -451,9 +451,11 @@ void appl::igrid::write(const std::string& name) {
 
     //    m_weight[ip]->print();
 
+    
     TH3D* h=m_weight[ip]->getTH3D(hname);
+    h->SetDirectory(0);
     h->Write();
-    //    delete h; // is this dengerous??? will root try to delete it later?
+    delete h; // is this dengerous??? will root try to delete it later? I guess not if we SetDirectory(0)
   }
 
 #if 0
@@ -566,8 +568,8 @@ void appl::igrid::fill_index(const int ix1, const int ix2, const int iQ2, const 
 
 
 void appl::igrid::setuppdf(double (*alphas)(const double&),
-			   void (*pdf0)(const double&, const double&, double* ),
-			   void (*pdf1)(const double&, const double&, double* ),
+			   NodeCache* pdf0,
+			   NodeCache* pdf1,
 			   int nloop,
 			   double rscale_factor,
 			   double fscale_factor,
@@ -635,8 +637,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
   bool scale_beams = false;
   if ( beam_scale!=1 ) scale_beams = true;
 
-
-  if ( initialise_hoppet ) hoppet_init::assign( pdf0 );
+  if ( initialise_hoppet ) hoppet_init::assign( pdf0->pdf() );
   
   // set up pdf grid, splitting function grid 
   // and alpha_s grid
@@ -690,7 +691,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	}    
       }
 
-      pdf0(x, fscale_factor*Q, m_fg1[itau][iy]);
+      pdf0->evaluate(x, fscale_factor*Q, m_fg1[itau][iy]);
       
       double invx = 1/x;
       for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= invx;
@@ -705,7 +706,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
     }
   }
 
-  if ( initialise_hoppet ) hoppet_init::assign( pdf1 );
+  if ( initialise_hoppet ) hoppet_init::assign( pdf1->pdf() );
   
   if ( ( !isSymmetric() && !isDISgrid() ) || ( pdf1 && pdf1!=pdf0 ) ) {
     
@@ -738,7 +739,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	  }
 	}
 	
-	pdf1(x, fscale_factor*Q, m_fg2[itau][iy]);
+	pdf1->evaluate(x, fscale_factor*Q, m_fg2[itau][iy]);
 	
 	double invx = 1/x;
 	for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= invx;
@@ -809,8 +810,8 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 // grids are seperate from the nlo grids, if nloop=1 then we must be calculating 
 // {r,f}scale_factor ie f*mu then *scale_factor=f
 // splitting, is the splitting function 
-double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, double* ), 
-			      void   (*pdf1)(const double& , const double&, double* ), 
+double appl::igrid::convolute(NodeCache* pdf0,
+			      NodeCache* pdf1,
 			      appl_pdf*  genpdf,
 			      double (*alphas)(const double& ), 
 			      int     lo_order,  
@@ -827,7 +828,7 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
   //TC   const int nf = 6;
   static const int nf = 5;
   static double beta0=(11.*nc-2.*nf)/(6.*twopi);
-  //const bool debug=true;  
+  //const bool debug=false;  
 
   double alphas_tmp = 0.;  
   double dsigma  = 0.; //, xsigma = 0.;
@@ -891,53 +892,29 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
 	//	std::cout << std::endl;
 
 	if ( nonzero ) { 	
-	 /*
-           std::cout << " itau= "<<itau << " iy1= "<<iy1 << " iy2= "<<iy2<<std::endl; 
-           double tau = gettau(itau);
-           std::cout<<" Q2= "<<fQ2(tau)<<" Q= "<<sqrt(fQ2(tau))<<" x1= "<<fx(gety1(iy1))<<" x2= "<<fx(gety2(iy2))<<std::endl;
-           for (int ifl=0; ifl<=6;ifl++) std::cout << " m_fg1["<<itau<<"]["<<iy1<<"]["<<ifl<<"]= "<<m_fg1[itau][iy1][ifl]; 
-           std::cout << std::endl;
-           std::cout << " f1["<<itau<<"]["<<iy1<<"][7]= "<<m_fg1[itau][iy1][7]<< std::endl;
-           for (int ifl=8; ifl<13;ifl++) std::cout << " f1["<<itau<<"]["<<iy1<<"]["<<ifl<<"]= "<<m_fg1[itau][iy1][ifl]; 
-           std::cout << std::endl;
-
-           for (int ifl=0; ifl<=6;ifl++)std::cout << " f2["<<itau<<"]["<<iy2<<"]["<<ifl<<"]= "<<m_fg2[itau][iy2][ifl]; 
-           std::cout << std::endl;
-           std::cout << " f2["<<itau<<"]["<<iy2<<"][7]= "<<m_fg2[itau][iy2][7]<< std::endl;
-           for (int ifl=8; ifl<13;ifl++)std::cout << " f2["<<itau<<"]["<<iy2<<"]["<<ifl<<"]= "<<m_fg2[itau][iy2][ifl]; 
-           std::cout << std::endl;
-         */
-         
 	  // build the generalised pdfs from the actual pdfs
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
-	  /*
-          if (debug) 
-	   for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
-	     //if (H[ip]!=0 || sig[ip]!=0) 	      
-            if (sig[ip]!=0) 
-             std::cout << "\t H["<<ip<<"]= " << H[ip] 
-                       << " sig["<<ip<<"]= " << sig[ip] 
-                       << std::endl;
-	  */ 
+	
+	  //	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) H[ip] = 1;
+	  //    std::cout << "H return" << std::endl;
+	  //    for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << H[ip] << std::endl;
+
+	  //	  for  ( int ipp=0 ; ipp<m_Nproc ; ipp++ ) H[ipp]=1;
+  
 	  // do the convolution
-          // 
+
           double xsigma=0.;
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+= sig[ip]*H[ip];
+    
+
 	  dsigma+= _alphas*xsigma;
-	 /*
-          if (debug) 
-           std::cout<<" nloop= "<<nloop
-                    <<" itau="<<itau
-                    <<" iy1= "<<iy1<<" iy2= "<<iy2
-                    <<" xsigma= "<<xsigma
-                    <<" alphas= "<<_alphas
-                    <<" as*xsigma=dsigma= "<<dsigma
-                    << std::endl;
-	 */
+
 #if 0
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
 	    xsigma+=sig[ip]*H[ip];
 	    dsigma+= _alphas*xsigma;
+	    // dsigma+= xsigma;
+
 	    //	    std::cout << "order " << nloop << "\talphas " << _alphas 
 	    //		      << "\tx "<< iy1 << " " << iy2 << " " << itau 
 	    //		      << "\tip " << ip << "\tpdf " << H[ip] << "\tc " << sig[ip]/BINWIDTH
@@ -945,6 +922,15 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
 	    //		      << "\tr "  << dsigma/BINWIDTH  << std::endl;
 	  } 
 #endif
+
+          //if (debug) 
+          // std::cout<<name<<" nloop= "<<nloop
+          //                     <<" itau="<<itau
+	  //	       <<" iy1= "<<iy1<<" iy2= "<<iy2
+          //                     <<" xsigma= "<<xsigma
+          //                     <<" dsigma= "<<dsigma
+          //                     << std::endl;
+	  
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
 	  if ( nloop==1 ) { 
@@ -963,6 +949,7 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
               //               << twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma
               //               <<endl;
 	      //
+
               //if (debug) std::cout<<name<<" rscale= " << rscale_factor << " dsigma= "<<dsigma<<endl;
 	    }
 
@@ -974,7 +961,8 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
 	      xsigma=0.;
 	      for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*(HA[ip]+HB[ip]);
 	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
-	      //if (debug) cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
+	      //if (debug) 
+              //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
 	    }
 	  }
 	}  // nonzero
@@ -982,7 +970,7 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
     }  // iy1
   }  // itau
   
-//  if (debug)  std::cout <<"igrid::convolute convoluted dsigma=" << dsigma << std::endl; 
+  //if (debug)  std::cout << name<<"     convoluted dsigma=" << dsigma << std::endl; 
   
   delete[] sig;
   delete[] H;
@@ -1017,8 +1005,8 @@ double appl::igrid::convolute(void   (*pdf0)(const double& , const double&, doub
 
 
 double appl::igrid::convolute_subproc(int subproc,
-				      void   (*pdf0)(const double& , const double&, double* ), 
-				      void   (*pdf1)(const double& , const double&, double* ), 
+				      NodeCache* pdf0,
+				      NodeCache* pdf1,
 				      appl::appl_pdf*  genpdf,
 				      double (*alphas)(const double& ), 
 				      int     lo_order,  
@@ -1160,8 +1148,8 @@ double appl::igrid::convolute_subproc(int subproc,
 /// is the same as for the standard calculation, but the amcatnlo calculation
 /// stores weights for the NLO born contribution, and counterterms, so we need
 /// more grids than the usual two, 
-double appl::igrid::amc_convolute(void   (*pdf0)(const double& , const double&, double* ), 
-				  void   (*pdf1)(const double& , const double&, double* ), 
+double appl::igrid::amc_convolute(NodeCache* pdf0,
+				  NodeCache* pdf1,
 				  appl_pdf*  genpdf,
 				  double (*alphas)(const double& ), 
 				  int     lo_order,  

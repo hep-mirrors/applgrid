@@ -461,9 +461,20 @@ public:
   void applyCorrection(unsigned i, std::vector<double>& v);
   
 
-
   /// set the ckm matrix values if need be
-  void setckm( const std::vector<std::vector<double> >& ckm2 );
+  /// takes a 3x3 matrix with the format { { Vud, Vus, Vub }, { Vcd, Vcs, Vcb }, { Vtd, Vts, Vtb } }  
+  void setckm( const std::vector<std::vector<double> >& ckm );
+
+  /// set the squared ckm matrix values if need be
+  /// the squared terms for eihter W+ or W- production - you probably should use setckm()
+  void setckm2( const std::vector<std::vector<double> >& ckm2 );
+
+  /// set the ckm matrix and squared ckm matrix values if need be
+  const std::vector<std::vector<double> >& getckm()  const;
+  const std::vector<std::vector<double> >& getckm2() const;
+
+
+  /// flag custom convolution routines
 
   void sherpa()   { m_type = SHERPA;   std::cout << "appl::grid::sherpa()   using SHERPA convolution" << std::endl; }
   void amcatnlo() { m_type = AMCATNLO; std::cout << "appl::grid::amcatnlo() using aMC@NLO convolution" << std::endl; }
@@ -582,6 +593,7 @@ protected:
   
   std::vector<double>                m_ckmsum;
   std::vector<std::vector<double> >  m_ckm2;
+  std::vector<std::vector<double> >  m_ckm;
 
   CALCULATION     m_type; 
 

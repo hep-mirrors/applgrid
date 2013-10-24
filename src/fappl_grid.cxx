@@ -85,6 +85,9 @@ extern "C" void escalefullconvolutewrap_(int& id, double* data,
 					 double& Escale );
 
 
+/// set the ckm matrix - a flat vector of 9 doubles, Vud, Vus, Vub, Vcd ...
+extern "C" void setckm_( int& id, const double* ckm );
+
 /// print a grid
 extern "C" void printgrid_(int& id);
 
@@ -185,6 +188,16 @@ void releasegrids_() {
     delete gitr->second; 
     _grid.erase(gitr);
   }
+}
+
+void setckm_( int& id, const double* ckm ) { 
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    std::vector<std::vector<double> > __ckm( 3, std::vector<double>(3,0) );
+    for ( int i=0 ; i<9 ; i++ ) __ckm[i/3][i%3] = ckm[i];
+    gitr->second->setckm( __ckm );
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
 
 

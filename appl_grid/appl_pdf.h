@@ -106,13 +106,20 @@ public:
     if ( int(m_subnames.size())<m_Nproc-1 ) m_subnames.push_back(subname); 
   }
 
+
+
+  /// is this a W+ or a W- pdf combination? or neither?
+  int getckmcharge() const { return m_ckmcharge; }
+
   /// access the ckm matrices - if no matrices are required these std::vectors have 
   /// zero size
 
   const std::vector<double>&               getckmsum() const { return m_ckmsum; }
   const std::vector<std::vector<double> >& getckm2()   const { return m_ckm2; }
-
+  const std::vector<std::vector<double> >& getckm()    const { return m_ckm; }
+  
   /// set the ckm matrices from external values
+  void setckm( const std::vector<std::vector<double> >& ckm ); 
   void setckm2( const std::vector<std::vector<double> >& ckm2 ); 
 
   /// code to create the ckm matrices using the hardcoded default 
@@ -151,10 +158,15 @@ protected:
   std::string m_name;
 
   std::vector<std::string> m_subnames;
-  
-  // ckm matrix related information 
+
+  /// ckm matrix related information 
+  /// W+, W- or neither?
+  int  m_ckmcharge;
+
+  // ckm matrices
   std::vector<double>               m_ckmsum;
-  std::vector<std::vector<double> > m_ckm2;
+  std::vector<std::vector<double> > m_ckm2; /// squared 13x13 matrix
+  std::vector<std::vector<double> > m_ckm;  /// simple 3x3
 
   /// some strings for more useful name if required
   std::vector<std::string>           m_names;

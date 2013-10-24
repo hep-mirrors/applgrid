@@ -101,6 +101,10 @@ public:
   unsigned ncached()    const { return _ncached; } 
   unsigned ngenerated() const { return _ngenerated; } 
 
+  double   fraction()  const { 
+    if ( (_ncached+_ngenerated)>0 ) return this->size()*1.0/(_ncached+_ngenerated); 
+    return 0;
+  }
 private:
 
   //  void (*_pdf)(const double& , const double&, double* );
@@ -123,8 +127,8 @@ inline std::ostream& operator<<( std::ostream& s, const Cache<T>& _c ) {
   s << "Cache:: " 
     << "\tgenerated "  << _c.ngenerated() 
     << "\tfrom cache " << _c.ncached() 
-    << "\tsize "    << _c.size()
-    << " (maximum " << _c.max() << ")";
+    << "\tsize "  << _c.size() <<  " ( " << int(_c.fraction()*1000)*0.1 << "% )\t"
+    << " :maximum " << _c.max();
     return s;
 }
 

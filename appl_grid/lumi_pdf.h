@@ -75,8 +75,6 @@ private:
 
   std::vector<combination> m_combinations;
 
-  int  m_ckmcharge;
-
   /// flag that this is an amcatnlo pdf
   //  bool m_amcflag;
 

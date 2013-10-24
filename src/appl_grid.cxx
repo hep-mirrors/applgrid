@@ -307,21 +307,43 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   //  std::vector<double> _ckmsum;
   std::vector<std::vector<double> > _ckm2;
+  std::vector<std::vector<double> > _ckm;
 
-  //  bool savedckm = false;
+
+
 
   if ( setup->GetNoElements()>8 && (*setup)(8)!=0 ) {
 
     std::cout << "grid::grid() read ckm matrices" << std::endl;
     
+    /// try 13x13 squared ckm matrix 
+
     TVectorT<double>* ckm2flat=(TVectorT<double>*)gridfilep->Get((dirname+"/CKM2").c_str());
 
-    _ckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13) );
- 
-    for ( int ic=0 ; ic<13 ; ic++ ) { 
-      for ( int id=0 ; id<13 ; id++ ) _ckm2[ic][id] = (*ckm2flat)(ic*13+id); 
+    if ( ckm2flat ) { 
+      if ( ckm2flat->GetNrows()>0 ) { 
+	_ckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13) );
+      
+	for ( int ic=0 ; ic<13 ; ic++ ) { 
+	  for ( int id=0 ; id<13 ; id++ ) _ckm2[ic][id] = (*ckm2flat)(ic*13+id); 
+	}
+      }  
     }
-  
+
+    /// now try usual 3x3 matrix
+
+    TVectorT<double>* ckmflat=(TVectorT<double>*)gridfilep->Get((dirname+"/CKM").c_str());
+
+    if ( ckmflat ) { 
+      if ( ckmflat->GetNrows()>0 ) { 
+	_ckm = std::vector<std::vector<double> >(3, std::vector<double>(3) );
+	
+	for ( int ic=0 ; ic<3 ; ic++ ) { 
+	  for ( int id=0 ; id<3 ; id++ ) _ckm[ic][id] = (*ckmflat)(ic*3+id); 
+	}
+      }  
+    }
+
   }
 
   if ( setup->GetNoElements()>9 ) m_type = (CALCULATION)int( (*setup)(9)+0.5 );
@@ -360,7 +382,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
 
   // set the ckm matrices 
-  if ( _ckm2.size()>0 )  setckm( _ckm2 );
+  if      ( _ckm.size()>0 )  setckm( _ckm );
+  else if ( _ckm2.size()>0 ) setckm2( _ckm2 );
 
   delete setup;
 
@@ -428,7 +451,8 @@ appl::grid::grid(const grid& g) :
   m_applyCorrections(g.m_applyCorrections), 
   m_documentation(g.m_documentation),
   m_ckmsum(g.m_ckmsum), /// need a deep copy of the contents
-  m_ckm2(g.m_ckm2),      /// need a deep copy of the contents
+  m_ckm2(g.m_ckm2),     /// need a deep copy of the contents
+  m_ckm(g.m_ckm),       /// need a deep copy of the contents
   m_type(g.m_type)
 {
   m_obs_bins->SetDirectory(0);
@@ -763,10 +787,19 @@ void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinati
 
 
 
-void appl::grid::setckm( const std::vector<std::vector<double> >& ckm2 ) { 
+void appl::grid::setckm2( const std::vector<std::vector<double> >& ckm2 ) { 
   for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i]->setckm2(ckm2);
 }
 
+
+void appl::grid::setckm( const std::vector<std::vector<double> >& ckm ) { 
+  for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i]->setckm(ckm);
+}
+
+
+const std::vector<std::vector<double> >& appl::grid::getckm()  const { return m_genpdf[0]->getckm(); }  
+
+const std::vector<std::vector<double> >& appl::grid::getckm2() const { return m_genpdf[0]->getckm2(); }  
 
 
 // void appl::grid::setuppdf(void (*pdf)(const double&, const double&, double* ) )  {  }
@@ -849,6 +882,8 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   
   if ( (*setup)(8) == 1 ) { 
     
+#if 0
+    /// no longer write out squared ckm matrix - just use the 3x3
     TVectorT<double>* ckm2flat = new TVectorT<double>(169);
     const std::vector<std::vector<double> >& _ckm2 = m_genpdf[0]->getckm2();
 
@@ -857,6 +892,17 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
     }
 
     ckm2flat->Write("CKM2");
+#endif
+
+    /// no longer write out squared ckm matrix - just use the 3x3
+    TVectorT<double>* ckmflat = new TVectorT<double>(9);
+    const std::vector<std::vector<double> >& _ckm = m_genpdf[0]->getckm();
+
+    for ( int ic=0 ; ic<3 ; ic++ ) { 
+      for ( int id=0 ; id<3 ; id++ ) (*ckmflat)(ic*3+id) = _ckm[ic][id];
+    }
+
+    ckmflat->Write("CKM");
 
   }
 
@@ -1086,35 +1132,34 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       double dsigma = 0; 
       
       if ( nloops==0 ) {
-	/// this is the amcatnlo LO calculation (without FKS shower)
-	label = "lo";
-	/// work out how to call from the igrid - maybe just implement additional 
-	double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+	  /// this is the amcatnlo LO calculation (without FKS shower)
+	  label = "lo";
+	  /// work out how to call from the igrid - maybe just implement additional 
+	  double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
  
-	dsigma = dsigma_B;
+   	  dsigma = dsigma_B;
       }
-      else if ( nloops==1 ) {
-	if ( m_type==AMCATNLO ) { 
-	  /// this is the amcatnlo NLO calculation (without FKS shower)
-	  label = "nlo";
+      else if ( nloops==1 || nloops==-1 ) {
+  	  /// this is the amcatnlo NLO calculation (without FKS shower)
+	  label = "nlo only"; /// for the time being ...
 	  /// work out how to call from the igrid - maybe just implement additional 
 	  /// convolution routines and call them here
 	  double dsigma_0 = m_grids[0][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
 	  double dsigma_R = m_grids[1][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
 	  double dsigma_F = m_grids[2][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
-	  double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
 	  
-	  dsigma = dsigma_0 + dsigma_R + dsigma_F + dsigma_B;
-	}
-      }
-      else if ( nloops==-1 ) { 
-        /// this is the amcatnlo NLO calculation (without FKS shower)
-        label = "lo";
-        /// work out how to call from the igrid - maybe just implement additional 
-        /// convolution routines and call them here
-        double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+	  dsigma = dsigma_0 + dsigma_R + dsigma_F;
+      
+	  if ( nloops==1 ) { 
+	    /// this is the amcatnlo NLO calculation (without FKS shower)
+	    label = "nlo";
+	    /// work out how to call from the igrid - maybe just implement additional 
+	    /// convolution routines and call them here
+	    double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
 	
-        dsigma = dsigma_B;
+	    dsigma += dsigma_B;
+	  }
+
       }
       else { 
 	throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 

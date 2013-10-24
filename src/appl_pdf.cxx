@@ -147,48 +147,55 @@ bool appl_pdf::create_map() {
 void appl_pdf::make_ckm( bool Wp ) { 
   
   // std::cout << "make_ckm() initialising" << std::endl;
-  m_ckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13,0));
-
+  std::vector<std::vector<double> > _ckm2(13, std::vector<double>(13,0));
+  
   if ( Wp ) { 
     
+    m_ckmcharge = +1;
+
     //  std::cout << "creating ckm matrix terms for Wplus production" << std::endl;
     
-    m_ckm2[3][8]  =   0.049284000000000001417976847051249933 ;
-    m_ckm2[8][3]  =   0.049284000000000001417976847051249933 ;
+    _ckm2[3][8]  =   0.049284000000000001417976847051249933 ;
+    _ckm2[8][3]  =   0.049284000000000001417976847051249933 ;
     
-    m_ckm2[5][8]  =   0.950624999999999942268402719491859898 ;
-    m_ckm2[8][5]  =   0.950624999999999942268402719491859898 ;
+    _ckm2[5][8]  =   0.950624999999999942268402719491859898 ;
+    _ckm2[8][5]  =   0.950624999999999942268402719491859898 ;
     
-    m_ckm2[5][10] =   0.049284000000000001417976847051249933 ;
-    m_ckm2[10][5] =   0.049284000000000001417976847051249933 ;
+    _ckm2[5][10] =   0.049284000000000001417976847051249933 ;
+    _ckm2[10][5] =   0.049284000000000001417976847051249933 ;
     
-    m_ckm2[3][10] =   0.950624999999999942268402719491859898 ;
-    m_ckm2[10][3] =   0.950624999999999942268402719491859898 ;
+    _ckm2[3][10] =   0.950624999999999942268402719491859898 ;
+    _ckm2[10][3] =   0.950624999999999942268402719491859898 ;
     
   }
   else { 
+
+    m_ckmcharge = -1;
     
     //    std::cout << "creating ckm matrix terms for Wminus production" << std::endl;
     
-    m_ckm2[4][9] =   0.049284000000000001417976847051249933 ;
-    m_ckm2[9][4] =   0.049284000000000001417976847051249933 ;
+    _ckm2[4][9] =   0.049284000000000001417976847051249933 ;
+    _ckm2[9][4] =   0.049284000000000001417976847051249933 ;
+        
+    _ckm2[7][4] =   0.950624999999999942268402719491859898 ;
+    _ckm2[4][7] =   0.950624999999999942268402719491859898 ;
     
-    m_ckm2[7][4] =   0.950624999999999942268402719491859898 ;
-    m_ckm2[4][7] =   0.950624999999999942268402719491859898 ;
+    _ckm2[7][2] =   0.049284000000000001417976847051249933 ;
+    _ckm2[2][7] =   0.049284000000000001417976847051249933 ;
     
-    m_ckm2[7][2] =   0.049284000000000001417976847051249933 ;
-    m_ckm2[2][7] =   0.049284000000000001417976847051249933 ;
-    
-    m_ckm2[9][2] =   0.950624999999999942268402719491859898 ;
-    m_ckm2[2][9] =   0.950624999999999942268402719491859898 ;
+    _ckm2[9][2] =   0.950624999999999942268402719491859898 ;
+    _ckm2[2][9] =   0.950624999999999942268402719491859898 ;
     
   }  
  
+  setckm2( _ckm2 );
 
+  /*
   m_ckmsum = std::vector<double>(m_ckm2.size(),0);
   for ( unsigned i=0 ; i<m_ckm2.size() ; i++ ) { 
     for ( unsigned j=0 ; j<m_ckm2[i].size() ; j++ ) m_ckmsum[i] += m_ckm2[i][j]; 
   }
+  */
 
   /*
   for ( int i=0 ; i<13 ; i++ ) {
@@ -201,12 +208,59 @@ void appl_pdf::make_ckm( bool Wp ) {
 }
 
 
-void appl_pdf::setckm2( const std::vector<std::vector<double> >& ckm2 ) { 
-    m_ckm2 = ckm2; 
-    m_ckmsum = std::vector<double>(m_ckm2.size(),0);
-    for ( unsigned i=0 ; i<m_ckm2.size() ; i++ ) { 
-      for ( unsigned j=0 ; j<m_ckm2[i].size() ; j++ ) m_ckmsum[i] += m_ckm2[i][j]; 
+
+void appl_pdf::setckm( const std::vector<std::vector<double> >& ckm ) { 
+
+  m_ckm = ckm; 
+  
+  /// calculate ckm2 and pass into setckm2  
+
+  //  std::cout << "appl_pdf::setckm() ";
+  
+  if ( m_ckmcharge==0 ) return;
+  
+  std::vector<std::vector<double> > ckm2( 13, std::vector<double>(13,0) );
+  for ( int iU=0 ; iU<3 ; iU++ ) {
+    for ( int iD=0 ; iD<3 ; iD++ ) {
+
+      //  std::cout << " " << int(10000*ckm[iU][iD]+0.5)*0.0001; // print rounded values
+
+      /// lhapdf codes ...
+      int utype = 2*iU+2;
+      int dtype = 2*iD+1;
+
+      /// W- 
+      if ( m_ckmcharge<0 ) utype *= -1;
+
+      /// W+ 
+      if ( m_ckmcharge>0 ) dtype *= -1;
+
+      /// translate to array indices
+      utype += 6;
+      dtype += 6;
+
+      double V2 = ckm[iU][iD]*ckm[iU][iD];
+
+      ckm2[utype][dtype] = V2;
+      ckm2[dtype][utype] = V2;
+      
     }
+  }
+  
+  //  std::cout << std::endl;
+
+  setckm2( ckm2 );
+} 
+
+
+
+
+void appl_pdf::setckm2( const std::vector<std::vector<double> >& ckm2 ) { 
+  m_ckm2 = ckm2; 
+  m_ckmsum = std::vector<double>(m_ckm2.size(),0);
+  for ( unsigned i=0 ; i<m_ckm2.size() ; i++ ) { 
+    for ( unsigned j=0 ; j<m_ckm2[i].size() ; j++ ) m_ckmsum[i] += m_ckm2[i][j]; 
+  }  
 } 
 
 

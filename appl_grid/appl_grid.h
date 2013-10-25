@@ -465,6 +465,11 @@ public:
   /// takes a 3x3 matrix with the format { { Vud, Vus, Vub }, { Vcd, Vcs, Vcb }, { Vtd, Vts, Vtb } }  
   void setckm( const std::vector<std::vector<double> >& ckm );
 
+  /// takes a flat 9 element vector (or c array) with the format { Vud, Vus, Vub, Vcd, Vcs, Vcb, Vtd, Vts, Vtb }  
+  void setckm( const std::vector<double>& ckm );
+  void setckm( const double* ckm );
+
+
   /// set the squared ckm matrix values if need be
   /// the squared terms for eihter W+ or W- production - you probably should use setckm()
   void setckm2( const std::vector<std::vector<double> >& ckm2 );

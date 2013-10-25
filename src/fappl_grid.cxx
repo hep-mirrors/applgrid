@@ -202,6 +202,21 @@ void setckm_( int& id, const double* ckm ) {
 }
 
 
+void getckm_( int& id, double* ckm ) { 
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    std::vector<std::vector<double> > __ckm = gitr->second->getckm();
+    for ( unsigned i=0 ; i<__ckm.size() ; i++ ) {
+      for ( unsigned j=0 ; j<__ckm[i].size() ; j++ ) {
+	ckm[i*3+j] = __ckm[i][j];
+      }
+    }
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
+
+
 void redefine_(int& id, 
 	       const int& iobs, const int& iorder, 
 	       const int& NQ2, const double& Q2min, const double& Q2max, 

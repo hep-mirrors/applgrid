@@ -33,7 +33,7 @@
 #include "TVectorT.h"
 
 
-#include "cache.h"
+#include "Cache.h"
 
 
 /// this is a compatability flag for persistent versions 
@@ -435,6 +435,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   //  std::cout << "read grid" << std::endl;
 
+  gridfilep->Close();
   delete gridfilep;
 }
 
@@ -837,13 +838,8 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   struct stat sb;
   
   if ( stat( filename.c_str(), &sb)==0 ) { // && S_ISREG(sb.st_mode ))
-
-    //  if ( FILE* f=fopen( filename.c_str(), "r") ) { 
-    //   fclose(f);
     std::string filename_save = filename + "-save";
-    //    std::string cmd = "mv " + filename + " " + _filename;
-    //    if ( std::system(cmd.c_str()) ) std::cerr << "could not rename grid file " << filename << std::endl;
-    if ( !std::rename( filename.c_str(), filename_save.c_str() ) ) std::cerr << "could not rename grid file " << filename << std::endl;
+    if ( std::rename( filename.c_str(), filename_save.c_str() ) ) std::cerr << "could not rename grid file " << filename << std::endl;
   } 
 
 
@@ -1021,11 +1017,15 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
   NodeCache cache1( pdf1 );
   NodeCache cache2;
 
+  cache1.reset();
+
   NodeCache* _pdf1 = &cache1;
   NodeCache* _pdf2 = 0;
   
   if ( pdf2!=0 && pdf1!=pdf2 ) { 
     cache2 = NodeCache( pdf2 );
+    cache2.reset();
+  
     _pdf2    = &cache2;
   }
 
@@ -1233,7 +1233,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
   }
 
   cache1.stats();
-  cache2.stats();
+  if ( cache2.ncalls() ) cache2.stats();
   
   return hvec;
 }
@@ -1264,6 +1264,7 @@ std::vector<double> appl::grid::vconvolute_subproc(int subproc,
   NodeCache cache1 = NodeCache( pdf );
   NodeCache* _pdf = &cache1;
   
+  cache1.reset();
 
   //  struct timeval _ctimer = appl_timer_start();
 

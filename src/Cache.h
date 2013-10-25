@@ -42,7 +42,7 @@ private:
 public:
 
   /// give it the pdf function to use
-  Cache( pdffunction pdf=0, unsigned mx=20000 ) : _pdf(pdf), _max(mx), _ncached(0), _ngenerated(0) { } 
+  Cache( pdffunction pdf=0, unsigned mx=20000 ) : _pdf(pdf), _max(mx), _ncalls(0), _ncached(0), _reset(0), _disabled(false) { } 
 
   virtual ~Cache() { } 
 
@@ -54,15 +54,17 @@ public:
   void evaluate( const double& x, const double& Q2, double*  xf ) { 
     
     if ( _pdf==0 ) { 
+      /// should really throw an exception here
       std::cerr << "whoops, pdf cache has no pdf!!" << std::endl; 
       return; 
     }
 
-#if 0 
-    /// if we don't want to use the cache - it can get quite large   
-    _pdf( x, Q2, xf ); 
-    return;
-#endif
+    _ncalls++;
+
+    /// if we don't want to use the cache for some reason (it can get quite large)     
+    if ( _disabled ) return _pdf( x, Q2, xf ); 
+
+    //    _reset++;
 
     T t(x, Q2);
 
@@ -86,7 +88,6 @@ public:
 
       /// copy to output 
       (*(partons*)xf) = ( *((partons*)&_xf[0]) ); 
-      _ngenerated++;
     }
   }
   
@@ -98,13 +99,21 @@ public:
   pdffunction pdf() { return _pdf; }
 
   unsigned max()        const { return _max; } 
+  unsigned ncalls()     const { return _ncalls; } 
   unsigned ncached()    const { return _ncached; } 
-  unsigned ngenerated() const { return _ngenerated; } 
+  unsigned ngenerated() const { return _ncalls-_ncached; } 
 
   double   fraction()  const { 
-    if ( (_ncached+_ngenerated)>0 ) return this->size()*1.0/(_ncached+_ngenerated); 
+    if ( _ncalls>0 ) return this->size()*1.0/_ncalls; 
     return 0;
   }
+
+  void reset() { this->clear(); _reset=_ncalls=_ncached=0; }
+
+  void diable() { _disabled = true; }
+  void enable() { _disabled = false; }
+
+
 private:
 
   //  void (*_pdf)(const double& , const double&, double* );
@@ -114,9 +123,13 @@ private:
   unsigned _max;
 
   /// some stats - how many nodes generated and how many from the cache
+  unsigned _ncalls;
   unsigned _ncached;
   unsigned _ngenerated;
 
+  unsigned _reset;
+
+  bool     _disabled;
 };
 
 
@@ -127,8 +140,8 @@ inline std::ostream& operator<<( std::ostream& s, const Cache<T>& _c ) {
   s << "Cache:: " 
     << "\tgenerated "  << _c.ngenerated() 
     << "\tfrom cache " << _c.ncached() 
-    << "\tsize "  << _c.size() <<  " ( " << int(_c.fraction()*1000)*0.1 << "% )\t"
-    << " :maximum " << _c.max();
+    << "\tsize "       << _c.size() <<  " ( " << int(_c.fraction()*1000)*0.1 << "% )\t"
+    << " :maximum "    << _c.max();
     return s;
 }
 

@@ -797,6 +797,19 @@ void appl::grid::setckm( const std::vector<std::vector<double> >& ckm ) {
 }
 
 
+void appl::grid::setckm( const std::vector<double>& ckm ) {
+  std::vector<std::vector<double> > _ckm(3, std::vector<double>(3,0) );
+  for ( unsigned i=0 ; i<ckm.size() && i<9 ; i++ ) _ckm[i/3][i%3] = ckm[i]; 
+  for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i]->setckm(_ckm);
+}
+
+void appl::grid::setckm( const double* ckm ) { 
+  std::vector<std::vector<double> > _ckm(3, std::vector<double>(3,0) );
+  for ( unsigned i=0 ; i<9 ; i++ ) _ckm[i/3][i%3] = ckm[i]; 
+  for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i]->setckm(_ckm);
+}
+
+
 const std::vector<std::vector<double> >& appl::grid::getckm()  const { return m_genpdf[0]->getckm(); }  
 
 const std::vector<std::vector<double> >& appl::grid::getckm2() const { return m_genpdf[0]->getckm2(); }  

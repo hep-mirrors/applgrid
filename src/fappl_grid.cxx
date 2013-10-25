@@ -193,10 +193,8 @@ void releasegrids_() {
 
 void setckm_( int& id, const double* ckm ) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
-  if ( gitr!=_grid.end() ) { 
-    std::vector<std::vector<double> > __ckm( 3, std::vector<double>(3,0) );
-    for ( int i=0 ; i<9 ; i++ ) __ckm[i/3][i%3] = ckm[i];
-    gitr->second->setckm( __ckm );
+  if ( gitr!=_grid.end() ) {
+    gitr->second->setckm( ckm );
   }
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }

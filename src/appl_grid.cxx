@@ -435,6 +435,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   //  std::cout << "read grid" << std::endl;
 
+  gridfilep->Close();
   delete gridfilep;
 }
 
@@ -837,13 +838,8 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   struct stat sb;
   
   if ( stat( filename.c_str(), &sb)==0 ) { // && S_ISREG(sb.st_mode ))
-
-    //  if ( FILE* f=fopen( filename.c_str(), "r") ) { 
-    //   fclose(f);
     std::string filename_save = filename + "-save";
-    //    std::string cmd = "mv " + filename + " " + _filename;
-    //    if ( std::system(cmd.c_str()) ) std::cerr << "could not rename grid file " << filename << std::endl;
-    if ( !std::rename( filename.c_str(), filename_save.c_str() ) ) std::cerr << "could not rename grid file " << filename << std::endl;
+    if ( std::rename( filename.c_str(), filename_save.c_str() ) ) std::cerr << "could not rename grid file " << filename << std::endl;
   } 
 
 

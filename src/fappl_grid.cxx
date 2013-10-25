@@ -15,90 +15,91 @@
 #include "appl_grid/fastnlo.h"
 
 
+#include "fappl_grid.h"
 
 /// externally defined alpha_s and pdf routines for fortran 
 /// callable convolution wrapper
 extern "C" double fnalphas_(const double& Q); 
 extern "C" void   fnpdf_(const double& x, const double& Q, double* f);
 
-/// create a grid
-extern "C" void bookgrid_(int& id, const int& Nobs, const double* binlims);
+// /// create a grid
+// extern "C" void bookgrid_(int& id, const int& Nobs, const double* binlims);
 
-/// delete a grid
-extern "C" void releasegrid_(int& id);
+// /// delete a grid
+// extern "C" void releasegrid_(int& id);
 
-/// delete all grids
-extern "C" void releasegrids_();
+// /// delete all grids
+// extern "C" void releasegrids_();
 
-/// read a grid from a file
-extern "C" void readgrid_(int& id, const char* s);
+// /// read a grid from a file
+// extern "C" void readgrid_(int& id, const char* s);
 
-/// write to a file 
-extern "C" void writegrid_(int& id, const char* s);
+// /// write to a file 
+// extern "C" void writegrid_(int& id, const char* s);
 
-/// add an entry 
-extern "C" void fillgrid_(int& id, 
-			  const int& ix1, const int& ix2, const int& iQ, 
-			  const int& iobs, 
-			  const double* w,
-			  const int& iorder );  
+// /// add an entry 
+// extern "C" void fillgrid_(int& id, 
+// 			  const int& ix1, const int& ix2, const int& iQ, 
+// 			  const int& iobs, 
+// 			  const double* w,
+// 			  const int& iorder );  
 
-/// redefine the grid dimensions
-extern "C" void redefine_(int& id, 
-			  const int& iobs, const int& iorder, 
-			  const int& NQ2, const double& Q2min, const double& Q2max, 
-			  const int& Nx,  const double&  xmin, const double&  xmax); 
+// /// redefine the grid dimensions
+// extern "C" void redefine_(int& id, 
+// 			  const int& iobs, const int& iorder, 
+// 			  const int& NQ2, const double& Q2min, const double& Q2max, 
+// 			  const int& Nx,  const double&  xmin, const double&  xmax); 
 
-/// get number of observable bins for a grid 
-extern "C" int getnbins_(int& id);
-
-
-/// do the convolution!! hooray!!
-
-extern "C" void convolute_(int& id, double* data);
-
-extern "C" void convoluteorder_(int& id, int& nloops, double* data);
-
-extern "C" void convolutewrap_(int& id, double* data, 
-			       void (*pdf)(const double& , const double&, double* ),
-			       double (*alphas)(const double& ) );
-
-extern "C" void fullconvolutewrap_(int& id, double* data, 
-				   void (*pdf)(const double& , const double&, double* ),
-				   double (*alphas)(const double& ),
-				   int& nloops,
-				   double& rscale, double& fscale  );
+// /// get number of observable bins for a grid 
+// extern "C" int getnbins_(int& id);
 
 
+// /// do the convolution!! hooray!!
 
-extern "C" void escaleconvolute_(int& id, double* data, double& Escale);
+// extern "C" void convolute_(int& id, double* data);
 
-extern "C" void escaleconvolutewrap_(int& id, double* data, 
-				     void (*pdf)(const double& , const double&, double* ),
-				     double (*alphas)(const double& ), double& Escale );
+// extern "C" void convoluteorder_(int& id, int& nloops, double* data);
 
-extern "C" void escalefullconvolutewrap_(int& id, double* data, 
-					 void (*pdf)(const double& , const double&, double* ),
-					 double (*alphas)(const double& ),
-					 int& nloops,
-					 double& rscale, double& fscale,
-					 double& Escale );
+// extern "C" void convolutewrap_(int& id, double* data, 
+// 			       void (*pdf)(const double& , const double&, double* ),
+// 			       double (*alphas)(const double& ) );
+
+// extern "C" void fullconvolutewrap_(int& id, double* data, 
+// 				   void (*pdf)(const double& , const double&, double* ),
+// 				   double (*alphas)(const double& ),
+// 				   int& nloops,
+// 				   double& rscale, double& fscale  );
 
 
-/// set the ckm matrix - a flat vector of 9 doubles, Vud, Vus, Vub, Vcd ...
-extern "C" void setckm_( int& id, const double* ckm );
 
-/// print a grid
-extern "C" void printgrid_(int& id);
+// extern "C" void escaleconvolute_(int& id, double* data, double& Escale);
 
-/// print all grids
-extern "C" void printgrids_();
+// extern "C" void escaleconvolutewrap_(int& id, double* data, 
+// 				     void (*pdf)(const double& , const double&, double* ),
+// 				     double (*alphas)(const double& ), double& Escale );
 
-/// print the grid documentation
-extern "C" void printgriddoc_(int& id);
+// extern "C" void escalefullconvolutewrap_(int& id, double* data, 
+// 					 void (*pdf)(const double& , const double&, double* ),
+// 					 double (*alphas)(const double& ),
+// 					 int& nloops,
+// 					 double& rscale, double& fscale,
+// 					 double& Escale );
 
-/// create grids from fastnlo
-extern "C" void readfastnlogrids_(  int* ids, const char* s );
+
+// /// set the ckm matrix - a flat vector of 9 doubles, Vud, Vus, Vub, Vcd ...
+// extern "C" void setckm_( int& id, const double* ckm );
+
+// /// print a grid
+// extern "C" void printgrid_(int& id);
+
+// /// print all grids
+// extern "C" void printgrids_();
+
+// /// print the grid documentation
+// extern "C" void printgriddoc_(int& id);
+
+// /// create grids from fastnlo
+// extern "C" void readfastnlogrids_(  int* ids, const char* s );
 
 
 static int idcounter = 0;
@@ -107,9 +108,9 @@ static std::map<int,appl::grid*> _grid;
 
 /// grid std::map management
 
-extern "C" void ngrids_(int& n) { n=_grid.size(); }
+void ngrids_(int& n) { n=_grid.size(); }
 
-extern "C" void gridids_(int* ids) { 
+void gridids_(int* ids) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.begin();
   for ( int i=0 ; gitr!=_grid.end() ; gitr++, i++ ) ids[i] = gitr->first;
 }
@@ -224,6 +225,23 @@ int getnbins_(int& id) {
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
 
+int getbinnumber_(int& id, double& x) { 
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) return gitr->second->obsbin(x);
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
+double getbinlowedge_(int& id, int& bin) { 
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) return gitr->second->obslow(bin);
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
+double getbinwidth_(int& id, int& bin) { 
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) return gitr->second->deltaobs(bin);
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
 
 
 void convolute_(int& id, double* data) { 

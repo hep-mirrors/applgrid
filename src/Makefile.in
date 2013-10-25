@@ -97,7 +97,7 @@ am_libAPPLgrid_la_OBJECTS = appl_grid.lo appl_igrid.lo fastnlo.lo \
 	TFileStringDict.lo TFileVector.lo TFileVectorDict.lo
 libAPPLgrid_la_OBJECTS = $(am_libAPPLgrid_la_OBJECTS)
 libfAPPLgrid_la_LIBADD =
-am_libfAPPLgrid_la_OBJECTS = fappl_grid.lo
+am_libfAPPLgrid_la_OBJECTS = fappl_grid.lo fappl_fitter.lo
 libfAPPLgrid_la_OBJECTS = $(am_libfAPPLgrid_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
 am_applgrid_combine_OBJECTS = combine.$(OBJEXT)
@@ -295,7 +295,7 @@ libAPPLgrid_la_SOURCES = \
 	TFileVector.cxx		TFileVectorDict.cxx  \
 	*.h
 
-libfAPPLgrid_la_SOURCES = fappl_grid.cxx
+libfAPPLgrid_la_SOURCES = fappl_grid.cxx fappl_fitter.cxx
 library_includedir = $(includedir)/appl_grid
 library_include_HEADERS = ../appl_grid/*.h
 
@@ -443,6 +443,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/combination.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/combine.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dis_pdf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fappl_fitter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fappl_grid.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fastnlo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/generic_pdf.Plo@am__quote@

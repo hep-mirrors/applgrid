@@ -67,7 +67,7 @@ libAPPLgrid_la_SOURCES = \
 	TFileVector.cxx		TFileVectorDict.cxx  \
 	*.h
 
-libfAPPLgrid_la_SOURCES = fappl_grid.cxx
+libfAPPLgrid_la_SOURCES = fappl_grid.cxx fappl_fitter.cxx
 
 library_includedir=$(includedir)/appl_grid
 

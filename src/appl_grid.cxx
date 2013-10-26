@@ -16,7 +16,6 @@
 #include <iomanip>
 #include <cmath>
 
-#include "appl_igrid.h"
 #include "appl_grid/appl_pdf.h"
 #include "appl_grid/appl_timer.h"
 #include "appl_grid/Directory.h"
@@ -24,6 +23,10 @@
 
 #include "appl_grid/generic_pdf.h"
 #include "appl_grid/lumi_pdf.h"
+
+#include "appl_igrid.h"
+#include "Cache.h"
+
 
 #include "TFileString.h"
 #include "TFileVector.h"
@@ -33,7 +36,8 @@
 #include "TVectorT.h"
 
 
-#include "Cache.h"
+#include "amconfig.h"
+
 
 
 /// this is a compatability flag for persistent versions 
@@ -41,10 +45,8 @@
 /// NB: ONLY change this if the persistent class
 ///     changes in a non-backwards compatible way.
 
-const std::string appl::grid::m_version = "version-3.1";
+const std::string appl::grid::m_version = "version-3.2";
 
-/// check if we have hoppet included 
-#include "amconfig.h"
 
 #include "hoppet_init.h"
 
@@ -71,6 +73,8 @@ void Splitting(const double& x, const double& Q, double* xf) {
 }
 
 #endif
+
+
 
 
 /// helper function

@@ -363,6 +363,7 @@ public:
   std::string getGenpdf()    const { return m_genpdfname; }
 
   std::string version()      const { return m_version; } 
+  std::string appl_version() const;
 
   double getCMSScale()          const { return m_cmsScale; }
   void   setCMSScale(double cmsScale) { m_cmsScale=cmsScale; }

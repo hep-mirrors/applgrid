@@ -45,9 +45,9 @@
 /// NB: ONLY change this if the persistent class
 ///     changes in a non-backwards compatible way.
 
-// const std::string appl::grid::m_version = "version-3.2";
-const std::string appl::grid::m_version = VERSION;
+const std::string appl::grid::m_version = "version-3.2";
 
+std::string appl::grid::appl_version() const { return PACKAGE_VERSION; }
 
 #include "hoppet_init.h"
 

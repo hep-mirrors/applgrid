@@ -42,7 +42,7 @@ private:
 public:
 
   /// give it the pdf function to use
-  Cache( pdffunction pdf=0, unsigned mx=20000 ) : _pdf(pdf), _max(mx), _ncalls(0), _ncached(0), _reset(0), _disabled(false) { } 
+  Cache( pdffunction pdf=0, unsigned mx=20000 ) : _pdf(pdf), _max(mx), _ncalls(0), _ncached(0), _reset(0), _disabled(false), _printstats(false) { } 
 
   virtual ~Cache() { } 
 
@@ -92,8 +92,10 @@ public:
   }
   
 
+
+
   /// print some useful stats
-  void stats() const {  std::cout << *this << std::endl; }
+  void stats() const { if (_printstats) std::cout << *this << std::endl; }
 
   /// return the actual stored pdf - very handy 
   pdffunction pdf() { return _pdf; }
@@ -130,6 +132,9 @@ private:
   unsigned _reset;
 
   bool     _disabled;
+
+  bool     _printstats;
+
 };
 
 

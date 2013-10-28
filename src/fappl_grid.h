@@ -64,11 +64,20 @@ extern "C" double getbinwidth_(int& id, int& bin);
 
 extern "C" void convolute_(int& id, double* data);
 
-extern "C" void convoluteorder_(int& id, int& nloops, double* data);
-
 extern "C" void convolutewrap_(int& id, double* data, 
 			       void (*pdf)(const double& , const double&, double* ),
 			       double (*alphas)(const double& ) );
+
+
+/// allow different loop order
+extern "C" void convoluteorder_(int& id, int& nloops, double* data);
+
+
+
+/// allow varaiation of loop order and scales
+extern "C" void fullconvolute_(int& id, double* data, 
+			       int& nloops,
+			       double& rscale, double& fscale  );
 
 extern "C" void fullconvolutewrap_(int& id, double* data, 
 				   void (*pdf)(const double& , const double&, double* ),
@@ -78,11 +87,20 @@ extern "C" void fullconvolutewrap_(int& id, double* data,
 
 
 
+/// allow different cms energies
 extern "C" void escaleconvolute_(int& id, double* data, double& Escale);
 
 extern "C" void escaleconvolutewrap_(int& id, double* data, 
 				     void (*pdf)(const double& , const double&, double* ),
 				     double (*alphas)(const double& ), double& Escale );
+
+
+
+/// allow different cms eneregies and scale variation, and loop order
+extern "C" void escalefullconvolute_(int& id, double* data, 
+				     int& nloops,
+				     double& rscale, double& fscale,
+				     double& Escale );
 
 extern "C" void escalefullconvolutewrap_(int& id, double* data, 
 					 void (*pdf)(const double& , const double&, double* ),

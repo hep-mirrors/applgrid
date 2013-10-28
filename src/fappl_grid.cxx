@@ -22,84 +22,6 @@
 extern "C" double fnalphas_(const double& Q); 
 extern "C" void   fnpdf_(const double& x, const double& Q, double* f);
 
-// /// create a grid
-// extern "C" void bookgrid_(int& id, const int& Nobs, const double* binlims);
-
-// /// delete a grid
-// extern "C" void releasegrid_(int& id);
-
-// /// delete all grids
-// extern "C" void releasegrids_();
-
-// /// read a grid from a file
-// extern "C" void readgrid_(int& id, const char* s);
-
-// /// write to a file 
-// extern "C" void writegrid_(int& id, const char* s);
-
-// /// add an entry 
-// extern "C" void fillgrid_(int& id, 
-// 			  const int& ix1, const int& ix2, const int& iQ, 
-// 			  const int& iobs, 
-// 			  const double* w,
-// 			  const int& iorder );  
-
-// /// redefine the grid dimensions
-// extern "C" void redefine_(int& id, 
-// 			  const int& iobs, const int& iorder, 
-// 			  const int& NQ2, const double& Q2min, const double& Q2max, 
-// 			  const int& Nx,  const double&  xmin, const double&  xmax); 
-
-// /// get number of observable bins for a grid 
-// extern "C" int getnbins_(int& id);
-
-
-// /// do the convolution!! hooray!!
-
-// extern "C" void convolute_(int& id, double* data);
-
-// extern "C" void convoluteorder_(int& id, int& nloops, double* data);
-
-// extern "C" void convolutewrap_(int& id, double* data, 
-// 			       void (*pdf)(const double& , const double&, double* ),
-// 			       double (*alphas)(const double& ) );
-
-// extern "C" void fullconvolutewrap_(int& id, double* data, 
-// 				   void (*pdf)(const double& , const double&, double* ),
-// 				   double (*alphas)(const double& ),
-// 				   int& nloops,
-// 				   double& rscale, double& fscale  );
-
-
-
-// extern "C" void escaleconvolute_(int& id, double* data, double& Escale);
-
-// extern "C" void escaleconvolutewrap_(int& id, double* data, 
-// 				     void (*pdf)(const double& , const double&, double* ),
-// 				     double (*alphas)(const double& ), double& Escale );
-
-// extern "C" void escalefullconvolutewrap_(int& id, double* data, 
-// 					 void (*pdf)(const double& , const double&, double* ),
-// 					 double (*alphas)(const double& ),
-// 					 int& nloops,
-// 					 double& rscale, double& fscale,
-// 					 double& Escale );
-
-
-// /// set the ckm matrix - a flat vector of 9 doubles, Vud, Vus, Vub, Vcd ...
-// extern "C" void setckm_( int& id, const double* ckm );
-
-// /// print a grid
-// extern "C" void printgrid_(int& id);
-
-// /// print all grids
-// extern "C" void printgrids_();
-
-// /// print the grid documentation
-// extern "C" void printgriddoc_(int& id);
-
-// /// create grids from fastnlo
-// extern "C" void readfastnlogrids_(  int* ids, const char* s );
 
 
 static int idcounter = 0;
@@ -140,7 +62,9 @@ void readgrid_(int& id, const char* s) {
   id = idcounter++;
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr==_grid.end() ) { 
-    _grid.insert(  std::map<int,appl::grid*>::value_type( id, new appl::grid(s) ) );
+    appl::grid* g = new appl::grid(s);
+    std::cout << "readgrid: " << id << " " << g->getDocumentation() << std::endl;
+    _grid.insert(  std::map<int,appl::grid*>::value_type( id, g ) ); 
   }
   else throw appl::grid::exception( std::cerr << "grid with id " << id << " already exists" << std::endl );  
 }

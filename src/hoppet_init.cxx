@@ -126,6 +126,7 @@ bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double
   //  std::cout << "ccache.size() = " << ccache.size() << "\tsize() = " << size() << std::endl;  
   
   if ( ccache.size()!= size() ) changed = true;  
+
   for ( unsigned i=0 ; i<ccache.size() ; i++ ) if ( ccache[i]!=at(i) ) changed = true;
   
   // cache (and hence the pdf) has changed, so replace the old cached 

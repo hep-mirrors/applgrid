@@ -447,7 +447,11 @@ public:
 
 
   /// will the corrections be applied? 
-  bool getApplyCorrection(unsigned i) const { return m_applyCorrection.at(i); } 
+  bool getApplyCorrection(unsigned i) const { 
+    if ( i<m_applyCorrection.size() ) return m_applyCorrection.at(i);
+    else                              return m_applyCorrections;
+  }
+ 
   bool setApplyCorrection(unsigned i, bool b) { 
     if ( i>=m_corrections.size() ) return false; 
     std::cout << "appl::grid bin-by-bin correction will " 

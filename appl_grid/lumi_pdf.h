@@ -35,13 +35,14 @@ public:
 
   lumi_pdf(const std::string& s="", const std::vector<int>& combinations=std::vector<int>() );   // , int Wcharge=0 );
 
+  lumi_pdf(const std::string& s, const std::vector<combination>& combinations, int ckmcharge=0 );             // , int Wcharge=0 );
+
   virtual ~lumi_pdf() {   } 
 
   void evaluate(const double* _fA, const double* _fB, double* H);
 
   /// additional user defined functions to actually initialise 
   /// based on the input file
-
 
   /// how many combinations of subprocesses are there ?
   unsigned size() const { return m_combinations.size(); }

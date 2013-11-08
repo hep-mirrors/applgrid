@@ -439,19 +439,8 @@ void appl::igrid::write(const std::string& name) {
     // trim it so that it's quicker to copy into the TH3D
     m_weight[ip]->trim();
 
-    //    int newsize = m_weight[ip]->size();
-    
-    //    std::cout << "iproc=" << ip 
-    //	 << "\tgrid size(untrimmed)=" << oldsize
-    //	 << "\tgrid size(trimmed)="   << newsize << std::endl;
-
-    //    m_weight[ip]->print();
-
     igridtrimsize += m_weight[ip]->size();
 
-    //    m_weight[ip]->print();
-
-    
     TH3D* h=m_weight[ip]->getTH3D(hname);
     h->SetDirectory(0);
     h->Write();

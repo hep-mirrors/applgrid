@@ -58,8 +58,10 @@ appl_pdf* appl_pdf::getpdf(const std::string& s, bool ) {
   if ( __pdfmap.size()==0 ) appl::appl_pdf::create_map(); 
   pdfmap::iterator itr = __pdfmap.find(s);
   if ( itr!=__pdfmap.end() ) return itr->second; 
-  /// not found in std::map
-  throw exception( std::cerr << "getpdf() " << s << " not instantiated in std::map " );
+ 
+  /// not found in std::map - used to throw (and catch) an exception 
+  return 0;
+  //  throw exception( std::cerr << "getpdf() " << s << " not instantiated in std::map " );
 }
 
 

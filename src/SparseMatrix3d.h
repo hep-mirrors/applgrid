@@ -87,7 +87,7 @@ public:
   }
   
 
-  // print out
+  /// print out
   void print() const {
     sparse3d::print();
     std::cout << m_xaxis << "\n"; 
@@ -95,7 +95,8 @@ public:
     std::cout << m_zaxis << "\n"; 
   }
 
-  bool operator==(const SparseMatrix3d& s) const { 
+  /// check if the axes are all the same
+  bool compare_axes(const SparseMatrix3d& s) const { 
 
 #if 0
 
@@ -129,6 +130,10 @@ public:
 	     m_zaxis == s.m_zaxis );
    
   }
+
+
+  /// checks if the actual contents are the same
+  bool operator==(const SparseMatrix3d& s) const;
 
   bool operator!=(const SparseMatrix3d& s) const { 
     return !( *this == s );

@@ -12,6 +12,9 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
+#include <vector>
+#include <map>
+#include <set>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -249,8 +252,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   TFile* gridfilep = TFile::Open(filename.c_str());
   
   if (gridfilep->IsZombie()) {
-    throw exception(std::cerr << "grid::grid() cannot open file: zombie " << filename << std::endl ); 
     delete gridfilep;
+    throw exception(std::cerr << "grid::grid() cannot open file: zombie " << filename << std::endl ); 
   }
 
   // TFile gridfile(filename.c_str());
@@ -359,6 +362,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf (or lumi_pdf for amcatnlo)
   //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
+
+  std::cout << "appl::grid() requested pdf combination " << m_genpdfname << std::endl;
   
   if ( contains(m_genpdfname, ".config") ) { 
     /// decode the pdf combination if appropriate
@@ -381,7 +386,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
     if ( contains(m_genpdfname, ".dat") ) addpdf(m_genpdfname);
   }
 
-  /// returieve the pdf routine 
+  /// retrieve the pdf routine 
   findgenpdf( m_genpdfname );
 
   //  std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
@@ -400,6 +405,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
+
 
 
   //  std::cout << "grid::grid() read obs bins" << std::endl;
@@ -449,7 +455,7 @@ appl::grid::grid(const grid& g) :
   m_obs_bins(new TH1D(*g.m_obs_bins)), 
   m_leading_order(g.m_leading_order), m_order(g.m_order), 
   m_run(g.m_run), m_optimised(g.m_optimised), m_trimmed(g.m_trimmed), 
-  m_normalised(true),
+  m_normalised(g.m_normalised),
   m_symmetrise(g.m_symmetrise),
   m_transform(g.m_transform),
   m_genpdfname(g.m_genpdfname), 
@@ -639,7 +645,8 @@ bool appl::grid::operator==(const appl::grid& g) const {
   if ( m_order!=g.m_order )  match = false;
   if ( m_leading_order!=g.m_leading_order ) match = false;
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) match &= ( (*m_grids[iorder][iobs]) == (*g.m_grids[iorder][iobs]) ); 
+    //    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) match &= ( (*m_grids[iorder][iobs]) == (*g.m_grids[iorder][iobs]) ); 
+    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) match &= ( m_grids[iorder][iobs]->compare_axes( *g.m_grids[iorder][iobs] ) ); 
   }
   return match;
 }
@@ -766,25 +773,39 @@ void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinati
 
       //      std::cout << "\ti " << i<< std::endl; 
 
-      if ( names[i].find(".dat")!=std::string::npos ) { 
-	try {
-	  appl_pdf::getpdf(names[i]); // , false);
-	}
-	catch ( appl_pdf::exception e ) { 
-	  std::cout << "creating new generic_pdf " << names[i] << std::endl;
+      if ( names[i].find(".dat")!=std::string::npos ) {
+
+	if ( appl_pdf::getpdf(names[i])==0 ) { 
+ 	  std::cout << "appl::grid::addpdf() creating new generic_pdf " << names[i] << std::endl;
 	  new generic_pdf(names[i]);
 	}
+
+	// 	try {
+	// 	  appl_pdf::getpdf(names[i]); // , false);
+	// 	}
+	// 	catch ( appl_pdf::exception e ) { 
+	// 	  std::cout << "creating new generic_pdf " << names[i] << std::endl;
+	// 	  new generic_pdf(names[i]);
+	// 	}
+
       }
       else if ( names[i].find(".config")!=std::string::npos ) { 
-	try {
-	  appl_pdf::getpdf(names[i]); // , false);
-	}
-	catch ( appl_pdf::exception e ) { 
-	  std::cout << "creating new lumi_pdf " << names[i] << std::endl;
-	  new lumi_pdf(names[i], combinations);
-	  //	  std::cout << "created" << names[i] << std::endl;
 
+	if ( appl_pdf::getpdf(names[i])==0 ) { 
+	  std::cout << "appl::grid::addpdf() creating new lumi_pdf " << names[i] << std::endl;
+	  new lumi_pdf(names[i], combinations);
 	}
+
+	// 	try {
+	// 	  appl_pdf::getpdf(names[i]); // , false);
+	// 	}
+	// 	catch ( appl_pdf::exception e ) { 
+	// 	  std::cout << "creating new lumi_pdf " << names[i] << std::endl;
+	// 	  new lumi_pdf(names[i], combinations);
+	// 	  //	  std::cout << "created" << names[i] << std::endl;
+	
+	// 	}
+
       }
 
     }
@@ -962,9 +983,13 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   //  std::cout << "reference" << std::endl;
   
   TH1D* reference = (TH1D*)m_obs_bins->Clone("reference");
-  
+  reference->SetDirectory(0);
+
+  /// grrr, what is this? This whole normalisation issue is a real pain - 
+  /// we need to address this - but how to do it in a backwards compatible way?
+  /// will need to check the grid version and do things differently probably
   if ( !getNormalised() )  if ( run() ) reference->Scale(1/double(run()));
-  
+  // if ( run() ) reference->Scale(1/double(run()));
   reference->Write();
   delete reference;
 
@@ -1667,6 +1692,175 @@ void appl::grid::applyCorrection(unsigned i, std::vector<double>& v) {
 }
 
 
+template<typename T>
+std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) { 
+  for ( unsigned i=0 ; i<v.size() ; i++ ) s << "\t" << v[i];
+  return s;
+}
+
+
+
+/// do a deep comparison of all the different sub processes - if any 
+/// are the same, then remove them
+void appl::grid::shrink() { 
+
+  std::cout << "appl::grid::shrink()" << std::endl;
+
+
+  for( int iorder=0 ; iorder<2 ; iorder++ ) {
+
+    std::cout << "appl::grid::shrink() order " << iorder << std::endl;
+    
+    
+    std::vector< std::vector<int> > pdf_combinations;
+    pdf_combinations.reserve( Nobs() );
+    
+    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) { 
+      
+      //      std::cout << "shrink() order: " << iorder << "\t obs: " << iobs;
+      
+
+      igrid* ig = m_grids[iorder][iobs];
+    
+      std::map< int, std::vector<int> > same;
+      std::map< int, int > sizes;
+
+      std::set<int> duplicates;
+
+      std::set<int> empty;
+
+      for ( int i=0 ; i<ig->SubProcesses() ; i++ ) { 
+
+	if ( duplicates.find(i)!=duplicates.end() ) continue;
+
+	//	std::pair< std::map< int, std::vector<int> >, bool> itr = 
+	//	  same.insert( std::map< int, std::vector<int> >::value_type( i, std::vector<int>() ) );
+	//	
+	//	if ( itr->second==false ) std::cerr << "OH SHIT!!!" << std::endl;
+
+	int isize = ig->weightgrid(i)->size();
+
+	if ( isize==0 ) { 
+	  empty.insert(i); 
+	  continue;
+	}
+
+	//	std::cout << i << " : ";
+
+	std::vector<int> vec; 
+	
+	for ( int j=i+1 ; j<ig->SubProcesses() ; j++ ) {
+
+	  if ( duplicates.find(j)!=duplicates.end() ) continue;
+	  if ( empty.find(j)!=empty.end() ) continue;
+
+	  int jsize = ig->weightgrid(j)->size();
+	  
+	  if ( jsize==0 ) { 
+	    empty.insert(j); 
+	    continue;
+	  }
+	  
+	  //	  std::cout << "\t" << j << ":" << jsize;
+	   
+	  if ( (*ig->weightgrid(i)) == (*ig->weightgrid(j)) ) { 
+	    //  std::cout << "!"; 
+	    vec.push_back(j);
+	    duplicates.insert(j);
+	  }
+
+	}
+	//	std::cout << std::endl;
+
+	same.insert( std::map< int, std::vector<int> >::value_type( i, vec ) );
+	sizes.insert( std::map< int, int >::value_type( i, isize ) );
+      }
+
+      if ( same.empty() ) continue;
+
+      std::map< int, std::vector<int> >::iterator itr  = same.begin();
+      std::map< int, std::vector<int> >::iterator iend = same.end();
+      
+      lumi_pdf*  _pdf = 0;
+      if ( m_genpdf[iorder]->name().find(".config")!=std::string::npos ){ 
+	_pdf = dynamic_cast<lumi_pdf*>(m_genpdf[iorder]);
+	//	std::cout << "pdf combinations : " << _pdf->size() << std::endl;
+      }
+
+      std::vector<combination> combinations;
+
+      int i=0;
+      while ( itr!=iend ) { 
+	std::vector<int>& v = itr->second;
+	//	std::map< int, int>::iterator sizeitr  = sizes.find(itr->first);
+	//	std::cout << "\t" << i++ << "\tproc: " << itr->first << ":" << sizeitr->second << "\t" << itr->second << " ( " << (*_pdf)[itr->first] << " )" << std::endl;
+	//	std::cout << "\t" << i << "\tproc: " << itr->first << ":" << sizeitr->second << "\t" << (*_pdf)[itr->first] << std::endl;
+	//	for ( unsigned iv=0 ; iv<v.size() ; iv++ ) std::cout << "\t\t\t" << v[iv] << "\t" << (*_pdf)[v[iv]] << std::endl;
+    
+
+	std::vector<int> c(2);
+	c[0] = i;
+	c[1] = 0;
+	
+	const combination& comb = (*_pdf)[itr->first]; 
+
+	for ( unsigned ic=0 ; ic<comb.size() ; ic++ ) { 
+	  c[1]++;
+	  c.push_back( comb[ic].first );
+	  c.push_back( comb[ic].second );
+	}
+
+	for ( unsigned iv=0 ; iv<v.size() ; iv++ ) { 
+
+	  const combination& comb = (*_pdf)[v[iv]]; 
+
+	  for ( unsigned ic=0 ; ic<comb.size() ; ic++ ) { 
+	    c[1]++;
+	    c.push_back( comb[ic].first );
+	    c.push_back( comb[ic].second );
+	  }
+
+	}
+
+
+	combinations.push_back( combination( c ) );
+	
+	i++;
+	itr++;
+      }
+
+      std::set< int>::iterator eitr  = empty.begin();
+      std::set< int>::iterator eend  = empty.end();
+
+      //      std::cout << "\tempty: " << empty.size() << " sub-processes";
+      //      while ( eitr!=eend ) std::cout << " " << (*eitr++);
+      //      std::cout << std::endl; 
+     
+      lumi_pdf newpdf( "newpdf.config", combinations, 0 );
+      
+      pdf_combinations.push_back( newpdf.serialise() );
+      
+      //      std::cout << newpdf << std::endl;
+ 
+    }
+
+    bool common = true;
+    for ( unsigned ipdf=1 ; ipdf<pdf_combinations.size() ; ipdf++ ) { 
+    
+      if ( pdf_combinations[ipdf].size()>0 ) {
+	if ( pdf_combinations[ipdf]!=pdf_combinations[ipdf-1] ) { 
+	  std::cout << "pdfs " << ipdf << " and " << ipdf-1 << " don't match" 
+		    << lumi_pdf("duff.config", pdf_combinations[ipdf]) << std::endl;
+	  common = false;
+	}  
+      } 
+    }      
+    
+    if ( common && pdf_combinations.size()>0 ) std::cout << "common pdf: " << lumi_pdf("duff", pdf_combinations[0]) << std::endl;
+    
+  }
+  
+}
 
 
 std::ostream& operator<<(std::ostream& s, const appl::grid& g) {

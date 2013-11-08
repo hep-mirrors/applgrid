@@ -60,6 +60,26 @@ SparseMatrix3d::SparseMatrix3d(const TH3D* h) :
   setup_fast();
 }
 
+/// check if the actual contents are the same
+bool SparseMatrix3d::operator==(const SparseMatrix3d& s) const { 
+
+  /// first if the axes are different, cannot be the same
+  if ( !compare_axes( s ) ) return false;
+
+  int nvalue = 0;
+
+  /// now do a deep comparison ...
+  for ( int i=0 ; i<m_xaxis.N() ; i++ ) { 
+    for ( int j=0 ; j<m_yaxis.N() ; j++ ) { 
+      for ( int k=0 ; k<m_zaxis.N() ; k++ ) { 
+	if ( (*this)(i,j,k) != s(i,j,k) ) return false;
+	if ( (*this)(i,j,k)!=0 ) nvalue++;
+      }  
+    }  
+  }
+
+  return true;
+}
 
 
 // utilities for file access and storage

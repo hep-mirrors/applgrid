@@ -366,7 +366,8 @@ public:
   igrid& operator+=(const igrid& g) { 
     for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
       if ( m_weight[ip] && g.m_weight[ip] ) { 
-	if ( (*m_weight[ip]) == (*g.m_weight[ip]) ) (*m_weight[ip]) += (*g.m_weight[ip]);
+	//if ( (*m_weight[ip]) == (*g.m_weight[ip]) ) (*m_weight[ip]) += (*g.m_weight[ip]);
+	if ( m_weight[ip]->compare_axes( *g.m_weight[ip] ) ) (*m_weight[ip]) += (*g.m_weight[ip]); 
 	else { 
 	  throw exception("igrid::operator+=() grids do not match");
 	}
@@ -375,11 +376,24 @@ public:
     return *this;
   } 
 
-  /// check that the grids match
+  /// check that the grid axes match
+  bool compare_axes(const igrid& g) const { 
+    for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
+      if ( m_weight[ip] && g.m_weight[ip] ) { 
+	if ( !m_weight[ip]->compare_axes( *g.m_weight[ip] ) )  return false;
+	// if ( (*m_weight[ip]) != (*g.m_weight[ip]) )  return false;
+      }
+      if ( m_weight[ip]    && g.m_weight[ip]==0 ) return false; 
+      if ( m_weight[ip]==0 && g.m_weight[ip]    ) return false; 
+    }
+    return true;
+  }
+
+
   bool operator==(const igrid& g) const { 
     for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
       if ( m_weight[ip] && g.m_weight[ip] ) { 
-	if ( (*m_weight[ip]) != (*g.m_weight[ip]) )  return false;
+	if ( (*m_weight[ip]) != (*g.m_weight[ip]) ) return false;
       }
       if ( m_weight[ip]    && g.m_weight[ip]==0 ) return false; 
       if ( m_weight[ip]==0 && g.m_weight[ip]    ) return false; 
@@ -387,8 +401,8 @@ public:
     return true;
   } 
 
+  bool operator!=(const igrid& g) const { return !((*this)==g); }
 
-  
 
   // ouput header
   std::ostream& header(std::ostream& s) const;

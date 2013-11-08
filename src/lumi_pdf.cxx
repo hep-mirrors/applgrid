@@ -108,6 +108,36 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
 
 
 
+
+
+lumi_pdf::lumi_pdf(const std::string& s, const std::vector<combination>& combinations, int ckmcharge ) : 
+  appl_pdf(s), m_filename(s), m_combinations(combinations)
+{
+  
+  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << " lookup size " << m_lookup.size() << " " << this << std::endl; 
+
+  /// no need need to decode the input std::vector
+
+  /// the W+- charge (if required) - flags that 
+  /// ckm matrix is to be used    
+  m_ckmcharge = ckmcharge;
+
+  if ( m_ckmcharge>0 ) { 
+    std::cout << "lumi_pdf::lumi_pdf() setting W+ cmk matrix" << std::endl;
+    make_ckm(true);
+  }
+  else if ( m_ckmcharge<0  ) { 
+    std::cout << "lumi_pdf::lumi_pdf() setting W- cmk matrix" << std::endl;
+    make_ckm(false);
+  }
+
+  m_Nproc = m_combinations.size();
+  
+}
+
+
+
+
 void lumi_pdf::evaluate(const double* xfA, const double* xfB, double* H) { 
   /// if need to include the ckm matrix ...
   if ( m_ckmcharge==0 )  {

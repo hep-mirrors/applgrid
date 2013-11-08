@@ -130,7 +130,6 @@ public:
 
   void SetNProc(int Nsub){ m_Nproc=Nsub; return;};
 
-
   /// set some useful names for the different subprocesses
   void setnames( const std::vector<std::string>& names) { m_names = names; } 
   std::vector<std::string> getnames() const  { return m_names; } 

@@ -506,6 +506,8 @@ public:
     return "unknown";
   }
 
+  /// reduce number of subprocesses if possible
+  void shrink();
 
 protected:
 

@@ -57,6 +57,10 @@ public:
 
   std::vector<int> serialise() const;
 
+  void write(const std::string& filename) const;
+ 
+  void write(std::ostream& s=std::cout) const; 
+  
 private:
 
   /// add a combination

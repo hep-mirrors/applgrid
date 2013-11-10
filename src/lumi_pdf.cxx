@@ -114,7 +114,7 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<combination>& combina
   appl_pdf(s), m_filename(s), m_combinations(combinations)
 {
   
-  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << " lookup size " << m_lookup.size() << " " << this << std::endl; 
+  //  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << " lookup size " << m_lookup.size() << " " << this << std::endl; 
 
   /// no need need to decode the input std::vector
 
@@ -199,3 +199,25 @@ std::vector<int> lumi_pdf::serialise() const {
 }
 
 
+void lumi_pdf::write(std::ostream& s) const { 
+  
+  s << m_ckmcharge << "\n";
+
+  for ( unsigned i=0 ; i<m_combinations.size() ; i++ ) { 
+    s << m_combinations[i].index() << " ";
+    s << m_combinations[i].size() << " ";
+
+    for ( unsigned j=0 ; j<m_combinations[i].size() ; j++ ) { 
+      s << "  " << m_combinations[i][j].first << " " << m_combinations[i][j].second;
+    }
+
+    s << "\n";
+
+  }
+
+}
+
+void lumi_pdf::write(const std::string& filename) const {  
+  std::ofstream s(filename.c_str());
+  write(s);
+}

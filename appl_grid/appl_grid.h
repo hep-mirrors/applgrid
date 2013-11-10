@@ -507,7 +507,7 @@ public:
   }
 
   /// reduce number of subprocesses if possible
-  void shrink();
+  void shrink(const std::string& name, int ckmcharge=0);
 
 protected:
 
@@ -547,9 +547,10 @@ protected:
   /// get the required pdf combinations from those registered   
   void findgenpdf( std::string s );
 
-
   /// add a generic pdf to the data base of registered pdfs
   void addpdf( const std::string& s, const std::vector<int>& combinations=std::vector<int>() );
+
+  appl_pdf* genpdf(int i) { return m_genpdf[i]; }
 
 protected:
 
@@ -609,13 +610,7 @@ protected:
 
   CALCULATION     m_type; 
 
-  /// pdf cache - will add quite some space to memory footprint, 
-  /// but should speed up convolution by ~ 40 times (!!!)
-
-  //  bool m_useCache;
-
-  //  NodeCache m_cache1;
-  //  NodeCache m_cache2;
+  bool            m_read;
 
 };
 

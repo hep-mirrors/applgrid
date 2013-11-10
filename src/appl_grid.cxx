@@ -16,6 +16,7 @@
 #include <map>
 #include <set>
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <cmath>
 
@@ -45,10 +46,10 @@
 
 /// this is a compatability flag for persistent versions 
 /// of the grid
-/// NB: ONLY change this if the persistent class
-///     changes in a non-backwards compatible way.
+/// NB: ONLY change the major version if the persistent 
+///     class changes in a non-backwards compatible way.
 
-const std::string appl::grid::m_version = "version-3.2";
+const std::string appl::grid::m_version = "version-3.3";
 
 std::string appl::grid::appl_version() const { return PACKAGE_VERSION; }
 
@@ -101,7 +102,8 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
   m_documentation(""),
-  m_type(STANDARD)
+  m_type(STANDARD),
+  m_read(false)
 {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
@@ -132,7 +134,8 @@ appl::grid::grid(int Nobs, const double* obsbins,
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
   m_documentation(""),
-  m_type(STANDARD)
+  m_type(STANDARD),
+  m_read(false)
 {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
@@ -164,7 +167,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),
   m_documentation(""),
-  m_type(STANDARD)
+  m_type(STANDARD),
+  m_read(false)
 {
   
   if ( obs.size()==0 ) { 
@@ -202,7 +206,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
   m_applyCorrections(false),  
   m_documentation(""),
-  m_type(STANDARD)
+  m_type(STANDARD),
+  m_read(false)
 { 
 
   if ( obs.size()==0 ) { 
@@ -239,7 +244,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_symmetrise(false), m_transform(""), 
   m_applyCorrections(false),
   m_documentation(""),
-  m_type(STANDARD)
+  m_type(STANDARD),
+  m_read(false)
 {
   
   struct stat _fileinfo;
@@ -359,6 +365,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   std::cout << "appl::grid() reading grid calculation type: " << _calculation(m_type) << std::endl;
 
+  std::cout << "appl::grid() normalised: " << getNormalised() << std::endl;
+
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf (or lumi_pdf for amcatnlo)
   //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
@@ -405,7 +413,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
-
+  if ( m_normalised ) m_read = true;
 
 
   //  std::cout << "grid::grid() read obs bins" << std::endl;
@@ -423,6 +431,9 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
       //      std::cout << "grid::grid() done" << std::endl;
     }
   }
+
+  trim();
+  std::cout << "appl::grid() size " << size();
 
   //  d.pop();
 
@@ -448,6 +459,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   gridfilep->Close();
   delete gridfilep;
+  
+
 }
 
 
@@ -465,7 +478,8 @@ appl::grid::grid(const grid& g) :
   m_ckmsum(g.m_ckmsum), /// need a deep copy of the contents
   m_ckm2(g.m_ckm2),     /// need a deep copy of the contents
   m_ckm(g.m_ckm),       /// need a deep copy of the contents
-  m_type(g.m_type)
+  m_type(g.m_type),
+  m_read(g.m_read)
 {
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2();
@@ -988,6 +1002,10 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   /// grrr, what is this? This whole normalisation issue is a real pain - 
   /// we need to address this - but how to do it in a backwards compatible way?
   /// will need to check the grid version and do things differently probably
+
+  std::cout << "normalised() " << getNormalised() << "\tread " << m_read << std::endl; 
+  
+  //  if ( !getNormalised() || m_read )  if ( run() ) reference->Scale(1/double(run()));
   if ( !getNormalised() )  if ( run() ) reference->Scale(1/double(run()));
   // if ( run() ) reference->Scale(1/double(run()));
   reference->Write();
@@ -1467,6 +1485,7 @@ TH1D* appl::grid::convolute_subproc(int subproc,
 void appl::grid::optimise(bool force) {
   if ( !force && m_optimised ) return;
   m_optimised = true;
+  m_read = false;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
       std::cout << "grid::optimise() bin " << iobs << "\t";
@@ -1480,6 +1499,7 @@ void appl::grid::optimise(int NQ2, int Nx) {  optimise(NQ2, Nx, Nx);  }
 
 void appl::grid::optimise(int NQ2, int Nx1, int Nx2) {
   m_optimised = true;
+  m_read = false;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
       std::cout << "grid::optimise() bin " << iobs << "\t";
@@ -1702,15 +1722,17 @@ std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
 
 /// do a deep comparison of all the different sub processes - if any 
 /// are the same, then remove them
-void appl::grid::shrink() { 
+void appl::grid::shrink(const std::string& name, int ckmcharge) { 
 
   std::cout << "appl::grid::shrink()" << std::endl;
 
+  std::string label[3] = { "LO", "NLO", "NNLO" };
+
+  std::string genpdfname="";
 
   for( int iorder=0 ; iorder<2 ; iorder++ ) {
 
     std::cout << "appl::grid::shrink() order " << iorder << std::endl;
-    
     
     std::vector< std::vector<int> > pdf_combinations;
     pdf_combinations.reserve( Nobs() );
@@ -1719,11 +1741,9 @@ void appl::grid::shrink() {
       
       //      std::cout << "shrink() order: " << iorder << "\t obs: " << iobs;
       
-
       igrid* ig = m_grids[iorder][iobs];
     
       std::map< int, std::vector<int> > same;
-      std::map< int, int > sizes;
 
       std::set<int> duplicates;
 
@@ -1773,7 +1793,7 @@ void appl::grid::shrink() {
 	//	std::cout << std::endl;
 
 	same.insert( std::map< int, std::vector<int> >::value_type( i, vec ) );
-	sizes.insert( std::map< int, int >::value_type( i, isize ) );
+
       }
 
       if ( same.empty() ) continue;
@@ -1784,7 +1804,6 @@ void appl::grid::shrink() {
       lumi_pdf*  _pdf = 0;
       if ( m_genpdf[iorder]->name().find(".config")!=std::string::npos ){ 
 	_pdf = dynamic_cast<lumi_pdf*>(m_genpdf[iorder]);
-	//	std::cout << "pdf combinations : " << _pdf->size() << std::endl;
       }
 
       std::vector<combination> combinations;
@@ -1792,7 +1811,6 @@ void appl::grid::shrink() {
       int i=0;
       while ( itr!=iend ) { 
 	std::vector<int>& v = itr->second;
-	//	std::map< int, int>::iterator sizeitr  = sizes.find(itr->first);
 	//	std::cout << "\t" << i++ << "\tproc: " << itr->first << ":" << sizeitr->second << "\t" << itr->second << " ( " << (*_pdf)[itr->first] << " )" << std::endl;
 	//	std::cout << "\t" << i << "\tproc: " << itr->first << ":" << sizeitr->second << "\t" << (*_pdf)[itr->first] << std::endl;
 	//	for ( unsigned iv=0 ; iv<v.size() ; iv++ ) std::cout << "\t\t\t" << v[iv] << "\t" << (*_pdf)[v[iv]] << std::endl;
@@ -1849,17 +1867,32 @@ void appl::grid::shrink() {
     
       if ( pdf_combinations[ipdf].size()>0 ) {
 	if ( pdf_combinations[ipdf]!=pdf_combinations[ipdf-1] ) { 
-	  std::cout << "pdfs " << ipdf << " and " << ipdf-1 << " don't match" 
-		    << lumi_pdf("duff.config", pdf_combinations[ipdf]) << std::endl;
+	  std::cout << "pdfs " << ipdf << " and " << ipdf-1 << " don't match" << std::endl; 
+	  //		    << lumi_pdf("duff.config", pdf_combinations[ipdf]) 
 	  common = false;
 	}  
       } 
     }      
     
-    if ( common && pdf_combinations.size()>0 ) std::cout << "common pdf: " << lumi_pdf("duff", pdf_combinations[0]) << std::endl;
-    
+    if ( common && pdf_combinations.size()>0 ) { 
+      pdf_combinations[0].push_back(ckmcharge);
+
+      lumi_pdf lpdf( name+label[iorder]+".config",   pdf_combinations[0]);
+
+      std::cout << lpdf << std::endl;
+
+      //      lpdf.write();
+      lpdf.write( lpdf.name() );
+
+      if ( genpdfname.size() ) genpdfname += ":";
+      genpdfname += name+label[iorder]+".config";
+    }  
   }
   
+  std::cout << "genpdfname " << genpdfname << std::endl;
+
+  //  if ( addpdf(m_genpdfname) )  findgenpdf( m_genpdfname );
+
 }
 
 

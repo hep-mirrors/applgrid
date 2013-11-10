@@ -413,7 +413,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
-  if ( m_normalised ) m_read = true;
+  if ( m_normalised && m_optimised ) m_read = true;
 
 
   //  std::cout << "grid::grid() read obs bins" << std::endl;
@@ -1006,7 +1006,8 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   std::cout << "normalised() " << getNormalised() << "\tread " << m_read << std::endl; 
   
   //  if ( !getNormalised() || m_read )  if ( run() ) reference->Scale(1/double(run()));
-  if ( !getNormalised() )  if ( run() ) reference->Scale(1/double(run()));
+  if ( !getNormalised() || m_read )  if ( run() ) reference->Scale(1/double(run()));
+
   // if ( run() ) reference->Scale(1/double(run()));
   reference->Write();
   delete reference;

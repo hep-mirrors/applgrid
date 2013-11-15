@@ -97,6 +97,8 @@ std::ifstream& appl_pdf::openpdf( const std::string& filename ) {
 } 
 
 
+int appl_pdf::decideSubProcess( const int , const int  ) const { return -1; }
+
 
 
 bool appl_pdf::create_map() { 

@@ -1272,22 +1272,31 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 
 
 
+bool appl::igrid::shrink( const std::vector<int>& keep ) {
+ 
+  /// save the old grids
+  int          Nproc = m_Nproc;
+  SparseMatrix3d** w = m_weight;
 
+  /// resize
+  m_Nproc  = keep.size();
+  m_weight = new SparseMatrix3d*[m_Nproc];
 
+  /// copy across the grids we want to save
+  for ( unsigned ip=0 ; ip<keep.size() ; ip++ ) {
+ 
+    //    std::cout << "\tcopy " << keep[ip] << " -> " << ip << std::endl; 
 
+    m_weight[ip] = w[keep[ip]]; /// move across the processes we want to keep
+    w[keep[ip]] = 0; /// now flag as 0 
+  }
 
+  for ( int ip=0 ; ip<Nproc ; ip++ ) if ( w[ip]!=0 ) delete w[ip];
 
-
-
-
-
-
-
-
-
-
-
-
+  delete[] w; 
+  
+  return true;
+}
 
 
 
@@ -1563,3 +1572,5 @@ std::ostream& appl::igrid::header(std::ostream& s) const {
 std::ostream& operator<<(std::ostream& s, const appl::igrid& g) {
   return g.header(s);
 }
+
+

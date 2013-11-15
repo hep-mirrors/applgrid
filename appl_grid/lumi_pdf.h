@@ -53,7 +53,7 @@ public:
 
   const combination& operator[](int i) const { return m_combinations.at(i); }  
 
-  int  decideSubProcess(const int iflav1, const int iflav2);
+  int  decideSubProcess(const int iflav1, const int iflav2) const ;
 
   std::vector<int> serialise() const;
 
@@ -65,6 +65,8 @@ private:
 
   /// add a combination
   void add(const combination& c) {  m_combinations.push_back(c); }
+
+  void create_lookup();
 
 private:
 

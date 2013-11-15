@@ -97,6 +97,10 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
 
   m_Nproc = m_combinations.size();
 
+  // create the reverse lookup 
+
+  create_lookup();
+
   //  std::cout << "decideSuprocess " << decideSubProcess( 0, 0 ) << std::endl;
   //  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << m_combinations.size() << " lookup size " << m_lookup.size() << std::endl; 
   //  std::cout << *this << std::endl;
@@ -132,8 +136,24 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<combination>& combina
   }
 
   m_Nproc = m_combinations.size();
+
+  create_lookup();
   
 }
+
+
+
+void lumi_pdf::create_lookup() { 
+  if ( m_lookup.size()==0 ) { 
+    /// create a 13 x 13 lookup table 
+    m_lookup = std::vector<std::vector<int> >(13, std::vector<int>(13, -1) ); 
+    for ( unsigned i=size() ; i-- ; ) { 
+      const combination& c = m_combinations[i];
+      for ( unsigned j=c.size() ; j-- ; ) m_lookup[ c[j].first+6 ][ c[j].second+6 ] = i;
+    } 
+  }
+}
+
 
 
 
@@ -153,25 +173,8 @@ void lumi_pdf::evaluate(const double* xfA, const double* xfB, double* H) {
 }
 
 
-
-
-int  lumi_pdf::decideSubProcess(const int iflav1, const int iflav2) { 
-  /// do we really need this? in any case, need to sort though each subprocess
-  /// checking if the provided flavours are in any of the pairs
-  /// so quicker to set up a reverse 13x13 lookup when needed, and not 
-  /// otherwise
-
+int  lumi_pdf::decideSubProcess(const int iflav1, const int iflav2) const { 
   //  std::cout << "lumi_pdf::decideSubProcess() " << name() << " " << m_lookup.size() << std::endl;
-
-  if ( m_lookup.size()==0 ) { 
-    /// create a 13 x 13 lookup table 
-    m_lookup = std::vector<std::vector<int> >(13, std::vector<int>(13, -1) ); 
-    for ( unsigned i=size() ; i-- ; ) { 
-      const combination& c = m_combinations[i];
-      for ( unsigned j=c.size() ; j-- ; ) m_lookup[ c[j].first+6 ][ c[j].second+6 ] = i;
-    } 
-  }
-
   return m_lookup[iflav1+6][iflav2+6];
 }
 
@@ -182,9 +185,13 @@ std::vector<int> lumi_pdf::serialise() const {
   std::vector<int> v;
 
   v.push_back( Nproc() );
+
   for ( int i=0 ; i<Nproc() ; i++ ) { 
+
     v.push_back(i);
+
     const combination& c = m_combinations[i];
+
     v.push_back( c.size() );
     for ( unsigned j=0 ; j<c.size() ; j++ ) { 
       v.push_back( c[j].first );
@@ -194,6 +201,7 @@ std::vector<int> lumi_pdf::serialise() const {
   
   if      ( m_ckmcharge>0 ) v.push_back(1);
   else if ( m_ckmcharge<0 ) v.push_back(-1);
+  else                      v.push_back(0);
 			 
   return v;
 }

@@ -325,7 +325,7 @@ public:
   const igrid* weightgrid(int iorder, int iobs) const { return m_grids[iorder][iobs]; }
   
   // save grid to specified file
-  void Write(const std::string& filename="weightgrid.root", const std::string& dirname="grid");
+  void Write(const std::string& filename, const std::string& dirname="grid", const std::string& pdfname="" );
 
   // accessors for the observable
   int    Nobs()               const { return m_obs_bins->GetNbinsX(); }
@@ -340,7 +340,7 @@ public:
   const TH1D* getReference()  const { return m_obs_bins; } 
 
   // number of subprocesses 
-  int subProcesses(int i=0) const;
+  int subProcesses(int i) const;
 
   // general status accessors
   double& run() { return m_run; }

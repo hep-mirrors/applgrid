@@ -39,11 +39,13 @@ public:
 
   void evaluate(const double* _fA, const double* _fB, double* H);
 
-  int  decideSubProcess(const int iflav1, const int iflav2);
+  int  decideSubProcess(const int iflav1, const int iflav2) const;
 
 };  
   
 
+
+#if 0
 
 inline void basic_pdf::evaluate(const double* _fA, const double* _fB, double* H) {  
 
@@ -65,12 +67,12 @@ inline void basic_pdf::evaluate(const double* _fA, const double* _fB, double* H)
 }
   
 
-inline int  basic_pdf::decideSubProcess(const int iflav1, const int iflav2) { 
+inline int  basic_pdf::decideSubProcess(const int iflav1, const int iflav2) const { 
   if ( std::fabs(iflav1)>5 || std::fabs(iflav2)>5 ) return -1;
   return (iflav1+5)*11+(iflav2+5);
 }
 
-
+#endif
 
 // fortran callable wrapper
 extern "C" void fbasic_pdf__(const double* fA, const double* fB, double* H);

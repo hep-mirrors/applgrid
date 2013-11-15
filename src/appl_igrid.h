@@ -82,11 +82,6 @@ public:
   void optimise() { optimise(m_Ntau, m_Ny1, m_Ny2); }
   void optimise(int NQ2, int Nx1, int Nx2);  
  
-  // trim unfilled elements
-  void trim() {
-    for ( int i=0 ; i<m_Nproc ; i++ )  m_weight[i]->trim();    
-  }
-
   // formatted print
   std::ostream&  print(std::ostream& s=std::cout) const {
     header(std::cout);
@@ -103,6 +98,9 @@ public:
     for ( int i=0 ; i<m_Nproc ; i++ ) _size += m_weight[i]->size();
     return _size;
   }
+
+  // trim unfilled elements
+  void trim() { for ( int i=0 ; i<m_Nproc ; i++ )  m_weight[i]->trim(); }
 
   // inflate unfilled elements
   void untrim() { for ( int i=0 ; i<m_Nproc ; i++ ) m_weight[i]->untrim(); }
@@ -287,10 +285,9 @@ public:
   bool   isDISgrid() const       { return m_DISgrid; }
   bool   seDISgrid(bool t=true)  { return m_DISgrid=t; } 
 
+  bool   reweight(bool t=true)   { return m_reweight=t; }
 
-
-  bool reweight(bool t=true)    { return m_reweight=t; }
-
+  bool   shrink(const std::vector<int>& keep);
 
   // setup the pdf grid for calculating the pdf using 
   // interpolation - needed if you actually want 

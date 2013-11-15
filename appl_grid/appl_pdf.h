@@ -79,8 +79,14 @@ public:
 
   virtual void evaluate(const double* fA, const double* fB, double* H) = 0; 
 
+  virtual int decideSubProcess( const int , const int  ) const;
+
   int     Nproc() const { return m_Nproc; } 
+
   std::string   name() const { return m_name;  }
+
+
+
 
   std::string  rename(const std::string& name) { 
     /// remove my entry from the std::map, and add me again with my new name

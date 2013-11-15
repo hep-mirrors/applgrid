@@ -325,6 +325,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
 
 
+  /// check whether we need to read in the ckm matrices
 
   if ( setup->GetNoElements()>8 && (*setup)(8)!=0 ) {
 
@@ -367,6 +368,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   std::cout << "appl::grid() normalised: " << getNormalised() << std::endl;
 
+
+
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf (or lumi_pdf for amcatnlo)
   //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
@@ -376,26 +379,43 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   if ( contains(m_genpdfname, ".config") ) { 
     /// decode the pdf combination if appropriate
 
-    /// again have to use TVectorT<double> because TVectorT<int> has no constructor!!!
-    /// I ask you!! what's the point of a template if it doesn't actually instantiate
-    /// it's pathetic!
-    TVectorT<double>* _combinations = (TVectorT<double>*)gridfilep->Get((dirname+"/Combinations").c_str());
+    // find out if we have one combination per order or one overall
+    std::vector<std::string> namevec = parse( m_genpdfname, ":" );
 
-    std::vector<int> combinations(_combinations->GetNoElements());
+    std::string label = dirname+"/Combinations";
 
-    for ( unsigned ic=0 ; ic<combinations.size() ; ic++ ) {
-      combinations[ic] = int((*_combinations)(ic)); 
-    }
+    for ( unsigned i=0 ; i<namevec.size() ; i++ ) { 
+
+      /// again have to use TVectorT<double> because TVectorT<int> has no constructor!!!
+      /// I ask you!! what's the point of a template if it doesn't actually instantiate
+      /// it's pathetic!
+
+      TVectorT<double>* _combinations = (TVectorT<double>*)gridfilep->Get( label.c_str() );
+
+      label += "N"; /// add an N for each order, N-LO, NN-LO etc
+
+      if ( _combinations==0 ) throw exception(std::cerr << "grid::grid() cannot read pdf combination " << namevec[i] << std::endl );
+
+      std::vector<int> combinations(_combinations->GetNoElements());
+
+      for ( unsigned ic=0 ; ic<combinations.size() ; ic++ )  combinations[ic] = int((*_combinations)(ic)); 
     
-    addpdf(m_genpdfname, combinations);
+      //      addpdf(m_genpdfname, combinations);
+      addpdf( namevec[i], combinations);
+
+    }
   }
   else { 
     /// of just create the generic from the file
     if ( contains(m_genpdfname, ".dat") ) addpdf(m_genpdfname);
   }
-
+  
   /// retrieve the pdf routine 
   findgenpdf( m_genpdfname );
+
+  //  appl_pdf* lo  = genpdf(0);
+  //  appl_pdf* nlo = genpdf(1);
+  //  if ( lo->name().find(".config")!=std::string::npos ) std::cout << "pdf:: " << *dynamic_cast<lumi_pdf*>(lo) << "\t" << *dynamic_cast<lumi_pdf*>(nlo) << std::endl;
 
   //  std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
 
@@ -433,7 +453,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   }
 
   trim();
-  std::cout << "appl::grid() size " << size();
+  std::cout << "appl::grid() size " << size()/1024 << " kB" << std::endl;
 
   //  d.pop();
 
@@ -460,7 +480,6 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   gridfilep->Close();
   delete gridfilep;
   
-
 }
 
 
@@ -872,7 +891,7 @@ bool appl::grid::reweight(bool t) {
 
 
 // dump to file
-void appl::grid::Write(const std::string& filename, const std::string& dirname) { 
+void appl::grid::Write(const std::string& filename, const std::string& dirname, const std::string& pdfname) { 
  
 
   struct stat sb;
@@ -882,6 +901,7 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
     if ( std::rename( filename.c_str(), filename_save.c_str() ) ) std::cerr << "could not rename grid file " << filename << std::endl;
   } 
 
+  if ( pdfname!="" ) shrink( pdfname, m_genpdf[0]->getckmcharge() );
 
   //  std::cout << "grid::Write() writing to file " << filename << std::endl;
   TFile rootfile(filename.c_str(),"recreate");
@@ -931,18 +951,6 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
   
   if ( (*setup)(8) == 1 ) { 
     
-#if 0
-    /// no longer write out squared ckm matrix - just use the 3x3
-    TVectorT<double>* ckm2flat = new TVectorT<double>(169);
-    const std::vector<std::vector<double> >& _ckm2 = m_genpdf[0]->getckm2();
-
-    for ( int ic=0 ; ic<13 ; ic++ ) { 
-      for ( int id=0 ; id<13 ; id++ ) (*ckm2flat)(ic*13+id) = _ckm2[ic][id];
-    }
-
-    ckm2flat->Write("CKM2");
-#endif
-
     /// no longer write out squared ckm matrix - just use the 3x3
     TVectorT<double>* ckmflat = new TVectorT<double>(9);
     const std::vector<std::vector<double> >& _ckm = m_genpdf[0]->getckm();
@@ -955,30 +963,47 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
 
   }
 
-
-  /// encode the pdf combination if appropriate
-
-  if ( contains( m_genpdfname, ".config" ) ) { 
-    std::vector<int>   combinations = dynamic_cast<lumi_pdf*>(m_genpdf[0])->serialise();  
-    TVectorT<double>* _combinations = new TVectorT<double>(combinations.size()); // add a few extra just in case 
-    for ( unsigned ic=0 ; ic<combinations.size() ; ic++ ) { 
-      //     std::cout << "write " << ic << "\tcombinations " << combinations[ic] << std::endl;
-      /// because root stupidly doesn't have a constructor for TVectorT<int> 
-      /// we need to store these integers as doubles - this mean we add (or subtract) 
-      /// 0.5 from each value to ensure that the double->int conversion doesn't mess 
-      /// up with 0.9999 -> 0 etc    
-      if ( combinations[ic]<0 ) (*_combinations)(ic) = double(combinations[ic]-0.5);
-      else                      (*_combinations)(ic) = double(combinations[ic]+0.5);
-    }
-    _combinations->Write("Combinations");
-  }
-
   
+  /// encode the pdf combination if appropriate
+  
+  if ( contains( m_genpdfname, ".config" ) ) { 
+    
+    // find out if we have one combination per order or one overall
+    
+    std::vector<std::string> namevec = parse( m_genpdfname, ":" );
+    
+    /// now write out all the ones we need
+    
+    std::string label = "Combinations";
+    
+    for ( unsigned i=0 ; i<namevec.size() && i<unsigned(m_order) ; i++ ) {  
 
-  //  int _size     = 0;
-  //  int trim_size = 0;
-
+      std::vector<int>   combinations = dynamic_cast<lumi_pdf*>(m_genpdf[i])->serialise();
+      TVectorT<double>* _combinations = new TVectorT<double>(combinations.size());
+      for ( unsigned ic=0 ; ic<combinations.size() ; ic++ ) { 
+	if ( combinations[ic]<0 ) (*_combinations)(ic) = double(combinations[ic]-0.5);
+	else                      (*_combinations)(ic) = double(combinations[ic]+0.5);
+      }
+      
+      _combinations->Write( label.c_str() );
+      
+      std::cout << "writing " << m_genpdf[i]->name() << std::endl;
+      
+      label += "N";  /// add an N for each order, N-LO, NN-LO etc
+    }
+  } 
+  
   //  std::cout << "grids Nobs = " << Nobs() << std::endl;
+  
+  untrim();
+  int untrim_size = size();
+  trim();
+  int trim_size = size();
+  std::cout <<"grid::Write()"
+	    << "size(untrimmed)=" << untrim_size/1024 << " kB"
+	    << "\tsize(trimmed)=" <<   trim_size/1024 << " kB"
+	    << " (" << 0.1*int(trim_size*1000./untrim_size) << "%)" << std::endl;
+  
 
   // internal grids
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
@@ -990,8 +1015,8 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname) 
       //   trim_size += m_grids[iorder][iobs]->size();
     }
   }
-  //  std::cout <<"grid::Write() size(untrimmed)=" << _size 
-  //     << "\tsize(trimmed)="              << trim_size << std::endl;
+ 
+  
   //  d.pop();
 
   //  std::cout << "reference" << std::endl;
@@ -1731,6 +1756,11 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
   std::string genpdfname="";
 
+  std::vector<int> keep[2];
+
+  bool found = false;
+
+
   for( int iorder=0 ; iorder<2 ; iorder++ ) {
 
     std::cout << "appl::grid::shrink() order " << iorder << std::endl;
@@ -1768,8 +1798,12 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
 	//	std::cout << i << " : ";
 
+	keep[iorder].push_back( i );
+
 	std::vector<int> vec; 
 	
+	found = true;
+
 	for ( int j=i+1 ; j<ig->SubProcesses() ; j++ ) {
 
 	  if ( duplicates.find(j)!=duplicates.end() ) continue;
@@ -1815,7 +1849,6 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	//	std::cout << "\t" << i++ << "\tproc: " << itr->first << ":" << sizeitr->second << "\t" << itr->second << " ( " << (*_pdf)[itr->first] << " )" << std::endl;
 	//	std::cout << "\t" << i << "\tproc: " << itr->first << ":" << sizeitr->second << "\t" << (*_pdf)[itr->first] << std::endl;
 	//	for ( unsigned iv=0 ; iv<v.size() ; iv++ ) std::cout << "\t\t\t" << v[iv] << "\t" << (*_pdf)[v[iv]] << std::endl;
-    
 
 	std::vector<int> c(2);
 	c[0] = i;
@@ -1838,9 +1871,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	    c.push_back( comb[ic].first );
 	    c.push_back( comb[ic].second );
 	  }
-
 	}
-
 
 	combinations.push_back( combination( c ) );
 	
@@ -1861,6 +1892,8 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
       
       //      std::cout << newpdf << std::endl;
  
+      if ( found ) break;
+
     }
 
     bool common = true;
@@ -1868,7 +1901,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
     
       if ( pdf_combinations[ipdf].size()>0 ) {
 	if ( pdf_combinations[ipdf]!=pdf_combinations[ipdf-1] ) { 
-	  std::cout << "pdfs " << ipdf << " and " << ipdf-1 << " don't match" << std::endl; 
+	  /// std::cout << "pdfs " << ipdf << " and " << ipdf-1 << " don't match" << std::endl; 
 	  //		    << lumi_pdf("duff.config", pdf_combinations[ipdf]) 
 	  common = false;
 	}  
@@ -1880,9 +1913,8 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
       lumi_pdf lpdf( name+label[iorder]+".config",   pdf_combinations[0]);
 
-      std::cout << lpdf << std::endl;
+      std::cout << lpdf.name() << std::endl;
 
-      //      lpdf.write();
       lpdf.write( lpdf.name() );
 
       if ( genpdfname.size() ) genpdfname += ":";
@@ -1890,15 +1922,37 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
     }  
   }
   
-  std::cout << "genpdfname " << genpdfname << std::endl;
+  std::cout << "appl::grid::shrink() genpdfname " << genpdfname << std::endl;
 
   //  if ( addpdf(m_genpdfname) )  findgenpdf( m_genpdfname );
+
+  /// horray!! here we have the optimised pdf combinations written out, so now we 
+  /// to delete the duplicated (or empty) grids ...
+
+  /// loop over the igrids, telling each grid which processes to keep
+  
+  for( int iobs=0 ; iobs<Nobs() ; iobs++ ) { 
+    for( int iorder=0 ; iorder<2 ; iorder++ ) {
+      //      std::cout << "appl::grid::shrink()  obs " << iobs << "\torder " << iorder << std::endl;       
+      m_grids[iorder][iobs]->shrink( keep[iorder] );
+    }
+  }
+
+  /// ... and need to replace the genpdf with these new ones
+  
+  m_genpdfname = genpdfname;
+  addpdf( m_genpdfname );
+  findgenpdf( genpdfname );
+
+  std::cout << "appl::grid::shrink()  new " << m_genpdf[0]->name() << " " <<  m_genpdf[1]->name() <<  std::endl;
 
 }
 
 
 std::ostream& operator<<(std::ostream& s, const appl::grid& g) {
+  
   s << "==================================================" << std::endl;
+  
   //  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses(0) << " initial states, " << g.Nobs() << " observable bins)" << std::endl;
 
   std::string basis[5] = {  "-LO, ",  "-NLO, ",  "-NNLO, ", "-Xtra0", "-Xtra1" };  

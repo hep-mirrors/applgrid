@@ -6,7 +6,7 @@ docdir   = ${datadir}/doc/${PACKAGE}
 dist_doc_DATA   = README INSTALL COPYING
 
 sharedir = ${datadir}/${PACKAGE}
-dist_share_DATA = share/mcfmwm.config share/mcfmwp.config share/basic.config 
+dist_share_DATA = share/*.config 
 
 clean-local:
 	rm -rf autom4te.cache

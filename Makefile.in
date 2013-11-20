@@ -253,7 +253,7 @@ top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = foreign 
 dist_doc_DATA = README INSTALL COPYING
 sharedir = ${datadir}/${PACKAGE}
-dist_share_DATA = share/mcfmwm.config share/mcfmwp.config share/basic.config 
+dist_share_DATA = share/*.config 
 SUBDIRS = src bin
 all: amconfig.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive

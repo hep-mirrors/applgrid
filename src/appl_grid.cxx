@@ -248,6 +248,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_read(false)
 {
   
+  struct timeval tstart = appl_timer_start();
+  
   struct stat _fileinfo;
   if ( stat(filename.c_str(),&_fileinfo) )   {    
     throw exception(std::cerr << "grid::grid() cannot open file " << filename << std::endl ); 
@@ -480,6 +482,11 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   gridfilep->Close();
   delete gridfilep;
   
+  double tstop = appl_timer_stop( tstart );
+  
+  std::cout << "appl::grid() read grid in " << tstop << " ms" << std::endl;
+
+
 }
 
 
@@ -889,14 +896,19 @@ bool appl::grid::reweight(bool t) {
 }
 
 
+bool exists( const std::string& filename ) { 
+  struct stat sb;
+  if ( stat( filename.c_str(), &sb)==0 ) return true; // && S_ISREG(sb.st_mode ))
+  else return false;
+}
+
 
 // dump to file
 void appl::grid::Write(const std::string& filename, const std::string& dirname, const std::string& pdfname) { 
- 
 
-  struct stat sb;
-  
-  if ( stat( filename.c_str(), &sb)==0 ) { // && S_ISREG(sb.st_mode ))
+  std::cout << "appl::grid::Write() " << filename << "\tdirname " << dirname << "\tpdfname " << pdfname << std::endl; 
+
+  if ( exists( filename ) ) { 
     std::string filename_save = filename + "-save";
     if ( std::rename( filename.c_str(), filename_save.c_str() ) ) std::cerr << "could not rename grid file " << filename << std::endl;
   } 
@@ -1761,6 +1773,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
   bool found = false;
 
 
+  /// loop over orders 
   for( int iorder=0 ; iorder<2 ; iorder++ ) {
 
     std::cout << "appl::grid::shrink() order " << iorder << std::endl;
@@ -1768,6 +1781,8 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
     std::vector< std::vector<int> > pdf_combinations;
     pdf_combinations.reserve( Nobs() );
     
+    /// ... for each observable bin ...
+ 
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) { 
       
       //      std::cout << "shrink() order: " << iorder << "\t obs: " << iobs;
@@ -1908,6 +1923,8 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
       } 
     }      
     
+    /// create the actual lumi_pdfs from these combinations
+
     if ( common && pdf_combinations.size()>0 ) { 
       pdf_combinations[0].push_back(ckmcharge);
 
@@ -1947,6 +1964,8 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
   std::cout << "appl::grid::shrink()  new " << m_genpdf[0]->name() << " " <<  m_genpdf[1]->name() <<  std::endl;
 
 }
+
+
 
 
 std::ostream& operator<<(std::ostream& s, const appl::grid& g) {

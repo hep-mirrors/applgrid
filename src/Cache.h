@@ -84,7 +84,7 @@ public:
       _pdf( x, Q2, &_xf[0] ); 
 
       /// add to cache if enough room
-      if ( this->size()<_max ) insert( typename _map::value_type( t, _xf ) );
+      if ( this->size()<_max ) this->insert( typename _map::value_type( t, _xf ) );
 
       /// copy to output 
       (*(partons*)xf) = ( *((partons*)&_xf[0]) ); 

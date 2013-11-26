@@ -243,6 +243,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_optimised(false),  m_trimmed(false), 
   m_normalised(false),
   m_symmetrise(false), m_transform(""), 
+  m_dynamicScale(0),
   m_applyCorrections(false),
   m_documentation(""),
   m_type(STANDARD),

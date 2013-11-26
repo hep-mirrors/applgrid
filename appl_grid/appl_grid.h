@@ -368,6 +368,9 @@ public:
   double getCMSScale()          const { return m_cmsScale; }
   void   setCMSScale(double cmsScale) { m_cmsScale=cmsScale; }
 
+  double getDynamicScale()          const     { return m_dynamicScale; }
+  void   setDynamicScale(double dynamicScale) { m_dynamicScale=dynamicScale; }
+
 
   // set optimise flag on all sub grids
   bool setOptimised(bool t=true) { 
@@ -589,6 +592,8 @@ protected:
   static const std::string m_version;
 
   double m_cmsScale;
+
+  double m_dynamicScale;
 
   /// bin by bin correction factors 
   std::vector<std::vector<double> > m_corrections;

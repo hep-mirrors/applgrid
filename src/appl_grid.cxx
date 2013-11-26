@@ -49,7 +49,8 @@
 /// NB: ONLY change the major version if the persistent 
 ///     class changes in a non-backwards compatible way.
 
-const std::string appl::grid::m_version = "version-3.3";
+// const std::string appl::grid::m_version = "version-3.3";
+const std::string appl::grid::m_version = PACKAGE_VERSION;
 
 std::string appl::grid::appl_version() const { return PACKAGE_VERSION; }
 
@@ -99,7 +100,7 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
 		 std::string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false), 
-  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0), m_dynamicScale(0),
   m_applyCorrections(false),
   m_documentation(""),
   m_type(STANDARD),
@@ -131,7 +132,7 @@ appl::grid::grid(int Nobs, const double* obsbins,
 		 std::string transform ) :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false),  m_normalised(false), m_symmetrise(false),
-  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0), m_dynamicScale(0),
   m_applyCorrections(false),
   m_documentation(""),
   m_type(STANDARD),
@@ -164,7 +165,7 @@ appl::grid::grid(const std::vector<double>& obs,
 		 std::string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
-  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0), m_dynamicScale(0),
   m_applyCorrections(false),
   m_documentation(""),
   m_type(STANDARD),
@@ -203,7 +204,7 @@ appl::grid::grid(const std::vector<double>& obs,
 		 std::string transform )  :
   m_leading_order(leading_order), m_order(nloops+1), 
   m_run(0), m_optimised(false), m_trimmed(false), m_normalised(false), m_symmetrise(false),  
-  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0),
+  m_transform(transform), m_genpdfname(genpdfname), m_cmsScale(0), m_dynamicScale(0),
   m_applyCorrections(false),  
   m_documentation(""),
   m_type(STANDARD),
@@ -499,6 +500,7 @@ appl::grid::grid(const grid& g) :
   m_transform(g.m_transform),
   m_genpdfname(g.m_genpdfname), 
   m_cmsScale(g.m_cmsScale),
+  m_dynamicScale(g.m_dynamicScale),
   m_applyCorrections(g.m_applyCorrections), 
   m_documentation(g.m_documentation),
   m_ckmsum(g.m_ckmsum), /// need a deep copy of the contents
@@ -1117,7 +1119,6 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
  
 
-
   //  struct timeval _ctimer = appl_timer_start();
   
   double Escale2 = 1;
@@ -1137,7 +1138,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 #ifdef HAVE_HOPPET
   // check if we need to use the splitting function, and if so see if we 
   // need to initialise it again, and do so if required
-  if ( fscale_factor!=1 ) {
+  if ( fscale_factor!=1 || m_dynamicScale ) {
 
     if ( pdf2==0 || pdf1==pdf2 ) { 
 
@@ -1160,43 +1161,60 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
   } 
   
   
- 
   if ( m_type==STANDARD ) { 
+
+    static bool first = true;
+ 
+    if ( first && m_dynamicScale ) std::cout << "** grid::vconvolute() emulating dynamic scale **" << std::endl;
 
     //    std::cout << "standard convolution" << std::endl;
 
     for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
+
+      /// here we see whether we need to emulate a dynamic scale by simply 
+      /// changing the renormalisation and factorisation scale terms to give 
+      /// what a dynamic scale would be in this bin
+ 
+      double dynamic_factor = 1;
+
+      if ( m_dynamicScale ) {
+	double var = m_obs_bins->GetBinCenter(iobs+1);
+	dynamic_factor = var/m_dynamicScale;
+	//	if ( first ) std::cout << "grid::vconvolute() bin " << iobs << "\tscale " << var << "\tdynamicScale " << m_dynamicScale << "\t scale factor " << dynamic_factor << std::endl;
+      } 
+
+      /// now do the convolution proper
 
       double dsigma = 0;
      
       if ( nloops==0 ) {
 	label = "lo      ";
 	// leading order cross section
-	dsigma = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, 1, 1, Escale);
+	dsigma = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, dynamic_factor*1, dynamic_factor*1, Escale);
       }
       else if ( nloops==1 ) { 
 	label = "nlo     ";
 	// next to leading order cross section
 	// std::cout << "convolute() nloop=1" << std::endl;
 	// leading order contribution and scale dependent born dependent terms
-	double dsigma_lo  = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 1, rscale_factor, fscale_factor, Escale);
+	double dsigma_lo  = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 1, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
 	// std::cout << "dsigma_lo=" << dsigma_lo << std::endl;
 	// next to leading order contribution
 	//      double dsigma_nlo = m_grids[1][iobs]->convolute(pdf, m_genpdf, alphas, m_leading_order+1, 0);
 	// GPS: the NLO piece must use the same rscale_factor and fscale_factor as
 	//      the LO piece -- that's the convention that defines how NLO calculations
 	//      are done.
-	double dsigma_nlo = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+	double dsigma_nlo = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
 	// std::cout << "dsigma_nlo=" << dsigma_nlo << std::endl;
 	dsigma = dsigma_lo + dsigma_nlo;
       }
       else if ( nloops==-1 ) {
 	label = "nlo only";
 	// nlo contribution only (only strict nlo contributions) 
-	dsigma = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
+	dsigma = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
       } 
       else if ( nloops==2 ) {
-	// FIXME: not implemented completely yet 
+	// FIXME: not implemented completely yet - no scale variation
 	//      return hvec;
 	label = "nnlo    ";
 	// next to next to leading order contribution 
@@ -1220,6 +1238,8 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
       hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
     }
+
+    first = false;
     
   }
   else if ( m_type==AMCATNLO ) {  
@@ -1360,6 +1380,15 @@ std::vector<double> appl::grid::vconvolute_subproc(int subproc,
   
   double invNruns = 1;
   if ( (!m_normalised) && run() ) invNruns /= double(run());
+
+  static bool first = true;
+
+  if ( first && m_dynamicScale ) { 
+    std::cout << "** grid::vconvolute_subprocess(): dynamic scale emulsation is not available **\n" 
+	      << "**                                with the subprocess convolution           **" << std::endl; 
+    first = false;
+  }
+
 
 #ifdef HAVE_HOPPET
   //  factorisation scale variation is disabled for the subprocess

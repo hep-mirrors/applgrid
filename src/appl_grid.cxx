@@ -1046,7 +1046,7 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname, 
   std::cout << "normalised() " << getNormalised() << "\tread " << m_read << std::endl; 
   
   //  if ( !getNormalised() || m_read )  if ( run() ) reference->Scale(1/double(run()));
-  if ( !getNormalised() || m_read )  if ( run() ) reference->Scale(1/double(run()));
+  if ( run() ) reference->Scale(1/double(run()));
 
   // if ( run() ) reference->Scale(1/double(run()));
   reference->Write();
@@ -1379,6 +1379,7 @@ std::vector<double> appl::grid::vconvolute_subproc(int subproc,
  
   if ( Escale!=1 ) Escale2 = Escale*Escale;
   
+
   double invNruns = 1;
   if ( (!m_normalised) && run() ) invNruns /= double(run());
 

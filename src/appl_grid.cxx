@@ -260,7 +260,11 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   std::cout << "appl::grid() reading grid from file " << filename << std::endl;
   
   TFile* gridfilep = TFile::Open(filename.c_str());
-  
+
+  if (gridfilep==0 ) {
+    throw exception(std::cerr << "grid::grid() cannot open file: " << filename << std::endl ); 
+  }
+
   if (gridfilep->IsZombie()) {
     delete gridfilep;
     throw exception(std::cerr << "grid::grid() cannot open file: zombie " << filename << std::endl ); 
@@ -279,8 +283,13 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  Directory d(dirname);
   //  d.push();
 
-  TFileString _tags = *(TFileString*)gridfilep->Get((dirname+"/Tags").c_str());  
+  TFileString* _tagsp = (TFileString*)gridfilep->Get((dirname+"/Tags").c_str());  
+
+  if ( _tagsp==0 ) throw exception(std::cerr << "grid::grid() cannot get tags: " << filename << std::endl ); 
+
+  TFileString _tags = *_tagsp;
   // TFileString _tags = *(TFileString*)gridfile.Get("Tags");  
+
   m_transform  = _tags[0];
   m_genpdfname = _tags[1];
 
@@ -368,17 +377,15 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   if ( setup->GetNoElements()>9 ) m_type = (CALCULATION)int( (*setup)(9)+0.5 );
   else                            m_type = STANDARD;
 
-  std::cout << "appl::grid() reading grid calculation type: " << _calculation(m_type) << std::endl;
+  //  std::cout << "appl::grid() reading grid calculation type: " << _calculation(m_type) << std::endl;
 
-  std::cout << "appl::grid() normalised: " << getNormalised() << std::endl;
-
-
+  //  std::cout << "appl::grid() normalised: " << getNormalised() << std::endl;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf (or lumi_pdf for amcatnlo)
   //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
 
-  std::cout << "appl::grid() requested pdf combination " << m_genpdfname << std::endl;
+  //  std::cout << "appl::grid() requested pdf combination " << m_genpdfname << std::endl;
   
   if ( contains(m_genpdfname, ".config") ) { 
     /// decode the pdf combination if appropriate
@@ -456,9 +463,6 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
     }
   }
 
-  trim();
-  std::cout << "appl::grid() size " << size()/1024 << " kB" << std::endl;
-
   //  d.pop();
 
   /// bin-by-bin correction labels                                       
@@ -483,11 +487,12 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   gridfilep->Close();
   delete gridfilep;
-  
+
+  trim();
+
   double tstop = appl_timer_stop( tstart );
   
-  std::cout << "appl::grid() read grid in " << tstop << " ms" << std::endl;
-
+  std::cout << "appl::grid() read grid, size " << size()/1024 << " kB\tin " << tstop << " ms" << std::endl;
 
 }
 
@@ -1043,7 +1048,7 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname, 
   /// we need to address this - but how to do it in a backwards compatible way?
   /// will need to check the grid version and do things differently probably
 
-  std::cout << "normalised() " << getNormalised() << "\tread " << m_read << std::endl; 
+  //  std::cout << "normalised() " << getNormalised() << "\tread " << m_read << std::endl; 
   
   //  if ( !getNormalised() || m_read )  if ( run() ) reference->Scale(1/double(run()));
   if ( run() ) reference->Scale(1/double(run()));
@@ -1268,7 +1273,9 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	  double dsigma_R = m_grids[1][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
 	  double dsigma_F = m_grids[2][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
 	  
-	  dsigma = dsigma_0 + dsigma_R + dsigma_F;
+	  dsigma = dsigma_0;
+	  if ( rscale_factor!=1 ) dsigma += dsigma_R*std::log(rscale_factor*rscale_factor);
+	  if ( fscale_factor!=1 ) dsigma += dsigma_F*std::log(fscale_factor*fscale_factor);
       
 	  if ( nloops==1 ) { 
 	    /// this is the amcatnlo NLO calculation (without FKS shower)
@@ -1279,7 +1286,24 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	
 	    dsigma += dsigma_B;
 	  }
-
+      }
+      else if ( nloops==-2 ) { 
+        /// Only the convolution from the W0 grid
+        label = "nlo_w0";
+	double dsigma_0 = m_grids[0][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
+	dsigma = dsigma_0;
+      }
+      else if ( nloops==-3 ) {
+	/// Only the convolution from the WR grid
+	label = "nlo_wR";
+	double dsigma_R = m_grids[1][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
+	dsigma = dsigma_R * std::log(rscale_factor*rscale_factor)  ;
+      }
+      else if ( nloops==-4 ) { 
+        /// Only the convolution from the WF grid
+        label = "nlo_wF";
+	double dsigma_F = m_grids[2][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
+	dsigma = dsigma_F * std::log(fscale_factor*fscale_factor) ;
       }
       else { 
 	throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 

@@ -1185,12 +1185,12 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 
   double* sig = new double[m_Nproc];  // weights from grid
   double* H   = new double[m_Nproc];  // generalised pdf  
-  double* HA  = NULL;  // generalised splitting functions
-  double* HB  = NULL;  // generalised splitting functions
-  if ( nloop==1 && fscale_factor!=1 ) { 
-    HA  = new double[m_Nproc];  // generalised splitting functions
-    HB  = new double[m_Nproc];  // generalised splitting functions
-  }
+  double* HA  = 0;  // generalised splitting functions
+  double* HB  = 0;  // generalised splitting functions
+  //  if ( nloop==1 && fscale_factor!=1 ) { 
+  //    HA  = new double[m_Nproc];  // generalised splitting functions
+  //    HB  = new double[m_Nproc];  // generalised splitting functions
+  //  }
 
   // cross section for this igrid  
 
@@ -1225,11 +1225,13 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 
           double xsigma=0.;
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
-	  // dsigma += _alphas*xsigma;
+	  dsigma += _alphas*xsigma;
 
+#if 0	
+	  /// JR scaling by R and F scale factors to grid::convoute() method 
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
-	
+
 	  // renormalisation scale dependent bit
 	  if ( rscale_factor!=1 ) { 
 	    // nlo relative ln mu_R^2 term 
@@ -1246,7 +1248,7 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 	  else { 
 	    dsigma += _alphas*xsigma;
 	  }
-	
+#endif	
 	}  // nonzero
       }  // iy2
     }  // iy1

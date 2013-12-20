@@ -559,11 +559,13 @@ void appl::igrid::fill_index(const int ix1, const int ix2, const int iQ2, const 
 void appl::igrid::setuppdf(double (*alphas)(const double&),
 			   NodeCache* pdf0,
 			   NodeCache* pdf1,
-			   int nloop,
+			   int _nloop,
 			   double rscale_factor,
 			   double fscale_factor,
 			   double beam_scale ) 
 {
+
+  int nloop = std::fabs(_nloop);
 
   if ( pdf1==0 ) pdf1 = pdf0;
 
@@ -749,6 +751,8 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 }
 
 
+int SUBPROC = -1;
+
 
 #if 0
 void igrid::pdfinterp(double x, double Q2, double* f)
@@ -804,11 +808,13 @@ double appl::igrid::convolute(NodeCache* pdf0,
 			      appl_pdf*  genpdf,
 			      double (*alphas)(const double& ), 
 			      int     lo_order,  
-			      int     nloop, 
+			      int     _nloop, 
 			      double  rscale_factor,
 			      double  fscale_factor,
 			      double Escale) 
 { 
+  int nloop = std::fabs(_nloop);
+
   if ( pdf1==0 ) pdf1 = pdf0; 
 
   //char name[]="appl_grid:igrid::convolute(): ";
@@ -893,33 +899,18 @@ double appl::igrid::convolute(NodeCache* pdf0,
 	  // do the convolution
 
           double xsigma=0.;
-	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+= sig[ip]*H[ip];
-    
 
-	  dsigma+= _alphas*xsigma;
+	  if ( SUBPROC==-1 ) { 
+	    for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+= sig[ip]*H[ip];
+	  }
+	  else { 
+	    int ip=SUBPROC ;
+	    xsigma+= sig[ip]*H[ip];
+	  }
 
-#if 0
-	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
-	    xsigma+=sig[ip]*H[ip];
-	    dsigma+= _alphas*xsigma;
-	    // dsigma+= xsigma;
+	  /// if want NLO part only, don't add in the born term
+	  if ( _nloop!=-1 ) dsigma += _alphas*xsigma;
 
-	    //	    std::cout << "order " << nloop << "\talphas " << _alphas 
-	    //		      << "\tx "<< iy1 << " " << iy2 << " " << itau 
-	    //		      << "\tip " << ip << "\tpdf " << H[ip] << "\tc " << sig[ip]/BINWIDTH
-	    //		      << "\tr0 " << _alphas*sig[ip]*H[ip]/BINWIDTH 
-	    //		      << "\tr "  << dsigma/BINWIDTH  << std::endl;
-	  } 
-#endif
-
-          //if (debug) 
-          // std::cout<<name<<" nloop= "<<nloop
-          //                     <<" itau="<<itau
-	  //	       <<" iy1= "<<iy1<<" iy2= "<<iy2
-          //                     <<" xsigma= "<<xsigma
-          //                     <<" dsigma= "<<dsigma
-          //                     << std::endl;
-	  
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
 	  if ( nloop==1 ) { 
@@ -927,20 +918,7 @@ double appl::igrid::convolute(NodeCache* pdf0,
 	    if ( rscale_factor!=1 ) { 
 	      // nlo relative ln mu_R^2 term 
 	      dsigma+= alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
-  
-              //if (debug) std::cout<<" xsigma= "<<xsigma
-              //    <<" twopi= "<<twopi<<" beta0= "<<beta0
-              //    <<" lo_order="<<lo_order 
-              //    <<" log(rscale_factor*rscale_factor)= "<<log(rscale_factor*rscale_factor)  
-              //    <<endl;
-              //if (debug) std::cout<<name<<" dsigma= "<<dsigma
-              //               <<" factor*xsigma= "
-              //               << twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma
-              //               <<endl;
-	      //
-
-              //if (debug) std::cout<<name<<" rscale= " << rscale_factor << " dsigma= "<<dsigma<<endl;
-	    }
+  	    }
 
 	    // factorisation scale dependent bit
             // nlo relative ln mu_F^2 term 
@@ -948,7 +926,14 @@ double appl::igrid::convolute(NodeCache* pdf0,
 	      genpdf->evaluate( m_fg1    [itau][iy1],  m_fsplit2[itau][iy2], HA);
 	      genpdf->evaluate( m_fsplit1[itau][iy1],  m_fg2    [itau][iy2], HB);
 	      xsigma=0.;
-	      for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*(HA[ip]+HB[ip]);
+	      if ( SUBPROC==-1 ) { 
+		for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*(HA[ip]+HB[ip]);
+	      }
+	      else {
+		int ip=SUBPROC;
+		xsigma+=sig[ip]*(HA[ip]+HB[ip]);
+	      }
+
 	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
 	      //if (debug) 
               //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
@@ -999,11 +984,12 @@ double appl::igrid::convolute_subproc(int subproc,
 				      appl::appl_pdf*  genpdf,
 				      double (*alphas)(const double& ), 
 				      int     lo_order,  
-				      int     nloop, 
+				      int     _nloop, 
 				      double  rscale_factor,
 				      double  fscale_factor,
 				      double Escale ) 
 { 
+  int nloop = std::fabs(_nloop);
 
   static const double twopi = 2.*M_PI;
 
@@ -1081,7 +1067,7 @@ double appl::igrid::convolute_subproc(int subproc,
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
 
 	  // do the convolution
-	  dsigma += _alphas*sig*H[ip];
+	  if ( _nloop!=-1 ) dsigma += _alphas*sig*H[ip];
 
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights

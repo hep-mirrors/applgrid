@@ -81,6 +81,7 @@ void Splitting(const double& x, const double& Q, double* xf) {
 #endif
 
 
+#define appl_line() std::cout << __FILE__ << " " << __LINE__ << std::endl; 
 
 
 /// helper function
@@ -110,6 +111,8 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
+
+  m_obs_bins_combined = 0;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -143,6 +146,8 @@ appl::grid::grid(int Nobs, const double* obsbins,
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsbins);
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
+
+  m_obs_bins_combined = 0;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -187,6 +192,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
   //  delete[] obsbins;
 
+  m_obs_bins_combined = 0;
+
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
   //   if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
@@ -226,6 +233,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
   //  delete[] obsbins;
 
+  m_obs_bins_combined = 0;
+
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
   //  if ( m_genpdfname.find(".dat")!=std::string::npos ) addpdf(m_genpdfname);
@@ -249,7 +258,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_type(STANDARD),
   m_read(false)
 {
-  
+  m_obs_bins_combined = 0;
+
   struct timeval tstart = appl_timer_start();
   
   struct stat _fileinfo;
@@ -446,6 +456,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_obs_bins->SetName("referenceInternal");
   if ( m_normalised && m_optimised ) m_read = true;
 
+  m_obs_bins_combined = 0;
 
   //  std::cout << "grid::grid() read obs bins" << std::endl;
 
@@ -479,6 +490,18 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
     for ( unsigned i=0 ; i<corrections->size() ; i++ ) {
       m_corrections.push_back( (*corrections)[i] ); // copy the correction histograms
     }
+  }
+
+
+  /// now read in vector of bins to be combined if present
+  TVectorT<double>* _combine = (TVectorT<double>*)gridfilep->Get((dirname+"/CombineBins").c_str());
+
+  if ( _combine!=0 ) { 
+    //    std::cout << "read in " << _combine->GetNrows() << " entries in combine" << std::endl;
+    m_combine = std::vector<int>(_combine->GetNrows(),0);
+    for ( unsigned i=_combine->GetNrows() ; i-- ; ) m_combine[i] = int((*_combine)(i));
+
+    if ( m_combine.size() ) combineReference();
   }
 
   //  std::cout << "grid::grid() read from file Nobs = " << Nobs() << std::endl;
@@ -517,6 +540,12 @@ appl::grid::grid(const grid& g) :
 {
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2();
+
+  m_obs_bins_combined = 0;
+  if ( g.m_obs_bins_combined ) { 
+    m_obs_bins_combined = new TH1D(*g.m_obs_bins_combined); 
+    m_obs_bins_combined->SetDirectory(0);
+  }
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -659,6 +688,7 @@ appl::grid& appl::grid::operator*=(const double& d) {
     for( int iobs=0 ; iobs<Nobs() ; iobs++ ) (*m_grids[iorder][iobs])*=d; 
   }
   getReference()->Scale( d );
+  combineReference(true);
   return *this;
 }
 
@@ -677,6 +707,7 @@ appl::grid& appl::grid::operator+=(const appl::grid& g) {
 
   /// grrr use root TH1::Add() even though I don't like it. 
   getReference()->Add( g.getReference() );
+  combineReference(true);
 
   return *this;
 }
@@ -1076,6 +1107,14 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname, 
 
   }
 
+  /// now write out vector of bins to be combined if this has been set
+  if ( m_combine.size()>0 ) { 
+    TVectorT<double>* _combine = new TVectorT<double>(m_combine.size()); 
+    for ( unsigned i=m_combine.size() ; i-- ; ) (*_combine)(i) = m_combine[i]+0.5; /// NB: add 0.5 to prevent root double -> int rounding errors
+    _combine->Write( "CombineBins" );
+  }
+
+
   //  std::cout << "close file" << std::endl;
 
   d.pop();
@@ -1370,7 +1409,45 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
   }
 
+
+  /// now combine bins if required ...
+
+  if ( m_combine.size()!=0 ) combineBins( hvec );
+
+#if 0
+  if ( m_combine.size()!=0 ) { 
+    /// need to go through, scaling by bin width, adding and then dividing by bin width again
+    /// in the TH1D* version, will need to recalculate the bin limits to create the new histogram
     
+    std::vector<double> _hvec(m_combine.size(),0);
+
+    unsigned nbins = 0;
+
+    unsigned i=0;
+
+    for ( unsigned ic=0 ; ic<m_combine.size() ; ic++ ) { 
+
+      nbins += m_combine[ic];
+
+      if ( nbins>hvec.size() ) throw grid::exception( std::cerr << "too many bins specified for rebinning"  ); 
+
+      double sigma = 0;
+      double width = 0;
+
+      for ( int ib=0 ; ib<m_combine[ic] && i<hvec.size() ; ib++, i++ ) { 
+	double deltaobs = m_obs_bins->GetBinLowEdge(i+2)-m_obs_bins->GetBinLowEdge(i+1);
+	sigma += hvec[i]*deltaobs;
+	width += deltaobs;
+      }
+
+      _hvec[ic] = sigma/width;
+    }
+
+    hvec = _hvec;
+  }
+#endif    
+
+
   //  double _ctime = appl_timer_stop(_ctimer);
   //  std::cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << std::endl;
   
@@ -1387,16 +1464,8 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
 
 
-#if 0
-double grid::vconvolute(void (*pdf)(const double& , const double&, double* ), 
-			double (*alphas)(const double& ), 
-			int     nloops, 
-			double  rscale_factor,
-			double  fscale_factor,
-			double Escale )
-{ 
-}
-#endif
+/// a dirty hack to tell the sub grid it tshould only 
+/// use a single subprocess
 
 extern int SUBPROC; 
 
@@ -1407,168 +1476,12 @@ std::vector<double> appl::grid::vconvolute_subproc(int subproc,
 						   double  rscale_factor, double Escale ) { 
   SUBPROC = subproc;
   //  std::cout << "\nconvolute for subprocess " << SUBPROC << std::endl; 
-  std::vector<double> duffer = vconvolute( pdf, 0, alphas, nloops, rscale_factor, rscale_factor, Escale );
+  std::vector<double> xsec = vconvolute( pdf, 0, alphas, nloops, rscale_factor, rscale_factor, Escale );
  
   SUBPROC = -1;
-  return duffer;
+  return xsec;
 
 }
-
-
-#if 0
-
-
-std::vector<double> appl::grid::vconvolute_subproc(int subproc,
-						   void (*pdf)(const double& , const double&, double* ), 
-						   double (*alphas)(const double& ), 
-						   int     nloops, 
-						   double  rscale_factor, double Escale )
-{ 
-
-  //   NodeCache cache1 = NodeCache( pdf );
-  //   NodeCache* _pdf = &cache1;
-  
-  //   cache1.reset();
-  
-  NodeCache cache1( pdf );
-  NodeCache cache2;
-  
-  cache1.reset();
-  
-  NodeCache* _pdf = &cache1;
-  
-  //  struct timeval _ctimer = appl_timer_start();
-
-  double Escale2 = 1;
- 
-  if ( Escale!=1 ) Escale2 = Escale*Escale;
-  
-  double fscale_factor = rscale_factor;
-
-  double invNruns = 1;
-  if ( (!m_normalised) && run() ) invNruns /= double(run());
-
-  static bool first = true;
-
-  if ( first && m_dynamicScale ) { 
-    std::cout << "** grid::vconvolute_subprocess(): dynamic scale emulation being called **\n" << std::endl;
-    first = false;
-  }
-
-
-#ifdef HAVE_HOPPET
-  //  factorisation scale variation is disabled for the subprocess
-  //  convolution
-  //  // check if we need to use the splitting function, and if so see if we 
-  //  // need to initialise it again, and do so if required
-  //  if ( fscale_factor!=1 ) {
-  //    if ( hoppet == NULL ) hoppet = new hoppet_init();
-  //    bool newpdf = hoppet->compareCache(pdf);
-  //    //   if ( newpdf ) hoppet->fillCache( pdf );
-  //  }
-  if ( fscale_factor!=1 || m_dynamicScale ) {
-      if ( hoppet == 0 ) hoppet = new hoppet_init();
-      bool newpdf = hoppet->compareCache(pdf);
-      if ( newpdf ) hoppet->fillCache( pdf );
-  }
-#endif
-
-  //  std::cout << "grid::run() " << run() << std::endl; 
-
-  //  genpdf = genpdf_map[m_genpdfname];
-    
-  //  TH1D* h = new TH1D(*m_obs_bins);
-  //  h->SetName("xsec");
-
-  std::vector<double> hvec;
-
-  std::string label;
-
-  int lo_order = m_leading_order;
-  if ( nloops>=m_order ) { 
-    std::cerr << "too many loops for grid nloops=" << nloops << "\tgrid=" << m_order << std::endl;   
-    return hvec;
-  } 
-
-  for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
-
-    double dynamic_factor = 1;
-    
-    if ( m_dynamicScale ) {
-      double var = m_obs_bins->GetBinCenter(iobs+1);
-      dynamic_factor = var/m_dynamicScale;
-      //	if ( first ) std::cout << "grid::vconvolute() bin " << iobs << "\tscale " << var << "\tdynamicScale " << m_dynamicScale << "\t scale factor " << dynamic_factor << std::endl;
-    } 
-    
-    double dsigma = 0;
-   
-    if ( nloops==0 ) {
-      label = "lo      ";
-      //      std::cout << "convolute() nloop=0" << iobs << std::endl;
-      // leading order cross section
-      dsigma = m_grids[0][iobs]->convolute_subproc(subproc, _pdf, 0, m_genpdf[0], alphas, lo_order, 0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
-    }
-    else if ( nloops==1 ) { 
-      label = "nlo     ";
-      // next to leading order cross section
-      // leading and next to order contributions and scale dependent born dependent terms
-      double dsigma_lo  = m_grids[0][iobs]->convolute_subproc(subproc, _pdf, 0, m_genpdf[0], alphas, lo_order,   1, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor,  Escale );
-      double dsigma_nlo = m_grids[1][iobs]->convolute_subproc(subproc, _pdf, 0, m_genpdf[1], alphas, lo_order+1, 0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor,  Escale );
-      dsigma = dsigma_lo + dsigma_nlo;
-    }
-    else if ( nloops==-1 ) { 
-      label = "nlo only";
-      // nlo contribution only (only strict nlo contributions)
-      dsigma = m_grids[1][iobs]->convolute_subproc(subproc, _pdf, 0, m_genpdf[1], alphas, lo_order+1, 0,  dynamic_factor*rscale_factor,  dynamic_factor*fscale_factor, Escale );
-    }
-    else if ( nloops==2 ) { 
-      // FIXME: not implemented completely yet 
-      return hvec;
-      label = "nnlo    ";
-      // next to next to leading order contribution 
-      // NB: NO scale dependendent parts, so only muR=muF=mu
-      double dsigma_lo   = m_grids[0][iobs]->convolute_subproc(subproc, _pdf, 0, m_genpdf[0], alphas, lo_order,   0);
-      double dsigma_nlo  = m_grids[1][iobs]->convolute_subproc(subproc, _pdf, 0, m_genpdf[1], alphas, lo_order+1, 0);
-      double dsigma_nnlo = m_grids[2][iobs]->convolute_subproc(subproc, _pdf, 0, m_genpdf[2], alphas, lo_order+2, 0);
-      dsigma = dsigma_lo + dsigma_nlo + dsigma_nnlo;
-    }
-    
-    
-    //   double deltaobs = h->GetBinLowEdge(iobs+2)-h->GetBinLowEdge(iobs+1);
-    //   h->SetBinContent(iobs+1, dsigma/(deltaobs));
-    //   h->SetBinError(iobs+1, 0);
-
-    double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);
-    
-    hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
-    // hvec.push_back( Escale2*dsigma/deltaobs );
-
-
-    //    std::cout << "dsigma[" << iobs << "]=" << dsigma/deltaobs << std::endl;
-
-    
-    //    std::cout << "obs bin " << iobs 
-    //         << "\t" <<  h->GetBinLowEdge(iobs+1) << " - " << h->GetBinLowEdge(iobs+2)
-    //	       << "\tdsigma=" << dsigma << std::endl;
-  }  // iobs   
-
-  //  double _ctime = appl_timer_stop(_ctimer);
-  //  std::cout << "grid::convolute_subproc(" << subproc << ") " << label << " convolution time=" << _ctime << " ms" << std::endl;
-
-  if ( getApplyCorrections() ) applyCorrections(hvec);
-  else { 
-    for ( unsigned i=0 ; i<m_corrections.size() ; i++ ) if ( getApplyCorrection(i) ) applyCorrection(i,hvec);
-  }
-
-  cache1.stats();
-
-  return hvec;
-}
-
-
-#endif
-
-
 
 
 TH1D* appl::grid::convolute(void (*pdf)(const double& , const double&, double* ), 
@@ -1589,20 +1502,42 @@ TH1D* appl::grid::convolute(void (*pdf1)(const double& , const double&, double* 
 			    int     nloops, 
 			    double  rscale_factor,
 			    double  fscale_factor,
-			    double Escale ) {
+			    double Escale ) 
+{
 
-    TH1D* h = new TH1D(*m_obs_bins);
+  int nbins = m_obs_bins->GetNbinsX();
+
+  TH1D* h = 0;
+  if ( m_combine.size() ) { 
+    
+    nbins = m_combine.size();
+
+    std::vector<double> limits(m_combine.size()+1);
+    
+    int i=0;
+    limits[0] = m_obs_bins->GetBinLowEdge(i+1);
+    for ( unsigned ib=0 ; ib<m_combine.size() ; ib++) { 
+      i += m_combine[ib]; 
+      limits[ib+1] = m_obs_bins->GetBinLowEdge(i+1);
+    }
+
+    h = new TH1D("xsec", "xsec", m_combine.size(), &limits[0] );
+  }
+  else { 
+    h = new TH1D(*m_obs_bins);
     h->SetName("xsec");
+  }
+   
     
-    std::vector<double> dvec = vconvolute( pdf1, pdf2, alphas, nloops, rscale_factor, fscale_factor, Escale );
-    
-    for ( unsigned i=0 ; i<dvec.size() ; i++ ) { 
+  std::vector<double> dvec = vconvolute( pdf1, pdf2, alphas, nloops, rscale_factor, fscale_factor, Escale );
+
+  for ( unsigned i=0 ; i<dvec.size() ; i++ ) { 
       h->SetBinContent( i+1, dvec[i] );
       h->SetBinError( i+1, 0 );
-    }
-    
-    return h;
-
+  }
+  
+  return h;
+  
 }
 
 
@@ -1646,7 +1581,11 @@ void appl::grid::optimise(bool force) {
   m_obs_bins->Reset();
 }
 
+
+
 void appl::grid::optimise(int NQ2, int Nx) {  optimise(NQ2, Nx, Nx);  }
+
+
 
 void appl::grid::optimise(int NQ2, int Nx1, int Nx2) {
   m_optimised = true;
@@ -1706,6 +1645,13 @@ void appl::grid::setRange(int ilower, int iupper, double xScaleFactor) {
   }
 }
 
+
+
+/// Fixme: need to fix this so that if the m_combine vector has values 
+///        then the range of this vector is also modified
+///        and then the combined reference recalculated:
+///        at the moment, if the range is changed, the combine vector
+///        needs to be recalculated and reset by hand
 
 void appl::grid::setRange(double lower, double upper, double xScaleFactor) { 
   
@@ -2079,6 +2025,91 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 }
 
 
+void appl::grid::combineReference(bool force) { 
+
+  if ( m_combine.empty() ) return;
+
+  if ( force ) { 
+    if ( m_obs_bins_combined ) { 
+      delete m_obs_bins_combined;
+      m_obs_bins_combined = 0;
+    }
+  }
+
+  if ( m_obs_bins_combined ) return; 
+
+  std::vector<double> hvec(  m_obs_bins->GetNbinsX(), 0 );
+  std::vector<double> hvece( m_obs_bins->GetNbinsX(), 0 );
+  for ( int i=m_obs_bins->GetNbinsX() ; i-- ; )  { 
+    hvec[i]  = m_obs_bins->GetBinContent( i+1 );
+    hvece[i] = m_obs_bins->GetBinError( i+1 );
+  }
+  
+  combineBins( hvec );
+  combineBins( hvece, 2 );
+  
+  std::vector<double> limits(m_combine.size()+1);
+  
+  int i=0;
+  limits[0] = m_obs_bins->GetBinLowEdge(i+1);
+  for ( unsigned ib=0 ; ib<m_combine.size() ; ib++) { 
+    i += m_combine[ib]; 
+    limits[ib+1] = m_obs_bins->GetBinLowEdge(i+1);
+  }
+  
+  /// need to make this a class variable set to 0 so we don't 
+  /// recalculate this every time, only if m_combine changes 
+  TH1D* h = new TH1D("reference", "xsec", m_combine.size(), &limits[0] );
+  h->SetDirectory(0);
+
+  for ( unsigned i=0 ; i<hvec.size() ; i++ ) { 
+    h->SetBinContent( i+1, hvec[i] );
+    h->SetBinError( i+1, hvece[i] );
+  }
+
+  m_obs_bins_combined = h;
+  
+}
+
+
+
+void appl::grid::combineBins(std::vector<double>& hvec, int power ) const { 
+  
+  /// now combine bins if required ...
+  
+  if ( m_combine.size()!=0 ) { 
+    /// need to go through, scaling by bin width, adding and then dividing by bin width again
+    /// in the TH1D* version, will need to recalculate the bin limits to create the new histogram
+    
+    std::vector<double> _hvec(m_combine.size(),0);
+    
+    unsigned nbins = 0;
+
+    unsigned i=0;
+
+    for ( unsigned ic=0 ; ic<m_combine.size() ; ic++ ) { 
+
+      nbins += m_combine[ic];
+
+      if ( nbins>hvec.size() ) throw grid::exception( std::cerr << "too many bins specified for rebinning"  ); 
+
+      double sigma = 0;
+      double width = 0;
+
+      for ( int ib=0 ; ib<m_combine[ic] && i<hvec.size() ; ib++, i++ ) { 
+	double deltaobs = m_obs_bins->GetBinLowEdge(i+2)-m_obs_bins->GetBinLowEdge(i+1);
+	if ( power==1 ) sigma += hvec[i]*deltaobs;
+	if ( power==2 ) sigma += (hvec[i]*deltaobs*hvec[i]*deltaobs);
+	width += deltaobs;
+      }
+
+      if ( power==1 ) _hvec[ic] = sigma/width;
+      if ( power==2 ) _hvec[ic] = std::sqrt(sigma)/width;
+    }
+
+    hvec = _hvec;
+  }
+}
 
 
 std::ostream& operator<<(std::ostream& s, const appl::grid& g) {

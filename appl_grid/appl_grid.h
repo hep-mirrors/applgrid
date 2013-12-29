@@ -336,8 +336,16 @@ public:
   double obsmax()             const { return obslow(Nobs()); } 
   double deltaobs(int iobs=0) const { return m_obs_bins->GetBinWidth(iobs+1); }
 
-  TH1D*       getReference()        { return m_obs_bins; } 
-  const TH1D* getReference()  const { return m_obs_bins; } 
+  const TH1D* getReference() const { return m_obs_bins; } 
+  TH1D*       getReference()       { return m_obs_bins; } 
+
+  TH1D*  getXReference() {
+    combineReference(); 
+    if ( m_obs_bins_combined==0 ) return m_obs_bins;
+    else                          return m_obs_bins_combined; 
+  }
+ 
+ 
 
   // number of subprocesses 
   int subProcesses(int i) const;
@@ -512,6 +520,18 @@ public:
   /// reduce number of subprocesses if possible
   void shrink(const std::string& name, int ckmcharge=0);
 
+
+  /// set bins to be combined after the convolution
+  void combine( std::vector<int>& v) { 
+    m_combine = v; 
+    if ( m_combine.size() ) combineReference(true);
+  }
+
+  /// set bins to be combined after the convolution
+  void combineReference(bool force=false);
+
+  void combineBins(std::vector<double>& v, int power=1 ) const;
+
 protected:
 
   // internal common construct for the different types of constructor
@@ -559,6 +579,7 @@ protected:
 
   // histograms for saving the observable
   TH1D*  m_obs_bins;
+  TH1D*  m_obs_bins_combined;
 
   // order in alpha_s of tree level contribution 
   int  m_leading_order; 
@@ -616,6 +637,8 @@ protected:
   CALCULATION     m_type; 
 
   bool            m_read;
+
+  std::vector<int> m_combine;
 
 };
 

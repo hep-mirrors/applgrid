@@ -1258,21 +1258,15 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       }
       else if ( nloops==-1 ) {
 	label = "nlo only";
-	/// fixme: this is inefficient - because the NLO part has a contribution proportional to the born 
-	///        term and we do the LO and NLO born dependen parts at the same time, to get the 
-	///        NLO term, we need to calculate the full NLO cross section, and subtract the strict 
-	///        LO part - we should fix the convolution so that we can ask for the NLO born term 
-	///        only if required 
-	/// strict leading order contribution
-	///	double dsigma_lo   = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
-	///  NLO born dependent terms
-	double dsigma_born = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, -1, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
+	/// next to leading order contribution for the scale dependent
+	/// terms proprotional to the LO coefficient functions  
+	double dsigma_log = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, -1, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
 
 	// nlo contribution only (only strict nlo contributions) 
 	dsigma = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
 
 	/// full nlo part 
-	dsigma += dsigma_born-dsigma_born;
+	dsigma += dsigma_log;
       } 
       else if ( nloops==2 ) {
 	// FIXME: not implemented completely yet - no scale variation

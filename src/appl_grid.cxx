@@ -1249,20 +1249,24 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
      
       if ( nloops==0 ) {
 	label = "lo      ";
+
 	/// leading order cross section
-	/// fixme: for the subproceses, this is technically incorrect - the "LO" contribution 
-	///        includes the scale dependent "NLO" terms that are proportional to the LO 
-	///        coefficient functions - it could use the strict "LO" part without the scale 
-	///        dependent parts using order "0" rather than order "1" but see the comment 
-	///        for the "NLO only" contribution. The reason for this is that the subprocesses
-	///        can be different for LO and NLO, so this NLO part with "LO coefficients", 
-	///        can have different subprocesses from the actual NLO part, so the correct 
-	///        LO/NLO separation is only guaranteed for the full convolution, and not by 
-	///        subprocess
-	if ( subproc()==-1 ) 
+
+	if ( subproc()==-1 ) {  
 	  dsigma = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
-	else 
+	}
+	else { 
+	  /// fixme: for the subproceses, this is technically incorrect - the "LO" contribution 
+	  ///        includes the scale dependent "NLO" terms that are proportional to the LO 
+	  ///        coefficient functions - it could use the strict "LO" part without the scale 
+	  ///        dependent parts using order "0" rather than order "1" but see the comment 
+	  ///        for the "NLO only" contribution. The reason for this is that the subprocesses
+	  ///        can be different for LO and NLO, so this NLO part with "LO coefficients", 
+	  ///        can have different subprocesses from the actual NLO part, so the correct 
+	  ///        LO/NLO separation is only guaranteed for the full convolution, and not by 
+	  ///        subprocess
 	  dsigma = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 1, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
+	}
 
       }
       else if ( nloops==1 ) { 
@@ -1283,22 +1287,22 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       }
       else if ( nloops==-1 ) {
 	label = "nlo only";
-	/// fixme: this is technically incorrect - the "LO" component contains the 
-	///        scale dependent NLO contribution dependent on the LO coefficient
-	///        functions. This part is difficult to include for individual 
-	///        subprocesses, since different subprocesses can be present 
-	///        at LO and NLO, so speifying subprocess X at NLO does not 
-	///        neccessarily correspond to subprocess X at LO, so adding the 
-	///        subprocesses - so these terms are only strict LO And NLO when 
-	///        *not* specifying subprocess
 
-	// nlo contribution only (only strict nlo contributions)
+	// nlo contribution only 
 	if ( subproc()==-1 ) { 
 	  double dsigma_log = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, -1, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
 	  double dsigma_nlo = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1,  0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
 	  dsigma = dsigma_nlo + dsigma_log;
 	}
 	else { 
+	  /// fixme: this is technically incorrect - the "LO" component contains the 
+	  ///        scale dependent NLO contribution dependent on the LO coefficient
+	  ///        functions. This part is difficult to include for individual 
+	  ///        subprocesses, since different subprocesses can be present 
+	  ///        at LO and NLO, so speifying subprocess X at NLO does not 
+	  ///        neccessarily correspond to subprocess X at LO, so adding the 
+	  ///        subprocesses - so these terms are only strict LO And NLO when 
+	  ///        *not* specifying subprocess
 	  dsigma = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1,  0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
 	}
 

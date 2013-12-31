@@ -105,7 +105,8 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_applyCorrections(false),
   m_documentation(""),
   m_type(STANDARD),
-  m_read(false)
+  m_read(false),
+  m_subproc(-1)
 {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
@@ -139,7 +140,8 @@ appl::grid::grid(int Nobs, const double* obsbins,
   m_applyCorrections(false),
   m_documentation(""),
   m_type(STANDARD),
-  m_read(false)
+  m_read(false),
+  m_subproc(-1)
 {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
@@ -174,7 +176,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_applyCorrections(false),
   m_documentation(""),
   m_type(STANDARD),
-  m_read(false)
+  m_read(false),
+  m_subproc(-1)
 {
   
   if ( obs.size()==0 ) { 
@@ -215,7 +218,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_applyCorrections(false),  
   m_documentation(""),
   m_type(STANDARD),
-  m_read(false)
+  m_read(false),
+  m_subproc(-1)
 { 
 
   if ( obs.size()==0 ) { 
@@ -256,7 +260,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_applyCorrections(false),
   m_documentation(""),
   m_type(STANDARD),
-  m_read(false)
+  m_read(false),
+  m_subproc(-1)
 {
   m_obs_bins_combined = 0;
 
@@ -469,6 +474,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
       m_grids[iorder][iobs] = new igrid(*gridfilep, name);
 
+      m_grids[iorder][iobs]->setparent( this ); 
+
       //    _size += m_grids[iorder][iobs]->size();
       //      std::cout << "grid::grid() done" << std::endl;
     }
@@ -555,7 +562,10 @@ appl::grid::grid(const grid& g) :
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     m_grids[iorder] = new igrid*[Nobs()];
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
+    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
+      m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
+      m_grids[iorder][iobs]->setparent( this ); 
+    }
   }
 } 
 
@@ -581,6 +591,7 @@ void appl::grid::construct(int Nobs,
       m_grids[iorder][iobs] = new igrid(NQ2, Q2min, Q2max, Q2order, 
 					Nx, xmin, xmax, xorder, 
 					transform, m_genpdf[iorder]->Nproc());
+      m_grids[iorder][iobs]->setparent( this ); 
     }
   }
   //  std::cout << "appl::grid::construct() return" << std::endl; 
@@ -617,6 +628,7 @@ void appl::grid::add_igrid(int bin, int order, igrid* g) {
   }
 
   m_grids[order][bin] = g;
+  m_grids[order][bin]->setparent(this);
 
   if ( g->transform()!=m_transform ) { 
     std::cerr << "grid::add_igrid() transform " << m_transform 
@@ -677,7 +689,10 @@ appl::grid& appl::grid::operator=(const appl::grid& g) {
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     m_grids[iorder] = new igrid*[Nobs()];
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
+    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
+      m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
+      m_grids[iorder][iobs]->setparent( this ); 
+    }
   }
   return *this;
 } 
@@ -1235,10 +1250,20 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       if ( nloops==0 ) {
 	label = "lo      ";
 	/// leading order cross section
-	dsigma = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
-	/// leading order cross section -- NB this is really the born + LO coef HO contribution, such that 
-	/// the LO + NLO parts add up, ie the NLO part = coefficient_LO + alphas(coefficient_NLO + coefficient_LO ln ... ) part
-	//	dsigma = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 1, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
+	/// fixme: for the subproceses, this is technically incorrect - the "LO" contribution 
+	///        includes the scale dependent "NLO" terms that are proportional to the LO 
+	///        coefficient functions - it could use the strict "LO" part without the scale 
+	///        dependent parts using order "0" rather than order "1" but see the comment 
+	///        for the "NLO only" contribution. The reason for this is that the subprocesses
+	///        can be different for LO and NLO, so this NLO part with "LO coefficients", 
+	///        can have different subprocesses from the actual NLO part, so the correct 
+	///        LO/NLO separation is only guaranteed for the full convolution, and not by 
+	///        subprocess
+	if ( subproc()==-1 ) 
+	  dsigma = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
+	else 
+	  dsigma = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 1, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
+
       }
       else if ( nloops==1 ) { 
 	label = "nlo     ";
@@ -1258,15 +1283,25 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       }
       else if ( nloops==-1 ) {
 	label = "nlo only";
-	/// next to leading order contribution for the scale dependent
-	/// terms proprotional to the LO coefficient functions  
-	double dsigma_log = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, -1, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
+	/// fixme: this is technically incorrect - the "LO" component contains the 
+	///        scale dependent NLO contribution dependent on the LO coefficient
+	///        functions. This part is difficult to include for individual 
+	///        subprocesses, since different subprocesses can be present 
+	///        at LO and NLO, so speifying subprocess X at NLO does not 
+	///        neccessarily correspond to subprocess X at LO, so adding the 
+	///        subprocesses - so these terms are only strict LO And NLO when 
+	///        *not* specifying subprocess
 
-	// nlo contribution only (only strict nlo contributions) 
-	dsigma = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
+	// nlo contribution only (only strict nlo contributions)
+	if ( subproc()==-1 ) { 
+	  double dsigma_log = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, -1, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
+	  double dsigma_nlo = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1,  0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
+	  dsigma = dsigma_nlo + dsigma_log;
+	}
+	else { 
+	  dsigma = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1,  0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
+	}
 
-	/// full nlo part 
-	dsigma += dsigma_log;
       } 
       else if ( nloops==2 ) {
 	// FIXME: not implemented completely yet - no scale variation
@@ -1381,7 +1416,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	// leading order contribution and scale dependent born dependent terms
 
 	// will eventually add the other nlo terms ...
-	double dsigma_lo  = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, rscale_factor, fscale_factor, Escale);
+	double dsigma_lo  = m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order,   0, rscale_factor, fscale_factor, Escale);
 	double dsigma_nlo = m_grids[1][iobs]->convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor, Escale);
   
 	dsigma = dsigma_lo + dsigma_nlo;
@@ -1403,44 +1438,9 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
   }
 
-
   /// now combine bins if required ...
 
   if ( m_combine.size()!=0 ) combineBins( hvec );
-
-#if 0
-  if ( m_combine.size()!=0 ) { 
-    /// need to go through, scaling by bin width, adding and then dividing by bin width again
-    /// in the TH1D* version, will need to recalculate the bin limits to create the new histogram
-    
-    std::vector<double> _hvec(m_combine.size(),0);
-
-    unsigned nbins = 0;
-
-    unsigned i=0;
-
-    for ( unsigned ic=0 ; ic<m_combine.size() ; ic++ ) { 
-
-      nbins += m_combine[ic];
-
-      if ( nbins>hvec.size() ) throw grid::exception( std::cerr << "too many bins specified for rebinning"  ); 
-
-      double sigma = 0;
-      double width = 0;
-
-      for ( int ib=0 ; ib<m_combine[ic] && i<hvec.size() ; ib++, i++ ) { 
-	double deltaobs = m_obs_bins->GetBinLowEdge(i+2)-m_obs_bins->GetBinLowEdge(i+1);
-	sigma += hvec[i]*deltaobs;
-	width += deltaobs;
-      }
-
-      _hvec[ic] = sigma/width;
-    }
-
-    hvec = _hvec;
-  }
-#endif    
-
 
   //  double _ctime = appl_timer_stop(_ctimer);
   //  std::cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << std::endl;
@@ -1458,25 +1458,6 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
 
 
-/// a dirty hack to tell the sub grid it tshould only 
-/// use a single subprocess
-
-extern int SUBPROC; 
-
-std::vector<double> appl::grid::vconvolute_subproc(int subproc,
-						   void (*pdf)(const double& , const double&, double* ), 
-						   double (*alphas)(const double& ), 
-						   int     nloops, 
-						   double  rscale_factor, double Escale ) { 
-  SUBPROC = subproc;
-  //  std::cout << "\nconvolute for subprocess " << SUBPROC << std::endl; 
-  std::vector<double> xsec = vconvolute( pdf, 0, alphas, nloops, rscale_factor, rscale_factor, Escale );
- 
-  SUBPROC = -1;
-  return xsec;
-
-}
-
 
 TH1D* appl::grid::convolute(void (*pdf)(const double& , const double&, double* ), 
 			    double (*alphas)(const double& ), 
@@ -1487,6 +1468,30 @@ TH1D* appl::grid::convolute(void (*pdf)(const double& , const double&, double* )
 {
   return convolute( pdf, 0, alphas, nloops, rscale_factor, fscale_factor, Escale );
 }
+
+
+
+
+/// a dirty hack to tell the sub grid it should only 
+/// use a single subprocess
+
+std::vector<double> appl::grid::vconvolute_subproc(int subproc,
+						   void (*pdf)(const double& , const double&, double* ), 
+						   double (*alphas)(const double& ), 
+						   int     nloops, 
+						   double  rscale_factor, double Escale ) 
+{ 
+  /// set the subprocess index - this is tested by the 
+  /// igrid convolution
+  m_subproc = subproc;
+  std::vector<double> xsec = vconvolute( pdf, 0, alphas, nloops, rscale_factor, rscale_factor, Escale ); 
+  m_subproc = -1;
+
+  return xsec;
+
+}
+
+
 
 
 
@@ -1554,7 +1559,7 @@ TH1D* appl::grid::convolute_subproc(int subproc,
       h->SetBinError( i+1, 0 );
     }
   
-  return h;
+    return h;
   
 }
 
@@ -1625,6 +1630,8 @@ void appl::grid::redefine(int iobs, int iorder,
   m_grids[iorder][iobs] = new igrid(NQ2, Q2min, Q2max, oldgrid->tauorder(),
 				    Nx,  xmin,  xmax,  oldgrid->yorder(), 
 				    oldgrid->transform(), m_genpdf[iorder]->Nproc());
+
+  m_grids[iorder][iobs]->setparent( this ); 
 
   delete oldgrid;
 }

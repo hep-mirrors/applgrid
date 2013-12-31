@@ -575,6 +575,11 @@ protected:
 
   appl_pdf* genpdf(int i) { return m_genpdf[i]; }
 
+
+public: 
+
+  int subproc() const { return m_subproc; }
+
 protected:
 
   // histograms for saving the observable
@@ -639,6 +644,8 @@ protected:
   bool            m_read;
 
   std::vector<int> m_combine;
+
+  int  m_subproc;
 
 };
 

@@ -40,6 +40,8 @@
 
 namespace appl {
 
+class grid;
+
 
 
 class igrid {
@@ -335,22 +337,6 @@ public:
   
   
 
-
-
-  double convolute_subproc(int subproc, 
-			   NodeCache* pdf0,
-			   NodeCache* pdf1,
-			   // void   (*pdf0)(const double& , const double&, double* ), 
-			   // void   (*pdf1)(const double& , const double&, double* ), 
-			   appl_pdf* genpdf, 
-			   double (*alphas)(const double& ), 
-			   int     lo_order=0,  
-			   int     nloop=0, 
-			   double  rscale_factor=1,
-			   double  fscale_factor=1,
-			   double Escale=1 );
-  
-
   // some useful algebraic operators
   igrid& operator=(const igrid& g); 
   
@@ -503,7 +489,16 @@ private:
   }
   
 
+public:
+
+  void setparent( grid* parent ) { m_parent=parent; }
+
 private:
+
+
+  /// parent grid so that it can access parent 
+  /// grid paremeters
+  grid* m_parent;
 
   // ranges of interest
 

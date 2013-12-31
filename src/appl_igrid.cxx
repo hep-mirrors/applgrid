@@ -15,6 +15,8 @@
 
 
 #include "appl_igrid.h"
+#include "appl_grid/appl_grid.h"
+
 #include "hoppet_init.h"
 
 
@@ -47,7 +49,8 @@ std::map<const std::string, appl::igrid::transform_vec> appl::igrid::m_fmap = ap
 
 
 appl::igrid::igrid() : 
-  fy(NULL),   fx(NULL), 
+  fy(NULL),   fx(NULL),
+  m_parent(0),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),
   m_yorder(0),   
@@ -71,6 +74,7 @@ appl::igrid::igrid() :
 appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order, 
 		   int Nx,  double xmin,  double xmax,  int xorder, 
 		   std::string transform, int Nproc, bool disflag ):
+  m_parent(0),
   m_Ny1(Nx),   m_Ny2( disflag ? 1 : Nx ),  m_yorder(xorder), 
   m_Ntau(NQ2), m_tauorder(Q2order), 
   m_Nproc(Nproc), 
@@ -146,7 +150,8 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
 
 // copy constructor
 appl::igrid::igrid(const appl::igrid& g) : 
-  fy(g.fy),  fx(g.fx), 
+  fy(g.fy),  fx(g.fx),  
+  m_parent(0),
   m_Ny1(g.m_Ny1),     
   m_y1min(g.m_y1min),     m_y1max(g.m_y1max),     m_deltay1(g.m_deltay1),   
   m_Ny2(g.m_Ny2),     
@@ -173,6 +178,7 @@ appl::igrid::igrid(const appl::igrid& g) :
 // read from a file 
 appl::igrid::igrid(TFile& f, const std::string& s) :
   fy(NULL),   fx(NULL),
+  m_parent(0),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),   
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),   
   m_yorder(0),   
@@ -751,7 +757,6 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 }
 
 
-int SUBPROC = -1;
 
 
 #if 0
@@ -900,13 +905,15 @@ double appl::igrid::convolute(NodeCache* pdf0,
 
           double xsigma=0.;
 
-	  if ( SUBPROC==-1 ) { 
-	    for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+= sig[ip]*H[ip];
-	  }
-	  else { 
-	    int ip=SUBPROC ;
+
+	  if ( m_parent && m_parent->subproc()!=-1 ) { 
+	    int ip=m_parent->subproc();
 	    xsigma+= sig[ip]*H[ip];
 	  }
+	  else { 
+	    for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+= sig[ip]*H[ip];
+	  }
+
 
 	  /// if want NLO part only, don't add in the born term
 	  if ( _nloop!=-1 ) dsigma += _alphas*xsigma;
@@ -926,13 +933,15 @@ double appl::igrid::convolute(NodeCache* pdf0,
 	      genpdf->evaluate( m_fg1    [itau][iy1],  m_fsplit2[itau][iy2], HA);
 	      genpdf->evaluate( m_fsplit1[itau][iy1],  m_fg2    [itau][iy2], HB);
 	      xsigma=0.;
-	      if ( SUBPROC==-1 ) { 
-		for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*(HA[ip]+HB[ip]);
+
+	      if ( m_parent && m_parent->subproc()!=-1 ) { 
+		int ip=m_parent->subproc();
+		xsigma += sig[ip]*(HA[ip]+HB[ip]);
 	      }
-	      else {
-		int ip=SUBPROC;
-		xsigma+=sig[ip]*(HA[ip]+HB[ip]);
+	      else { 
+		for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma += sig[ip]*(HA[ip]+HB[ip]);
 	      }
+
 
 	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
 	      //if (debug) 
@@ -960,156 +969,6 @@ double appl::igrid::convolute(NodeCache* pdf0,
   // the number of operations if in grid. 
   return dsigma; 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-double appl::igrid::convolute_subproc(int subproc,
-				      NodeCache* pdf0,
-				      NodeCache* pdf1,
-				      appl::appl_pdf*  genpdf,
-				      double (*alphas)(const double& ), 
-				      int     lo_order,  
-				      int     _nloop, 
-				      double  rscale_factor,
-				      double  fscale_factor,
-				      double Escale ) 
-{ 
-  int nloop = std::fabs(_nloop);
-
-  static const double twopi = 2.*M_PI;
-
-  const int nc = 3;
-  //TC const int nf = 6;
-  const int nf = 5;
-  
-  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
-  
-  // do the convolution  
-
-  // is the grid empty
-  int size=0;
-  
-  int ip = 0;
-  //TC if ( subproc>=0 && subproc<genpdf->Nproc() )   ip = subproc;
-  if ( subproc>=0 && subproc<m_Nproc )   ip = subproc;
-  else throw exception("convolute_subproc() subprocess index out of range\n");
-
-
-  if ( !m_weight[ip]->trimmed() )  {
-      //  std::cout << "igrid::convolute() naughty, naughty!" << std::endl;
-      m_weight[ip]->trim();
-  }
-  size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
-  
-
-  // grid is empty
-  if ( size==0 )  return 0;
-
-  //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
-
-  
-  double  sig = 0;  // weights from grid
-  double* H   = new double[m_Nproc];  // generalised pdf  
-  double* HA  = NULL;  // generalised pdf
-  double* HB  = NULL;  // generalised pdf
-  if ( nloop==1 && fscale_factor!=1 ) { 
-    HA  = new double[m_Nproc];  // generalised pdf
-    HB  = new double[m_Nproc];  // generalised pdf
-  }
-
-  //  int N;
-
-  // cross section for this igrid  
-  double dsigma  = 0;
-
-  // loop over the grid 
-  //  for ( int itau=m_Ntau ; itau-- ; ) {
-  for ( int itau=0 ; itau<Ntau() ; itau++  ) {
-    
-    double alphas_tmp = m_alphas[itau];
-    double _alphas = 1;
-    for ( int iorder=0 ; iorder<lo_order ; iorder++ ) _alphas *= alphas_tmp;
-    double alphaplus1 = _alphas*alphas_tmp;
-
-    for ( int iy1=0 ; iy1<Ny1() ; iy1++ ) { 
-           
-      for ( int iy2=0 ; iy2<Ny2() ; iy2++ ) { 
-	
-	// test if this element is actually filled
-	// if ( !m_weight[0]->trimmed(itau,iy1,iy2) ) continue; 
-	
-	//	bool nonzero = false;
-
-	// basic convolution order component for either the born level
-	// or the convolution of the nlo grid with the pdf 
-	//for ( int ip=0 ; ip<m_Nproc ; ip++ ) 
-     
-	if ( ( sig = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2) ) )  { 
-	  //	  std::cout << "alpha=" << _alphas << std::endl; 
-
-	  // build the generalised pdfs from the actual pdfs
-	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
-
-	  // do the convolution
-	  if ( _nloop!=-1 ) dsigma += _alphas*sig*H[ip];
-
-	  // now do the convolution for the variation of factorisation and 
-	  // renormalisation scales, proportional to the leading order weights
-	  if ( nloop==1 ) { 
-	    // do all the other convolution bits
-	    // now the the renorm and factorisation scale terms...
-	    
-	    // renormalisation scale dependent bit
-	    if ( rscale_factor!=1 ) { 
-	      //cout << "rscale=" << rscale_factor << std::endl;
-	      dsigma += alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*sig*H[ip];  // nlo relative ln mu_R^2 term 
-	    }
-
-	    // factorisation scale dependent bit
-	    if ( fscale_factor!=1 ) {
-	      //cout << "fscale=" << fscale_factor << std::endl;
-	      genpdf->evaluate( m_fg1    [itau][iy1],  m_fsplit2[itau][iy2], HA);
-	      genpdf->evaluate( m_fsplit1[itau][iy1],  m_fg2    [itau][iy2], HB);
-	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*sig*(HA[ip]+HB[ip]);              // nlo relative ln mu_F^2 term 
-	    }
-	  }
-	}  // sig is nonzero
-	
-      }  // iy2
-    }  // iy1
-  }  // itau
-  
-  //  std::cout << "\tconvoluted dsigma=" << dsigma << std::endl; 
-  
-  delete[] H;
-  delete[] HA;
-  delete[] HB;
-  
-  deletepdftable();
-  
-  // NB!!! the return value dsigma must be scaled by Escale*Escale which 
-  // is done in grid::vconvolute. It would be better here, but is reduces 
-  // the number of operations if in grid. 
-  return dsigma;
-}
-
-
 
 
 

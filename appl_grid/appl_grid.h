@@ -327,23 +327,37 @@ public:
   // save grid to specified file
   void Write(const std::string& filename, const std::string& dirname="grid", const std::string& pdfname="" );
 
-  // accessors for the observable
-  int    Nobs()               const { return m_obs_bins->GetNbinsX(); }
-  double obs(int obsbin)      const { return m_obs_bins->GetBinCenter(obsbin+1); } 
-  int    obsbin(double obs)   const { return m_obs_bins->FindBin(obs)-1; } 
-  double obslow(int iobs=0)   const { return m_obs_bins->GetBinLowEdge(iobs+1); }
+  // accessors for the observable after possible bin combination
+  int    Nobs()               const { return m_obs_bins_combined->GetNbinsX(); }
+  double obs(int iobs)        const { return m_obs_bins_combined->GetBinCenter(iobs+1); } 
+  int    obsbin(double obs)   const { return m_obs_bins_combined->FindBin(obs)-1; } 
+  double obslow(int iobs)     const { return m_obs_bins_combined->GetBinLowEdge(iobs+1); }
   double obsmin()             const { return obslow(0); } 
   double obsmax()             const { return obslow(Nobs()); } 
-  double deltaobs(int iobs=0) const { return m_obs_bins->GetBinWidth(iobs+1); }
+  double deltaobs(int iobs)   const { return m_obs_bins_combined->GetBinWidth(iobs+1); }
 
-  const TH1D* getReference() const { return m_obs_bins; } 
-  TH1D*       getReference()       { return m_obs_bins; } 
+  const TH1D* getReference() const { return m_obs_bins_combined; } 
+  TH1D*       getReference()       { return m_obs_bins_combined; } 
 
-  TH1D*  getXReference() {
-    combineReference(); 
-    if ( m_obs_bins_combined==0 ) return m_obs_bins;
-    else                          return m_obs_bins_combined; 
-  }
+
+  //  TH1D*  getXReference() {
+  //    combineReference(); 
+  //    return m_obs_bins_combined; 
+  //  }
+ 
+ 
+  // accessors for the observable befor any bin combination
+  int    Nobs_internal()               const { return m_obs_bins->GetNbinsX(); }
+  double obs_internal(int iobs)        const { return m_obs_bins->GetBinCenter(iobs+1); } 
+  int    obsbin_internal(double obs)   const { return m_obs_bins->FindBin(obs)-1; } 
+  double obslow_internal(int iobs)     const { return m_obs_bins->GetBinLowEdge(iobs+1); }
+  double deltaobs_internal(int iobs)   const { return m_obs_bins->GetBinWidth(iobs+1); }
+  double obsmin_internal()             const { return obslow_internal(0); } 
+  double obsmax_internal()             const { return obslow_internal(Nobs_internal()); } 
+
+  const TH1D* getReference_internal() const { return m_obs_bins_combined; } 
+  TH1D*       getReference_internal()       { return m_obs_bins_combined; } 
+
  
  
 
@@ -520,14 +534,10 @@ public:
   /// reduce number of subprocesses if possible
   void shrink(const std::string& name, int ckmcharge=0);
 
-
   /// set bins to be combined after the convolution
-  void combine( std::vector<int>& v) { 
-    m_combine = v; 
-    if ( m_combine.size() ) combineReference(true);
-  }
+  void combine( std::vector<int>& v) { if ( (m_combine=v).size() ) combineReference(true); }
 
-  /// set bins to be combined after the convolution
+  /// set combine the  be combined after the convolution
   void combineReference(bool force=false);
 
   void combineBins(std::vector<double>& v, int power=1 ) const;

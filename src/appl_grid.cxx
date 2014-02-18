@@ -44,6 +44,12 @@
 
 
 
+template<class T> 
+std::ostream& operator<<( std::ostream& s, std::vector<T>& v ) {
+  for ( unsigned i=0 ; i<v.size() ; i++ ) std::cout << (i==0 ? "" : " " ) << v[i];
+  return s;
+}
+
 /// this is a compatability flag for persistent versions 
 /// of the grid
 /// NB: ONLY change the major version if the persistent 
@@ -113,7 +119,7 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
 
-  m_obs_bins_combined = 0;
+  m_obs_bins_combined = m_obs_bins;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -149,7 +155,7 @@ appl::grid::grid(int Nobs, const double* obsbins,
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
 
-  m_obs_bins_combined = 0;
+  m_obs_bins_combined = m_obs_bins;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -195,7 +201,7 @@ appl::grid::grid(const std::vector<double>& obs,
   m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
   //  delete[] obsbins;
 
-  m_obs_bins_combined = 0;
+  m_obs_bins_combined = m_obs_bins;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -237,7 +243,7 @@ appl::grid::grid(const std::vector<double>& obs,
   m_obs_bins->Sumw2(); /// grrr root is so rubbish - not scaling errors properly
   //  delete[] obsbins;
 
-  m_obs_bins_combined = 0;
+  m_obs_bins_combined = m_obs_bins;
 
   /// check to see if we require a generic pdf from a text file, and 
   /// and if so, create the required generic pdf
@@ -263,7 +269,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_read(false),
   m_subproc(-1)
 {
-  m_obs_bins_combined = 0;
+  m_obs_bins_combined = m_obs_bins = 0;
 
   struct timeval tstart = appl_timer_start();
   
@@ -455,25 +461,34 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   // Read observable bins information
   //  gridfile.GetObject("obs_bins", m_obs_bins );
-  m_obs_bins = (TH1D*)gridfilep->Get((dirname+"/reference").c_str());
+
+  m_obs_bins = (TH1D*)gridfilep->Get((dirname+"/reference_internal").c_str());
+  if ( m_obs_bins ) { 
+    m_obs_bins_combined = (TH1D*)gridfilep->Get((dirname+"/reference").c_str());
+    m_obs_bins_combined->SetDirectory(0);
+    m_obs_bins_combined->Scale(run());
+  }
+  else { 
+    m_obs_bins = (TH1D*)gridfilep->Get((dirname+"/reference").c_str());
+    m_obs_bins_combined = m_obs_bins;
+  }
+
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Scale(run());
   m_obs_bins->SetName("referenceInternal");
   if ( m_normalised && m_optimised ) m_read = true;
 
-  m_obs_bins_combined = 0;
 
   //  std::cout << "grid::grid() read obs bins" << std::endl;
 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     //  std::cout << "grid::grid() iorder=" << iorder << std::endl;
-    m_grids[iorder] = new igrid*[Nobs()];  
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {
+    m_grids[iorder] = new igrid*[Nobs_internal()];  
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
       char name[128];  sprintf(name, (dirname+"/weight[alpha-%d][%03d]").c_str(), iorder, iobs);
       // std::cout << "grid::grid() reading " << name << "\tiobs=" << iobs << std::endl;
 
       m_grids[iorder][iobs] = new igrid(*gridfilep, name);
-
       m_grids[iorder][iobs]->setparent( this ); 
 
       //    _size += m_grids[iorder][iobs]->size();
@@ -511,7 +526,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
     if ( m_combine.size() ) combineReference();
   }
 
-  //  std::cout << "grid::grid() read from file Nobs = " << Nobs() << std::endl;
+  //  std::cout << "grid::grid() read from file Nobs = " << Nobs_internal() << std::endl;
 
   //  std::cout << "read grid" << std::endl;
 
@@ -548,8 +563,8 @@ appl::grid::grid(const grid& g) :
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2();
 
-  m_obs_bins_combined = 0;
-  if ( g.m_obs_bins_combined ) { 
+  m_obs_bins_combined = m_obs_bins;
+  if ( g.m_obs_bins_combined != g.m_obs_bins) { 
     m_obs_bins_combined = new TH1D(*g.m_obs_bins_combined); 
     m_obs_bins_combined->SetDirectory(0);
   }
@@ -561,8 +576,8 @@ appl::grid::grid(const grid& g) :
   findgenpdf( m_genpdfname );
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
-    m_grids[iorder] = new igrid*[Nobs()];
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
+    m_grids[iorder] = new igrid*[Nobs_internal()];
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ )  { 
       m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
       m_grids[iorder][iobs]->setparent( this ); 
     }
@@ -622,7 +637,7 @@ void appl::grid::add_igrid(int bin, int order, igrid* g) {
     return;
   } 
 
-  if ( !(bin>=0 && bin<Nobs() ) ) {
+  if ( !(bin>=0 && bin<Nobs_internal() ) ) {
     std::cerr << "grid::add_igrid() observable bin out of range " << bin << std::endl; 
     return;
   }
@@ -644,15 +659,19 @@ void appl::grid::add_igrid(int bin, int order, igrid* g) {
 appl::grid::~grid() {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {  
     if( m_grids[iorder] ) { 
-      for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) { 
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
 	delete m_grids[iorder][iobs];
       }
       delete[] m_grids[iorder];
       m_grids[iorder] = 0;
     }
   }
-  if(m_obs_bins) delete m_obs_bins;
+  if (m_obs_bins_combined) {
+    if ( m_obs_bins_combined!=m_obs_bins) delete m_obs_bins_combined;
+  }
+  if (m_obs_bins) delete m_obs_bins;
   m_obs_bins=0;
+  m_obs_bins_combined = 0;
 
 #ifdef HAVE_HOPPET
   if ( hoppet ) delete hoppet; 
@@ -668,9 +687,10 @@ appl::grid::~grid() {
 
 appl::grid& appl::grid::operator=(const appl::grid& g) { 
   // clear out the old...
+  if ( m_obs_bins_combined!=m_obs_bins ) delete m_obs_bins_combined;
   delete m_obs_bins;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  delete m_grids[iorder][iobs];
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ )  delete m_grids[iorder][iobs];
     delete m_grids[iorder];
   }
   
@@ -678,6 +698,8 @@ appl::grid& appl::grid::operator=(const appl::grid& g) {
   m_obs_bins = new TH1D(*g.m_obs_bins);
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2();
+
+  m_obs_bins_combined = m_obs_bins;
 
   // copy the state
   m_leading_order = g.m_leading_order;
@@ -688,8 +710,8 @@ appl::grid& appl::grid::operator=(const appl::grid& g) {
   m_trimmed   = g.m_trimmed;
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
-    m_grids[iorder] = new igrid*[Nobs()];
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
+    m_grids[iorder] = new igrid*[Nobs_internal()];
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ )  { 
       m_grids[iorder][iobs] = new igrid(*g.m_grids[iorder][iobs]);
       m_grids[iorder][iobs]->setparent( this ); 
     }
@@ -700,7 +722,7 @@ appl::grid& appl::grid::operator=(const appl::grid& g) {
 
 appl::grid& appl::grid::operator*=(const double& d) { 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) (*m_grids[iorder][iobs])*=d; 
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs])*=d; 
   }
   getReference()->Scale( d );
   combineReference(true);
@@ -713,11 +735,11 @@ appl::grid& appl::grid::operator+=(const appl::grid& g) {
   m_run      += g.m_run;
   m_optimised = g.m_optimised;
   m_trimmed   = g.m_trimmed;
-  if ( Nobs()!=g.Nobs() )   throw exception("grid::operator+ Nobs bin mismatch");
+  if ( Nobs_internal()!=g.Nobs_internal() )   throw exception("grid::operator+ Nobs bin mismatch");
   if ( m_order!=g.m_order ) throw exception("grid::operator+ different order grids");
   if ( m_leading_order!=g.m_leading_order ) throw exception("grid::operator+ different order processes in grids");
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) (*m_grids[iorder][iobs]) += (*g.m_grids[iorder][iobs]); 
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs]) += (*g.m_grids[iorder][iobs]); 
   }
 
   /// grrr use root TH1::Add() even though I don't like it. 
@@ -735,12 +757,12 @@ bool appl::grid::operator==(const appl::grid& g) const {
   
   bool match = true; 
 
-  if ( Nobs()!=g.Nobs() )    match = false;
+  if ( Nobs_internal()!=g.Nobs_internal() )    match = false;
   if ( m_order!=g.m_order )  match = false;
   if ( m_leading_order!=g.m_leading_order ) match = false;
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    //    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) match &= ( (*m_grids[iorder][iobs]) == (*g.m_grids[iorder][iobs]) ); 
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) match &= ( m_grids[iorder][iobs]->compare_axes( *g.m_grids[iorder][iobs] ) ); 
+    //    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) match &= ( (*m_grids[iorder][iobs]) == (*g.m_grids[iorder][iobs]) ); 
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) match &= ( m_grids[iorder][iobs]->compare_axes( *g.m_grids[iorder][iobs] ) ); 
   }
   return match;
 }
@@ -752,7 +774,7 @@ void appl::grid::fill(const double x1, const double x2, const double Q2,
 		      const double obs, 
 		      const double* weight, const int iorder)  {  
   int iobs = m_obs_bins->FindBin(obs)-1;
-  if ( iobs<0 || iobs>=Nobs() ) {
+  if ( iobs<0 || iobs>=Nobs_internal() ) {
     //    cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
     //    cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
     return;
@@ -773,7 +795,7 @@ void appl::grid::fill_phasespace(const double x1, const double x2, const double 
 				 const double obs, 
 				 const double* weight, const int iorder) {
   int iobs = m_obs_bins->FindBin(obs)-1;
-  if ( iobs<0 || iobs>=Nobs() ) {
+  if ( iobs<0 || iobs>=Nobs_internal() ) {
     //  cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
     //  cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
     return;
@@ -790,7 +812,7 @@ void appl::grid::fill_index(const int ix1, const int ix2, const int iQ2,
 			    const int iobs, 
 			    const double* weight, const int iorder) {
 
-  if ( iobs<0 || iobs>=Nobs() ) {
+  if ( iobs<0 || iobs>=Nobs_internal() ) {
     //  cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
     //  cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
     return;
@@ -803,20 +825,20 @@ void appl::grid::fill_index(const int ix1, const int ix2, const int iQ2,
 void appl::grid::trim() {
   m_trimmed = true;
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) m_grids[iorder][iobs]->trim(); 
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iorder][iobs]->trim(); 
   }
 }
 
 void appl::grid::untrim() {
   m_trimmed = false;
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) m_grids[iorder][iobs]->untrim(); 
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iorder][iobs]->untrim(); 
   }
 }
 
 std::ostream& appl::grid::print(std::ostream& s) const {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {     
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {     
       s << iobs << "\t" 
 	<< std::setprecision(5) << std::setw(6) << getReference()->GetBinLowEdge(iobs+1) << "\t- " 
 	<< std::setprecision(5) << std::setw(6) << getReference()->GetBinLowEdge(iobs+2) << "\t"; 
@@ -944,7 +966,7 @@ const std::vector<std::vector<double> >& appl::grid::getckm2() const { return m_
 // set the rewight flag of the internal grids
 bool appl::grid::reweight(bool t) { 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) m_grids[iorder][iobs]->reweight(t);       
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iorder][iobs]->reweight(t);       
   }
   return t;
 }
@@ -958,7 +980,10 @@ bool exists( const std::string& filename ) {
 
 
 // dump to file
-void appl::grid::Write(const std::string& filename, const std::string& dirname, const std::string& pdfname) { 
+void appl::grid::Write(const std::string& filename, 
+		       const std::string& dirname, 
+		       const std::string& pdfname) 
+{ 
 
   std::cout << "appl::grid::Write() " << filename << "\tdirname " << dirname << "\tpdfname " << pdfname << std::endl; 
 
@@ -1059,7 +1084,7 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname, 
     }
   } 
   
-  //  std::cout << "grids Nobs = " << Nobs() << std::endl;
+  //  std::cout << "grids Nobs = " << Nobs_internal() << std::endl;
   
   untrim();
   int untrim_size = size();
@@ -1073,7 +1098,7 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname, 
 
   // internal grids
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) {
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
       char name[128];  sprintf(name, "weight[alpha-%d][%03d]", iorder, iobs);
       // std::cout << "writing grid " << name << std::endl;
       //   _size += m_grids[iorder][iobs]->size();
@@ -1086,9 +1111,22 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname, 
   //  d.pop();
 
   //  std::cout << "reference" << std::endl;
-  
-  TH1D* reference = (TH1D*)m_obs_bins->Clone("reference");
-  reference->SetDirectory(0);
+
+  TH1D* reference          = 0;
+  TH1D* reference_internal = 0;
+
+
+  if ( m_obs_bins_combined != m_obs_bins )  { 
+    reference = (TH1D*)m_obs_bins_combined->Clone("reference");
+    reference->SetDirectory(0);
+
+    reference_internal = (TH1D*)m_obs_bins->Clone("reference_internal");
+    reference_internal->SetDirectory(0);
+  }
+  else { 
+    reference = (TH1D*)m_obs_bins->Clone("reference");
+    reference->SetDirectory(0);
+  }
 
   /// grrr, what is this? This whole normalisation issue is a real pain - 
   /// we need to address this - but how to do it in a backwards compatible way?
@@ -1097,11 +1135,18 @@ void appl::grid::Write(const std::string& filename, const std::string& dirname, 
   //  std::cout << "normalised() " << getNormalised() << "\tread " << m_read << std::endl; 
   
   //  if ( !getNormalised() || m_read )  if ( run() ) reference->Scale(1/double(run()));
-  if ( run() ) reference->Scale(1/double(run()));
+  if ( run() ) { 
+    reference->Scale(1/double(run()));
+    if ( reference_internal ) reference_internal->Scale(1/double(run()));
+  }
 
   // if ( run() ) reference->Scale(1/double(run()));
   reference->Write();
   delete reference;
+  if ( reference_internal ) { 
+    reference_internal->Write();
+    delete reference_internal;
+  }
 
   //  std::cout << "corrections" << std::endl;
 
@@ -1229,7 +1274,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
     //    std::cout << "standard convolution" << std::endl;
 
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {  
 
       /// here we see whether we need to emulate a dynamic scale by simply 
       /// changing the renormalisation and factorisation scale terms to give 
@@ -1340,7 +1385,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
     //    std::cout << "amc@NLO convolution" << std::endl;
     
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {  
 
       double dsigma = 0; 
       
@@ -1405,7 +1450,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
     
     //    std::cout << "sherpa convolution" << std::endl;
 
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ ) {  
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {  
     
       double dsigma = 0; 
   
@@ -1508,12 +1553,12 @@ TH1D* appl::grid::convolute(void (*pdf1)(const double& , const double&, double* 
 			    double Escale ) 
 {
 
-  int nbins = m_obs_bins->GetNbinsX();
+  //  int nbins = m_obs_bins->GetNbinsX();
 
   TH1D* h = 0;
   if ( m_combine.size() ) { 
     
-    nbins = m_combine.size();
+    //    nbins = m_combine.size();
 
     std::vector<double> limits(m_combine.size()+1);
     
@@ -1525,10 +1570,12 @@ TH1D* appl::grid::convolute(void (*pdf1)(const double& , const double&, double* 
     }
 
     h = new TH1D("xsec", "xsec", m_combine.size(), &limits[0] );
+    h->SetDirectory(0);
   }
   else { 
     h = new TH1D(*m_obs_bins);
     h->SetName("xsec");
+    h->SetDirectory(0);
   }
    
     
@@ -1576,7 +1623,7 @@ void appl::grid::optimise(bool force) {
   m_optimised = true;
   m_read = false;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ )  { 
       std::cout << "grid::optimise() bin " << iobs << "\t";
       m_grids[iorder][iobs]->optimise();
     }
@@ -1594,7 +1641,7 @@ void appl::grid::optimise(int NQ2, int Nx1, int Nx2) {
   m_optimised = true;
   m_read = false;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
-    for ( int iobs=0 ; iobs<Nobs() ; iobs++ )  { 
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ )  { 
       std::cout << "grid::optimise() bin " << iobs << "\t";
       m_grids[iorder][iobs]->optimise(NQ2, Nx1, Nx2);
     }
@@ -1616,7 +1663,7 @@ void appl::grid::redefine(int iobs, int iorder,
     return;
   }
   
-  if ( iobs<0 || iobs>=Nobs() ) { 
+  if ( iobs<0 || iobs>=Nobs_internal() ) { 
     std::cerr << "observable bin out of range" << std::endl;
     return;
   }
@@ -1627,7 +1674,7 @@ void appl::grid::redefine(int iobs, int iorder,
 	      << "\tNx=" << Nx  << "\txmin=" <<            xmin  << "\txmax=" <<            xmax << std::endl; 
   }
   
-  igrid* oldgrid =  m_grids[iorder][iobs];
+  igrid* oldgrid = m_grids[iorder][iobs];
   
   //  m_grids[iorder][iobs]->redefine(NQ2, Q2min, Q2max, Nx, xmin, xmax);
 
@@ -1643,7 +1690,7 @@ void appl::grid::redefine(int iobs, int iorder,
 
 
 void appl::grid::setRange(int ilower, int iupper, double xScaleFactor) { 
-  if ( ilower>=0 && iupper <Nobs() ) {  
+  if ( ilower>=0 && iupper <Nobs_internal() ) {  
     double lower = getReference()->GetBinLowEdge(ilower+1);
     double upper = getReference()->GetBinLowEdge(iupper+2); 
     setRange( lower, upper, xScaleFactor );
@@ -1667,11 +1714,13 @@ void appl::grid::setRange(double lower, double upper, double xScaleFactor) {
   std::vector<double> contents;
   std::vector<double> errors;
 
+  m_combine = std::vector<int>(0);
+
   /// get the occupied bins
   //  int Nbins = 0;
   double last = 0;
   for ( int i=1 ; i<=m_obs_bins->GetNbinsX() ; i++ ) { 
-    double bin =  m_obs_bins->GetBinCenter(i);
+    double bin = m_obs_bins->GetBinCenter(i);
     if ( bin>lower && bin<upper ) { 
       limits.push_back( m_obs_bins->GetBinLowEdge(i) );
       contents.push_back( m_obs_bins->GetBinContent(i) );
@@ -1681,10 +1730,31 @@ void appl::grid::setRange(double lower, double upper, double xScaleFactor) {
       used.push_back(true);
     }
     else { 
+      //      std::cout << "skip bin " << i << " : " << m_obs_bins->GetBinLowEdge(i) << " - " << m_obs_bins->GetBinLowEdge(i+1) << std::endl;
       used.push_back(false);
     }
   }
+
+  int firstbin = 0;
+  int lastbin  = 0;
+
+  for ( unsigned i=0 ; i<used.size() ; i++ ) { 
+    if ( used[i] ) { 
+      firstbin = i;
+      break;
+    }
+  }
   
+  for ( unsigned i=used.size() ; i-- ; ) { 
+    if ( used[i] ) { 
+      lastbin = i;
+      break;
+    }
+  }
+
+  std::cout << "grid::SetRange() bins chosen " << firstbin << " - " << lastbin << std::endl;
+
+
   /// copy the range of the reference histogram
   if ( limits.size()>0 ) limits.push_back( last );
   else { 
@@ -1694,6 +1764,11 @@ void appl::grid::setRange(double lower, double upper, double xScaleFactor) {
   if ( xScaleFactor!=1 ) { 
     for ( unsigned i=0 ; i<limits.size(); i++ ) limits[i] *= xScaleFactor;
   }
+
+  /// delete combined reference if it exists
+
+  if ( m_obs_bins_combined != m_obs_bins ) delete m_obs_bins_combined;
+  
 
   /// save bins somewhere so can overwrite them 
   TH1D* h = m_obs_bins;
@@ -1712,16 +1787,18 @@ void appl::grid::setRange(double lower, double upper, double xScaleFactor) {
   /// save old grids
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) grids[iorder] = m_grids[iorder];
   
-  int Nobs = m_obs_bins->GetNbinsX();
+  int _Nobs = m_obs_bins->GetNbinsX();
 
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
-    m_grids[iorder] = new igrid*[Nobs];
+    m_grids[iorder] = new igrid*[_Nobs];
     int iobs = 0;
     for ( int igrid=0 ; igrid<h->GetNbinsX() ; igrid++ ) {
       if ( used[igrid] ) m_grids[iorder][iobs++] = grids[iorder][igrid];
       else               delete grids[iorder][igrid];                           
     }
   }
+  
+  m_obs_bins_combined = m_obs_bins; 
 
   delete h;
 
@@ -1782,7 +1859,7 @@ void appl::grid::addCorrection(TH1D* h, const std::string& label) {
 int appl::grid::size() const { 
     int _size = 0;
     for( int iorder=0 ; iorder<2 ; iorder++ ) {
-      for( int iobs=0 ; iobs<Nobs() ; iobs++ ) _size += m_grids[iorder][iobs]->size();
+      for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) _size += m_grids[iorder][iobs]->size();
     }
     return _size;
 }
@@ -1843,11 +1920,11 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
     std::cout << "appl::grid::shrink() order " << iorder << std::endl;
     
     std::vector< std::vector<int> > pdf_combinations;
-    pdf_combinations.reserve( Nobs() );
+    pdf_combinations.reserve( Nobs_internal() );
     
     /// ... for each observable bin ...
  
-    for( int iobs=0 ; iobs<Nobs() ; iobs++ ) { 
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
       
       //      std::cout << "shrink() order: " << iorder << "\t obs: " << iobs;
       
@@ -2012,7 +2089,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
   /// loop over the igrids, telling each grid which processes to keep
   
-  for( int iobs=0 ; iobs<Nobs() ; iobs++ ) { 
+  for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
     for( int iorder=0 ; iorder<2 ; iorder++ ) {
       //      std::cout << "appl::grid::shrink()  obs " << iobs << "\torder " << iorder << std::endl;       
       m_grids[iorder][iobs]->shrink( keep[iorder] );
@@ -2036,20 +2113,22 @@ void appl::grid::combineReference(bool force) {
 
   if ( force ) { 
     if ( m_obs_bins_combined ) { 
-      delete m_obs_bins_combined;
+      if ( m_obs_bins_combined!=m_obs_bins ) delete m_obs_bins_combined;
       m_obs_bins_combined = 0;
     }
   }
 
-  if ( m_obs_bins_combined ) return; 
+  if ( m_obs_bins_combined && m_obs_bins_combined!=m_obs_bins) return; 
 
   std::vector<double> hvec(  m_obs_bins->GetNbinsX(), 0 );
   std::vector<double> hvece( m_obs_bins->GetNbinsX(), 0 );
+
+
   for ( int i=m_obs_bins->GetNbinsX() ; i-- ; )  { 
     hvec[i]  = m_obs_bins->GetBinContent( i+1 );
     hvece[i] = m_obs_bins->GetBinError( i+1 );
   }
-  
+
   combineBins( hvec );
   combineBins( hvece, 2 );
   
@@ -2103,7 +2182,7 @@ void appl::grid::combineBins(std::vector<double>& hvec, int power ) const {
 
       for ( int ib=0 ; ib<m_combine[ic] && i<hvec.size() ; ib++, i++ ) { 
 	double deltaobs = m_obs_bins->GetBinLowEdge(i+2)-m_obs_bins->GetBinLowEdge(i+1);
-	if ( power==1 ) sigma += hvec[i]*deltaobs;
+	if ( power==1 ) sigma +=  hvec[i]*deltaobs;
 	if ( power==2 ) sigma += (hvec[i]*deltaobs*hvec[i]*deltaobs);
 	width += deltaobs;
       }
@@ -2121,7 +2200,7 @@ std::ostream& operator<<(std::ostream& s, const appl::grid& g) {
   
   s << "==================================================" << std::endl;
   
-  //  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses(0) << " initial states, " << g.Nobs() << " observable bins)" << std::endl;
+  //  s << "appl::grid version " << g.version() << "\t(" << g.subProcesses(0) << " initial states, " << g.Nobs_internal() << " observable bins)" << std::endl;
 
   std::string basis[5] = {  "-LO, ",  "-NLO, ",  "-NNLO, ", "-Xtra0", "-Xtra1" };  
   std::string order[appl::MAXGRIDS];
@@ -2132,7 +2211,7 @@ std::ostream& operator<<(std::ostream& s, const appl::grid& g) {
 
   s << "appl::grid version " << g.version() << "\t( "; 
   for ( int i=0 ; i<g.nloops()+1 ; i++ ) s << g.subProcesses(i) << order[i];
-  s << "initial states, " << g.Nobs() << " observable bins )" << std::endl;
+  s << "initial states, " << g.Nobs_internal() << " observable bins )" << std::endl;
   if ( g.isOptimised() ) s << "Optimised grid" << std::endl;
   if ( g.isSymmetric() ) s << "Symmetrised in x1, x2" << std::endl;
   else                   s << "Unsymmetrised in x1, x2" << std::endl;
@@ -2141,11 +2220,11 @@ std::ostream& operator<<(std::ostream& s, const appl::grid& g) {
   s << "x->y coordinate transform:  "  << g.getTransform() << std::endl;
   s << "genpdf in use: " << g.getGenpdf() << std::endl;
   s << "--------------------------------------------------" << std::endl;
-  s << "Observable binning: [ " << g.Nobs() 
+  s << "Observable binning: [ " << g.Nobs_internal() 
     << " bins : " << g.obsmin() << ",  " << g.obsmax() << " ]" << std::endl;
 
   //  for( int iorder=0 ; iorder<1 ; iorder++ ) {
-  for( int iobs=0 ; iobs<g.Nobs() ; iobs++ ) {
+  for( int iobs=0 ; iobs<g.Nobs_internal() ; iobs++ ) {
     s << iobs << "\t" 
       << std::setprecision(5) << std::setw(5) << g.getReference()->GetBinLowEdge(iobs+1) << "\t- " 
       << std::setprecision(5) << std::setw(5) << g.getReference()->GetBinLowEdge(iobs+2) << "\t"; 

@@ -33,6 +33,8 @@ double _fx(double y);
 double _fun(double y);
 
 
+#include "correction.h"
+
 namespace appl { 
 
 
@@ -355,8 +357,8 @@ public:
   double obsmin_internal()             const { return obslow_internal(0); } 
   double obsmax_internal()             const { return obslow_internal(Nobs_internal()); } 
 
-  const TH1D* getReference_internal() const { return m_obs_bins_combined; } 
-  TH1D*       getReference_internal()       { return m_obs_bins_combined; } 
+  const TH1D* getReference_internal() const { return m_obs_bins; } 
+  TH1D*       getReference_internal()       { return m_obs_bins; } 
 
  
  
@@ -438,15 +440,16 @@ public:
 
 
   /// add a correction as a std::vector
-  void addCorrection( std::vector<double>& v, const std::string& label="" );
+  void addCorrection( std::vector<double>& v, const std::string& label="", bool combine=false );
 
 
   /// add a correction by histogram
-  void addCorrection(TH1D* h, const std::string& label="");
+  void addCorrection(TH1D* h, const std::string& label="", bool ombine=false);
 
   
   /// access the corrections
-  const std::vector<std::vector<double> >& corrections() const { 
+  //  const std::vector<std::vector<double> >& corrections() const { 
+  const std::vector<correction>& corrections() const { 
     return m_corrections;
   }
 
@@ -454,13 +457,10 @@ public:
   const std::vector<std::string >& correctionLabels() const { 
     return m_correctionLabels;
   }
-  
-  /// access a specific correction by index
-  //  TH1D* correction(int i) const;
-
 
   /// will the corrections be applied? 
   bool getApplyCorrections() const { return m_applyCorrections; } 
+
   bool setApplyCorrections(bool b) { 
     std::cout << "appl::grid bin-by-bin corrections will " 
 	      << ( b ? "" : "not " ) << "be applied" << std::endl;
@@ -468,13 +468,14 @@ public:
   } 
 
   /// apply corrections to a std::vector
-  void applyCorrections(std::vector<double>& v);
+  void applyCorrections(std::vector<double>& v, std::vector<bool>& applied);
 
 
-  /// will the corrections be applied? 
-  bool getApplyCorrection(unsigned i) const { 
-    if ( i<m_applyCorrection.size() ) return m_applyCorrection.at(i);
-    else                              return m_applyCorrections;
+  /// will a specific correction be applied? 
+  bool getApplyCorrection(unsigned i) const {
+    if      ( m_applyCorrections )         return true; 
+    else if ( i<m_applyCorrection.size() ) return m_applyCorrection.at(i);
+    return false; 
   }
  
   bool setApplyCorrection(unsigned i, bool b) { 
@@ -488,7 +489,7 @@ public:
   } 
   
   /// apply corrections to a std::vector
-  void applyCorrection(unsigned i, std::vector<double>& v);
+  bool applyCorrection(unsigned i, std::vector<double>& v);
   
 
   /// set the ckm matrix values if need be
@@ -632,8 +633,9 @@ protected:
   double m_dynamicScale;
 
   /// bin by bin correction factors 
-  std::vector<std::vector<double> > m_corrections;
-  std::vector<std::string>          m_correctionLabels;
+  //  std::vector<std::vector<double> > m_corrections;
+  std::vector<correction>    m_corrections;
+  std::vector<std::string>   m_correctionLabels;
   
 
   /// should we apply the corrections?

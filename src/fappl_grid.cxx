@@ -343,5 +343,16 @@ void readfastnlogrids_( int* ids, const char* s ) {
 
 }
 
+
+void getrun_( const int& id, double& run ) { 
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    appl::grid*    g = gitr->second;
+    run = g->run();
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
+
   
 

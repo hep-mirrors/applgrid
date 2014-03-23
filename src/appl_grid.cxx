@@ -1489,16 +1489,48 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
   /// now combine bins if required ...
 
-  if ( m_combine.size()!=0 ) combineBins( hvec );
+  std::vector<bool> applied(m_corrections.size(),false);
+
+  /// apply corrrections on the *uncombined* bins
+  if ( getApplyCorrections() ) applyCorrections(hvec, applied);
+  else { 
+    for ( unsigned i=m_corrections.size() ; i-- ; ) if ( getApplyCorrection(i) ) applied[i] = applyCorrection(i,hvec);
+  }
+
+
+  /// combine bins if required
+  if ( m_combine.size()!=0 ) { 
+    combineBins( hvec );
+
+    /// apply additional corrrections on the *combined* bins
+    /// NB: Only apply those that have not already been applied
+    if ( getApplyCorrections() ) applyCorrections(hvec, applied);
+    else { 
+      for ( unsigned i=m_corrections.size() ; i-- ; ) if ( getApplyCorrection(i) && !applied[i] ) applied[i] = applyCorrection(i,hvec);
+    }
+  }
+
+  /// check all corrections have been applied correctly
+  if ( getApplyCorrections() ) { 
+    unsigned appliedcorrections = 0;
+    for ( unsigned i=applied.size() ; i-- ; ) if ( applied[i] ) appliedcorrections++;
+    if ( appliedcorrections!=applied.size() ) throw grid::exception( std::cerr << "correction vector size does not match data "  ); 
+  }
+  else { 
+    unsigned Ncorrections = 0;
+    unsigned appliedcorrections = 0;
+    for ( unsigned i=m_corrections.size() ; i-- ; ) { 
+      if ( getApplyCorrection(i) ) { 
+	Ncorrections++;
+	if ( applied[i] ) appliedcorrections++;
+      }
+    }
+    if ( appliedcorrections!=Ncorrections ) throw grid::exception( std::cerr << "correction vector size does not match data "  ); 
+  }
 
   //  double _ctime = appl_timer_stop(_ctimer);
   //  std::cout << "grid::convolute() " << label << " convolution time=" << _ctime << " ms" << std::endl;
   
-  if ( getApplyCorrections() ) applyCorrections(hvec);
-  else { 
-    for ( unsigned i=0 ; i<m_corrections.size() ; i++ ) if ( getApplyCorrection(i) ) applyCorrection(i,hvec);
-  }
-
   cache1.stats();
   if ( cache2.ncalls() ) cache2.stats();
   
@@ -1820,9 +1852,9 @@ void appl::grid::addDocumentation(const std::string& s) {
 /// methods to handle bin-by-bin corrections
 
 /// add a correction as a std::vector
-void appl::grid::addCorrection( std::vector<double>& v, const std::string& label) {
+void appl::grid::addCorrection( std::vector<double>& v, const std::string& label, bool ) {
   //  std::cout << "addCorrections(vector) " << v.size() << " " << m_obs_bins->GetNbinsX() << std::endl;
-  if ( v.size()==unsigned(m_obs_bins->GetNbinsX()) ) {
+  if ( v.size()==unsigned(m_obs_bins->GetNbinsX()) || v.size()==unsigned(m_obs_bins_combined->GetNbinsX()) ) {
     m_corrections.push_back(v);
     m_correctionLabels.push_back(label);
     m_applyCorrection.push_back(false);
@@ -1832,11 +1864,17 @@ void appl::grid::addCorrection( std::vector<double>& v, const std::string& label
 
 
 /// add a correction by histogram
-void appl::grid::addCorrection(TH1D* h, const std::string& label) {
+void appl::grid::addCorrection(TH1D* h, const std::string& label, bool ) {
   // std::cout << "addCorrections(TH1D*) " << h->GetNbinsX() << " " << m_obs_bins->GetNbinsX() << std::endl;
-  if ( h->GetNbinsX()==m_obs_bins->GetNbinsX() ) {
+  
+  TH1D* hobs = 0;
+  
+  if      ( h->GetNbinsX()==m_obs_bins->GetNbinsX() )          hobs = m_obs_bins;
+  else if ( h->GetNbinsX()==m_obs_bins_combined->GetNbinsX() ) hobs = m_obs_bins_combined;
+
+  if ( hobs ) { 
     for ( int i=1 ; i<=h->GetNbinsX()+1 ; i++ ) { 
-      if ( std::fabs(h->GetBinLowEdge(i+1)-m_obs_bins->GetBinLowEdge(i+1))>1e-10 ) { 
+      if ( std::fabs(h->GetBinLowEdge(i+1)-hobs->GetBinLowEdge(i+1))>1e-10 ) { 
 	std::cerr << "grid::addCorrection(TH1D* h): bin mismatch, not adding correction" << std::endl;
 	return;
       }
@@ -1866,28 +1904,40 @@ int appl::grid::size() const {
 
 
 /// apply corrections to a std::vector
-void appl::grid::applyCorrections(std::vector<double>& v) {
+void appl::grid::applyCorrections(std::vector<double>& v, std::vector<bool>& applied) {
+ 
+  if ( applied.size()!=m_corrections.size() ) throw grid::exception( std::cerr << "wrong number of corrections expected" ); 
+ 
   //  std::cout << "grid::applyCorrections(vector) " << m_corrections.size() << std::endl;
-  for ( unsigned i=0 ; i<m_corrections.size() ; i++ ) { 
+ 
+  for ( unsigned i=m_corrections.size() ; i-- ; ) { 
+ 
     std::vector<double>& correction = m_corrections[i];
-    //      TH1D* hc = m_corrections[i];
-    for ( unsigned j=0 ; j<v.size() ; j++ ) v[j] *= correction[j];
+  
+    //    std::cout << "\t" << i << " " << correction.size() << " " << v.size() << std::endl;
+    
+    if ( applied[i] || v.size()!=correction.size() ) continue; /// correction applied already or wrong size     
+    
+    for ( unsigned j=v.size() ; j-- ; ) v[j] *= correction[j];
+    applied[i] = true;
   }
   //  std::cout << "grid::applyCorrections(vector) done" << std::endl;
 }
 
 
+
+
 /// apply correction to a std::vector
-void appl::grid::applyCorrection(unsigned i, std::vector<double>& v) {
-  //  std::cout << "grid::applyCorrections(vector) " << m_corrections.size() << std::endl;
-  for ( unsigned j=0 ; j<m_corrections.size() ; j++ ) { 
-    if ( j==i ) { 
-      std::vector<double>& correction = m_corrections[j];
-      //      TH1D* hc = m_corrections[i];
-      for ( unsigned k=0 ; k<v.size() ; k++ ) v[k] *= correction[k];
-    }
-  }
-  //  std::cout << "grid::applyCorrections(vector) done" << std::endl;
+bool appl::grid::applyCorrection(unsigned i, std::vector<double>& v) {
+
+  if ( i>=m_corrections.size() ) throw grid::exception( std::cerr << "correction index out of range"  ); 
+ 
+  std::vector<double>& correction = m_corrections[i];
+
+  if ( v.size()!=correction.size() ) return false; /// wrong size
+
+  for ( unsigned k=v.size() ; k-- ; ) v[k] *= correction[k];
+  return true;
 }
 
 

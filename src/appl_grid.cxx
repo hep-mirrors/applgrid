@@ -511,6 +511,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   if ( corrections ) { 
     for ( unsigned i=0 ; i<corrections->size() ; i++ ) {
       m_corrections.push_back( (*corrections)[i] ); // copy the correction histograms
+      m_applyCorrection.push_back(false);
     }
   }
 
@@ -1864,17 +1865,18 @@ void appl::grid::addCorrection( std::vector<double>& v, const std::string& label
 
 
 /// add a correction by histogram
-void appl::grid::addCorrection(TH1D* h, const std::string& label, bool ) {
-  // std::cout << "addCorrections(TH1D*) " << h->GetNbinsX() << " " << m_obs_bins->GetNbinsX() << std::endl;
+void appl::grid::addCorrection(TH1D* h, const std::string& label, double scale, bool ) {
   
   TH1D* hobs = 0;
   
   if      ( h->GetNbinsX()==m_obs_bins->GetNbinsX() )          hobs = m_obs_bins;
   else if ( h->GetNbinsX()==m_obs_bins_combined->GetNbinsX() ) hobs = m_obs_bins_combined;
 
+
   if ( hobs ) { 
     for ( int i=1 ; i<=h->GetNbinsX()+1 ; i++ ) { 
-      if ( std::fabs(h->GetBinLowEdge(i+1)-hobs->GetBinLowEdge(i+1))>1e-10 ) { 
+      if ( std::fabs(h->GetBinLowEdge(i+1)*scale-hobs->GetBinLowEdge(i+1))>1e-10 ) { 
+	std::cerr << "bins " << h->GetBinLowEdge(i+1) << " " << hobs->GetBinLowEdge(i+1) << std::endl; 
 	std::cerr << "grid::addCorrection(TH1D* h): bin mismatch, not adding correction" << std::endl;
 	return;
       }
@@ -1908,16 +1910,12 @@ void appl::grid::applyCorrections(std::vector<double>& v, std::vector<bool>& app
  
   if ( applied.size()!=m_corrections.size() ) throw grid::exception( std::cerr << "wrong number of corrections expected" ); 
  
-  //  std::cout << "grid::applyCorrections(vector) " << m_corrections.size() << std::endl;
- 
   for ( unsigned i=m_corrections.size() ; i-- ; ) { 
  
     std::vector<double>& correction = m_corrections[i];
-  
-    //    std::cout << "\t" << i << " " << correction.size() << " " << v.size() << std::endl;
     
     if ( applied[i] || v.size()!=correction.size() ) continue; /// correction applied already or wrong size     
-    
+
     for ( unsigned j=v.size() ; j-- ; ) v[j] *= correction[j];
     applied[i] = true;
   }

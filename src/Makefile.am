@@ -65,6 +65,7 @@ libAPPLgrid_la_SOURCES = \
 	SparseMatrix3d.cxx	hoppet_init.cxx	     \
 	TFileString.cxx		TFileStringDict.cxx  \
 	TFileVector.cxx		TFileVectorDict.cxx  \
+	integral.cxx \
 	*.h
 
 libfAPPLgrid_la_SOURCES = fappl_grid.cxx fappl_fitter.cxx

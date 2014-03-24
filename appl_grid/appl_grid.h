@@ -444,7 +444,7 @@ public:
 
 
   /// add a correction by histogram
-  void addCorrection(TH1D* h, const std::string& label="", bool ombine=false);
+  void addCorrection(TH1D* h, const std::string& label="", double scale=1, bool combine=false );
 
   
   /// access the corrections
@@ -481,9 +481,8 @@ public:
   bool setApplyCorrection(unsigned i, bool b) { 
     if ( i>=m_corrections.size() ) return false; 
     std::cout << "appl::grid bin-by-bin correction will " 
-	      << ( b ? "" : "not " ) << "be applied to correction " << i;
+	      << ( b ? "" : "not " ) << "be applied for correction " << i;
     if ( m_correctionLabels[i]!="" ) std::cout << " ("  << m_correctionLabels[i] << ")";
- 
     std::cout << std::endl;
     return m_applyCorrection[i]=b;
   } 

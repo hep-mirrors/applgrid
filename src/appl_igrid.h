@@ -125,24 +125,21 @@ public:
 
 
   // this section stores the available x<->y transforms.
-  // they are static functions and the function pairs are stored in a std::map with a 
-  // (const std::string) tag - the tag can be saved to a root file to uniquely identify 
-  // the transform pair.
-  // additional user defined transform pairs can be added to the std::map using the static 
-  // add_transform method before creating the grid
+  // the function pairs are stored in a std::map with a (const std::string) tag - the tag can 
+  // be saved to a root file to uniquely identify the transform pair.
+  // additional user defined transform pairs can *no longer* be added to the std::map since now
+  // only local class functions can be used
 
   transform_t mfy;
   transform_t mfx;
 
   // transform 
-  //  double fy(double x) const { return this->*mfy(x); }
   double fy(double x) const { return (this->*mfy)(x); }
   double fx(double x) const { return (this->*mfx)(x); }
 
   std::string transform() const { return m_transform; } 
 
-  // potential static transforms and 
-  // static std::map<const std::string, transform_vec> init_fmap() { 
+  // initialise the transform map - no longer shared between class members
   void init_fmap() { 
     if ( m_fmap.size()==0 ) { 
       std::map<const std::string, transform_vec>& fmap = m_fmap; 
@@ -155,9 +152,8 @@ public:
     }
   }
 
-  //  static 
-  void add_transform(const std::string transform, 
-			    transform_t __fx, transform_t __fy ) { 
+  /// add a transform
+  void add_transform(const std::string transform, transform_t __fx, transform_t __fy ) { 
     if ( m_fmap.find(transform)!=m_fmap.end() ) { 
       throw exception("igrid::add_fmap() transform "+transform+" already in std::map");
     }
@@ -165,24 +161,16 @@ public:
   }
 
   // define all these so that ymin=fy(xmin) rather than ymin=fy(xmax)
-  // static 
   double _fy(double x) const { return std::log(1/x-1); } 
-  //  static 
   double _fx(double y) const { return 1/(1+std::exp(y)); } 
 
-  //  static 
   double _fy0(double x) const { return -std::log(x); } 
-  // static 
   double _fx0(double y) const { return  std::exp(-y); } 
 
-  //  static 
   double _fy1(double x) const { return std::sqrt(-log(x)); } 
-  //  static 
   double _fx1(double y) const { return std::exp(-y*y); } 
 
-  // static 
   double _fy2(double x) const { return -std::log(x)+m_transvar*(1-x); }
-  // static 
   double _fx2(double y) const {
     // use Newton-Raphson: y = ln(1/x)
     // solve   y - yp - a(1 - exp(-yp)) = 0
@@ -208,15 +196,11 @@ public:
     return std::exp(-yp); 
   }
   
-  // static 
   double _fy3(double x) const { return std::sqrt(-log10(x)); }
-  // static 
   double _fx3(double y) const { return std::pow(10,-y*y); } 
 
   // fastnlo dis transform
-  //  static 
   double _fy4(double x) const { return -std::log10(x); }
-  //  static 
   double _fx4(double y) const { return std::pow(10,-y); } 
 
 
@@ -294,7 +278,9 @@ public:
   //  double getxmin()   const { return getx2max(); }
   //  double getxmax()   const { return getx1max(); }
 
-  
+  /// these set the static class used to initialise the 
+  /// local variables upon grid creation, since a value may 
+  /// be needed by the constructor  
   static double transformvar()         { return transvar; }
   static double transformvar(double v) { return transvar=v; }
 
@@ -548,11 +534,11 @@ private:
 
   // useful transform information for storage in root file 
   std::string                   m_transform;
-  //  static 
+
   std::map<const std::string, transform_vec> m_fmap;
 
-  static   double  transvar;      // transform function parameter
-  double           m_transvar; // local copy transform function parameter
+  static double  transvar;   // transform function parameter
+  double         m_transvar; // local copy transform function parameter
 
   /// *don't* make m_reweight static!!! otherwise we can't mix 
   ///  reweighted and non-reweighted grids!!! 

@@ -41,12 +41,6 @@ void Splitting(const double& x, const double& Q, double* f);
 // variable tranformation parameters
 double appl::igrid::transvar = 5;
 
-// std::map<const std::string, appl::igrid::transform_vec> appl::igrid::m_fmap = appl::igrid::init_fmap();
-
-
-
-// double Escale = 1;
-
 
 appl::igrid::igrid() : 
   mfy(0),   mfx(0),
@@ -77,6 +71,7 @@ appl::igrid::igrid() :
 appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order, 
 		   int Nx,  double xmin,  double xmax,  int xorder, 
 		   std::string transform, int Nproc, bool disflag ):
+  mfy(0),   mfx(0),
   m_parent(0),
   m_Ny1(Nx),   m_Ny2( disflag ? 1 : Nx ),  m_yorder(xorder), 
   m_Ntau(NQ2), m_tauorder(Q2order), 
@@ -96,8 +91,6 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   //  std::cout << "igrid::igrid() transform=" << m_transform << std::endl;
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
-  //  mfx = m_fmap.find(m_transform))->second.mfx;
-  //  mfy = m_fmap.find(m_transform))->second.mfy;
   mfx=m_fmap[m_transform].mfx;
   mfy=m_fmap[m_transform].mfy;
   
@@ -159,7 +152,7 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
 
 // copy constructor
 appl::igrid::igrid(const appl::igrid& g) : 
-  //  mfy(g.mfy),  mfx(g.mfx),  
+  mfy(0),  mfx(0),  
   m_parent(0),
   m_Ny1(g.m_Ny1),     
   m_y1min(g.m_y1min),     m_y1max(g.m_y1max),     m_deltay1(g.m_deltay1),   
@@ -182,8 +175,6 @@ appl::igrid::igrid(const appl::igrid& g) :
 {
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
-  // mfx = m_fmap.find(m_transform))->second.mfx;
-  // mfy = m_fmap.find(m_transform))->second.mfy;
   mfx=m_fmap[m_transform].mfx;
   mfy=m_fmap[m_transform].mfy;
   
@@ -195,7 +186,7 @@ appl::igrid::igrid(const appl::igrid& g) :
 
 // read from a file 
 appl::igrid::igrid(TFile& f, const std::string& s) :
-  //  fy(NULL),   fx(NULL),
+  mfy(0),  mfx(0),  
   m_parent(0),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),   
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),   
@@ -231,8 +222,6 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
 
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
-  // mfx = m_fmap.find(m_transform)->second.mfx;
-  // mfy = m_fmap.find(m_transform)->second.mfy;
   mfx = m_fmap[m_transform].mfx;
   mfy = m_fmap[m_transform].mfy;
 

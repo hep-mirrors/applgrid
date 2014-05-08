@@ -731,6 +731,16 @@ appl::grid& appl::grid::operator*=(const double& d) {
 }
 
 
+double appl::grid::fx(double x) const { 
+  if ( m_order>0 && Nobs_internal()>0 ) return m_grids[0][0]->fx(x);
+  else return 0;
+}
+
+double appl::grid::fy(double x) const { 
+  if ( m_order>0 && Nobs_internal()>0 ) return m_grids[0][0]->fy(x);
+  else return 0;
+}
+
 
 appl::grid& appl::grid::operator+=(const appl::grid& g) {
   m_run      += g.m_run;

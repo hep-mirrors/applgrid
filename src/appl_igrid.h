@@ -55,13 +55,14 @@ private:
     exception(std::ostream& s)      { std::cerr << s << std::endl; }; 
   };
 
+  typedef double (igrid::*transform_t)(double) const;
 
   // structure to store the x<->y transform pairs for 
   struct transform_vec {
-    transform_vec() : mfx(NULL), mfy(NULL) { } 
-    transform_vec(double (*__fx)(double), double (*__fy)(double)) : mfx(__fx), mfy(__fy) { } 
-    double (*mfx)(double);
-    double (*mfy)(double);
+    transform_vec() : mfx(0), mfy(0) { } 
+    transform_vec( transform_t __fx, transform_t __fy) : mfx(__fx), mfy(__fy) { } 
+    transform_t mfx;
+    transform_t mfy;
   };
   
 
@@ -130,26 +131,33 @@ public:
   // additional user defined transform pairs can be added to the std::map using the static 
   // add_transform method before creating the grid
 
+  transform_t mfy;
+  transform_t mfx;
+
   // transform 
-  double (*fy)(double x);
-  double (*fx)(double y);
+  //  double fy(double x) const { return this->*mfy(x); }
+  double fy(double x) const { return (this->*mfy)(x); }
+  double fx(double x) const { return (this->*mfx)(x); }
 
   std::string transform() const { return m_transform; } 
 
   // potential static transforms and 
-  static std::map<const std::string, transform_vec> init_fmap() { 
-    std::map<const std::string, transform_vec> fmap; 
-    fmap["f"]  = transform_vec( _fx , _fy  );
-    fmap["f0"] = transform_vec( _fx0, _fy0 );
-    fmap["f1"] = transform_vec( _fx1, _fy1 );
-    fmap["f2"] = transform_vec( _fx2, _fy2 );
-    fmap["f3"] = transform_vec( _fx3, _fy3 );
-    fmap["f4"] = transform_vec( _fx4, _fy4 );
-    return fmap;
+  // static std::map<const std::string, transform_vec> init_fmap() { 
+  void init_fmap() { 
+    if ( m_fmap.size()==0 ) { 
+      std::map<const std::string, transform_vec>& fmap = m_fmap; 
+      fmap["f"]  = transform_vec( &igrid::_fx , &igrid::_fy  );
+      fmap["f0"] = transform_vec( &igrid::_fx0, &igrid::_fy0 );
+      fmap["f1"] = transform_vec( &igrid::_fx1, &igrid::_fy1 );
+      fmap["f2"] = transform_vec( &igrid::_fx2, &igrid::_fy2 );
+      fmap["f3"] = transform_vec( &igrid::_fx3, &igrid::_fy3 );
+      fmap["f4"] = transform_vec( &igrid::_fx4, &igrid::_fy4 );
+    }
   }
 
-  static void add_transform(const std::string transform, 
-			    double (*__fx)(double), double (*__fy)(double)) { 
+  //  static 
+  void add_transform(const std::string transform, 
+			    transform_t __fx, transform_t __fy ) { 
     if ( m_fmap.find(transform)!=m_fmap.end() ) { 
       throw exception("igrid::add_fmap() transform "+transform+" already in std::map");
     }
@@ -157,17 +165,25 @@ public:
   }
 
   // define all these so that ymin=fy(xmin) rather than ymin=fy(xmax)
-  static double _fy(double x) { return std::log(1/x-1); } 
-  static double _fx(double y) { return 1/(1+std::exp(y)); } 
+  // static 
+  double _fy(double x) const { return std::log(1/x-1); } 
+  //  static 
+  double _fx(double y) const { return 1/(1+std::exp(y)); } 
 
-  static double _fy0(double x) { return -std::log(x); } 
-  static double _fx0(double y) { return  std::exp(-y); } 
+  //  static 
+  double _fy0(double x) const { return -std::log(x); } 
+  // static 
+  double _fx0(double y) const { return  std::exp(-y); } 
 
-  static double _fy1(double x) { return std::sqrt(-log(x)); } 
-  static double _fx1(double y) { return std::exp(-y*y); } 
+  //  static 
+  double _fy1(double x) const { return std::sqrt(-log(x)); } 
+  //  static 
+  double _fx1(double y) const { return std::exp(-y*y); } 
 
-  static double _fy2(double x) { return -std::log(x)+m_transvar*(1-x); }
-  static double _fx2(double y) {
+  // static 
+  double _fy2(double x) const { return -std::log(x)+m_transvar*(1-x); }
+  // static 
+  double _fx2(double y) const {
     // use Newton-Raphson: y = ln(1/x)
     // solve   y - yp - a(1 - exp(-yp)) = 0
     // deriv:  - 1 -a exp(-yp)
@@ -192,12 +208,16 @@ public:
     return std::exp(-yp); 
   }
   
-  static double _fy3(double x) { return std::sqrt(-log10(x)); }
-  static double _fx3(double y) { return std::pow(10,-y*y); } 
+  // static 
+  double _fy3(double x) const { return std::sqrt(-log10(x)); }
+  // static 
+  double _fx3(double y) const { return std::pow(10,-y*y); } 
 
   // fastnlo dis transform
-  static double _fy4(double x) { return -std::log10(x); }
-  static double _fx4(double y) { return std::pow(10,-y); } 
+  //  static 
+  double _fy4(double x) const { return -std::log10(x); }
+  //  static 
+  double _fx4(double y) const { return std::pow(10,-y); } 
 
 
   // pdf weight function
@@ -275,8 +295,8 @@ public:
   //  double getxmax()   const { return getx1max(); }
 
   
-  static double transformvar()         { return m_transvar; }
-  static double transformvar(double v) { return m_transvar=v; }
+  static double transformvar()         { return transvar; }
+  static double transformvar(double v) { return transvar=v; }
 
   bool   symmetrise(bool t=true)   { return m_symmetrise=t; }
   bool   isSymmetric() const       { return m_symmetrise; }
@@ -528,10 +548,11 @@ private:
 
   // useful transform information for storage in root file 
   std::string                   m_transform;
-  static std::map<const std::string, transform_vec> m_fmap;
+  //  static 
+  std::map<const std::string, transform_vec> m_fmap;
 
-  static double m_transvar;      // transform function parameter
-  double        m_transvarlocal; // local copy transform function parameter
+  static   double  transvar;      // transform function parameter
+  double           m_transvar; // local copy transform function parameter
 
   /// *don't* make m_reweight static!!! otherwise we can't mix 
   ///  reweighted and non-reweighted grids!!! 

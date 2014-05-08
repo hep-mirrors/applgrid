@@ -207,8 +207,11 @@ fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
   // need to implement other schemes if need be...
   std::string transform;
 
-  static double (*fy)(double x) = NULL;
-  static double (*fx)(double x) = NULL;
+  //  static double (*fy)(double x) = NULL;
+  //  static double (*fx)(double x) = NULL;
+
+  //  appl::igrid::transform_t fx = 0;
+  //  appl::igrid::transform_t fy = 0;
 
   out( "scheme: ", ixscheme ); 
 
@@ -216,14 +219,14 @@ fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
   case 1:  
     // dis
     transform = "f4";
-    fy = appl::igrid::_fy4;
-    fx = appl::igrid::_fx4;
+    //   fy = &appl::igrid::_fy4;
+    //   fx = &appl::igrid::_fx4;
     break;
   case 2: 
     // pp and ppbar  
     transform = "f3";
-    fy = appl::igrid::_fy3;
-    fx = appl::igrid::_fx3;
+    //   fy = appl::igrid::_fy3;
+    //   fx = appl::igrid::_fx3;
     break;
   default:
     std::cerr << "fastnlo::fastnlo() transform not defined" << std::endl;
@@ -247,6 +250,7 @@ fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
   for ( int i=0 ; i<Nrapidity ; i++ ) Nbins += Npt[i];
   
   std::vector<  std::vector<  std::vector<  std::vector<  std::vector<double> > > > > array(Nbins);
+
 
   int ibin = 0;
   for ( int irap=0 ; irap<Nrapidity ; irap++ ) { 
@@ -317,6 +321,9 @@ fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
   int iposition[3] = { 0, 1+icentral, 1+icentral+Nscalevar };
   ibin = 0;
   
+  /// create dummy igrid, purely so we can call the fx and fy functions! I ask you! 
+  appl::igrid grid_dummy(   5, 10, 100, 0,   5, 0.01, 0.1, 0,  transform, Nsubproc, DISgrid );
+
   
   for ( int irap=0 ; irap<Nrapidity ; irap++ ) { 
 
@@ -348,12 +355,12 @@ fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
       //      std::cout << "width " << ipt << "\t" << width << std::endl;
 
       // need to generalise this??
-      double hylim = -fy( xlimit[irap][ipt] );
+      double hylim = -grid_dummy.fy( xlimit[irap][ipt] );
       
       double hyl = hylim;
       double hyu = hylim/Nxtot;
-      double xl = fx(-hyl);
-      double xu = fx(-hyu);
+      double xl = grid_dummy.fx(-hyl);
+      double xu = grid_dummy.fx(-hyu);
       
       //      std::cout << "ipt " << ipt << "\txl " << xl << "\txu " << xu << std::endl; 
       

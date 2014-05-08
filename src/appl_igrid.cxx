@@ -39,9 +39,9 @@ void Splitting(const double& x, const double& Q, double* f);
 // bool   igrid::m_symmetrise = false;
 
 // variable tranformation parameters
-double appl::igrid::m_transvar = 5;
+double appl::igrid::transvar = 5;
 
-std::map<const std::string, appl::igrid::transform_vec> appl::igrid::m_fmap = appl::igrid::init_fmap();
+// std::map<const std::string, appl::igrid::transform_vec> appl::igrid::m_fmap = appl::igrid::init_fmap();
 
 
 
@@ -49,7 +49,7 @@ std::map<const std::string, appl::igrid::transform_vec> appl::igrid::m_fmap = ap
 
 
 appl::igrid::igrid() : 
-  fy(NULL),   fx(NULL),
+  mfy(0),   mfx(0),
   m_parent(0),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),
@@ -57,14 +57,16 @@ appl::igrid::igrid() :
   m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0),   m_tauorder(0), 
   m_Nproc(0),
   m_transform(""), 
-  m_transvarlocal(m_transvar),
+  //  m_transvarlocal(m_transvar),
+  m_transvar(transvar),
   m_reweight(false),
   m_symmetrise(false),
   m_optimised(false),
-  m_weight(NULL),
-  m_fg1(NULL),     m_fg2(NULL),
-  m_fsplit1(NULL), m_fsplit2(NULL),
-  m_alphas(NULL) { 
+  m_weight(0),
+  m_fg1(0),     m_fg2(0),
+  m_fsplit1(0), m_fsplit2(0),
+  m_alphas(0) { 
+
   //  std::cout << "igrid() (default) Ntau=" << m_Ntau << "\t" << fQ2(m_taumin) << " - " << fQ2(m_taumax) << std::endl;
 
 } 
@@ -80,22 +82,27 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_Ntau(NQ2), m_tauorder(Q2order), 
   m_Nproc(Nproc), 
   m_transform(transform), 
-  m_transvarlocal(m_transvar),
+  //  m_transvarlocal(m_transvar),
+  m_transvar(transvar),
   m_reweight(false),
   m_symmetrise(false), 
   m_optimised(false),
-  m_weight(NULL),
-  m_fg1(NULL),     m_fg2(NULL),  
-  m_fsplit1(NULL), m_fsplit2(NULL),
-  m_alphas(NULL),
+  m_weight(0),
+  m_fg1(0),     m_fg2(0),  
+  m_fsplit1(0), m_fsplit2(0),
+  m_alphas(0),
   m_DISgrid(disflag)   
 {
   //  std::cout << "igrid::igrid() transform=" << m_transform << std::endl;
+  init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
-
-  fx=m_fmap[m_transform].mfx;
-  fy=m_fmap[m_transform].mfy;
+  //  mfx = m_fmap.find(m_transform))->second.mfx;
+  //  mfy = m_fmap.find(m_transform))->second.mfy;
+  mfx=m_fmap[m_transform].mfx;
+  mfy=m_fmap[m_transform].mfy;
   
+
+
   double ymin1 = fy(xmax);
   double ymax1 = fy(xmin);
 
@@ -152,7 +159,7 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
 
 // copy constructor
 appl::igrid::igrid(const appl::igrid& g) : 
-  fy(g.fy),  fx(g.fx),  
+  //  mfy(g.mfy),  mfx(g.mfx),  
   m_parent(0),
   m_Ny1(g.m_Ny1),     
   m_y1min(g.m_y1min),     m_y1max(g.m_y1max),     m_deltay1(g.m_deltay1),   
@@ -163,7 +170,8 @@ appl::igrid::igrid(const appl::igrid& g) :
   m_taumin(g.m_taumin), m_taumax(g.m_taumax), m_deltatau(g.m_deltatau), m_tauorder(g.m_tauorder), 
   m_Nproc(g.m_Nproc),
   m_transform(g.m_transform), 
-  m_transvarlocal(g.m_transvarlocal),
+  //  m_transvarlocal(g.m_transvarlocal),
+  m_transvar(g.m_transvar),
   m_reweight(g.m_reweight),
   m_symmetrise(g.m_symmetrise),
   m_optimised(g.m_optimised),
@@ -172,6 +180,13 @@ appl::igrid::igrid(const appl::igrid& g) :
   m_fsplit1(NULL), m_fsplit2(NULL),
   m_alphas(NULL)   
 {
+  init_fmap();
+  if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
+  // mfx = m_fmap.find(m_transform))->second.mfx;
+  // mfy = m_fmap.find(m_transform))->second.mfy;
+  mfx=m_fmap[m_transform].mfx;
+  mfy=m_fmap[m_transform].mfy;
+  
   m_weight = new SparseMatrix3d*[m_Nproc];
   for( int ip=0 ; ip<m_Nproc ; ip++ )   m_weight[ip] = new SparseMatrix3d(*g.m_weight[ip]);
   //  construct();
@@ -180,7 +195,7 @@ appl::igrid::igrid(const appl::igrid& g) :
 
 // read from a file 
 appl::igrid::igrid(TFile& f, const std::string& s) :
-  fy(NULL),   fx(NULL),
+  //  fy(NULL),   fx(NULL),
   m_parent(0),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),   
   m_Ny2(0),   m_y2min(0),   m_y2max(0),   m_deltay2(0),   
@@ -188,7 +203,8 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0), m_tauorder(0), 
   m_Nproc(0),
   m_transform(""), 
-  m_transvarlocal(m_transvar),
+  //  m_transvarlocal(m_transvar),
+  m_transvar(transvar),
   m_reweight(false),
   m_symmetrise(false),
   m_optimised(false),
@@ -213,10 +229,12 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   TFileString _tag = *(TFileString*)f.Get((s+"/Transform").c_str());
   m_transform = _tag[0];
 
+  init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
-
-  fx = (*m_fmap.find(m_transform)).second.mfx;
-  fy = (*m_fmap.find(m_transform)).second.mfy;
+  // mfx = m_fmap.find(m_transform)->second.mfx;
+  // mfy = m_fmap.find(m_transform)->second.mfy;
+  mfx = m_fmap[m_transform].mfx;
+  mfy = m_fmap[m_transform].mfy;
 
   // delete _transform;
   
@@ -242,7 +260,7 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_taumax   = (*setup)(9);
   m_tauorder = int((*setup)(10)+0.5);
 
-  m_transvarlocal = (*setup)(11);
+  m_transvar = (*setup)(11);
 
   m_Nproc    = int((*setup)(12)+0.5);
 
@@ -422,7 +440,7 @@ void appl::igrid::write(const std::string& name) {
   (*setup)(9)  = m_taumax;
   (*setup)(10) = m_tauorder;
 
-  (*setup)(11) = m_transvarlocal;
+  (*setup)(11) = m_transvar;
 
   (*setup)(12) = m_Nproc;
  
@@ -823,7 +841,7 @@ double appl::igrid::convolute(NodeCache* pdf0,
 			      double Escale) 
 { 
 
-  m_transvar = m_transvarlocal;
+  //  m_transvar = m_transvarlocal;
 
   int nloop = std::fabs(_nloop);
 
@@ -1000,7 +1018,7 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 				  double Escale) 
 { 
 
-  m_transvar = m_transvarlocal;
+  //  m_transvar = m_transvarlocal;
 
   //char name[]="appl_grid:igrid::convolute(): ";
   //  static const double twopi = 2*M_PI;

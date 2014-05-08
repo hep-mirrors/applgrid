@@ -542,6 +542,9 @@ public:
 
   void combineBins(std::vector<double>& v, int power=1 ) const;
 
+  double fx(double x) const;
+  double fy(double x) const;
+
 protected:
 
   // internal common construct for the different types of constructor

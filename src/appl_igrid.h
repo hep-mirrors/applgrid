@@ -530,7 +530,8 @@ private:
   std::string                   m_transform;
   static std::map<const std::string, transform_vec> m_fmap;
 
-  static double m_transvar;    // transform function parameter
+  static double m_transvar;      // transform function parameter
+  double        m_transvarlocal; // local copy transform function parameter
 
   /// *don't* make m_reweight static!!! otherwise we can't mix 
   ///  reweighted and non-reweighted grids!!! 

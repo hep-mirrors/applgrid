@@ -57,6 +57,7 @@ appl::igrid::igrid() :
   m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0),   m_tauorder(0), 
   m_Nproc(0),
   m_transform(""), 
+  m_transvarlocal(m_transvar),
   m_reweight(false),
   m_symmetrise(false),
   m_optimised(false),
@@ -79,6 +80,7 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_Ntau(NQ2), m_tauorder(Q2order), 
   m_Nproc(Nproc), 
   m_transform(transform), 
+  m_transvarlocal(m_transvar),
   m_reweight(false),
   m_symmetrise(false), 
   m_optimised(false),
@@ -161,6 +163,7 @@ appl::igrid::igrid(const appl::igrid& g) :
   m_taumin(g.m_taumin), m_taumax(g.m_taumax), m_deltatau(g.m_deltatau), m_tauorder(g.m_tauorder), 
   m_Nproc(g.m_Nproc),
   m_transform(g.m_transform), 
+  m_transvarlocal(g.m_transvarlocal),
   m_reweight(g.m_reweight),
   m_symmetrise(g.m_symmetrise),
   m_optimised(g.m_optimised),
@@ -185,6 +188,7 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_Ntau(0), m_taumin(0), m_taumax(0), m_deltatau(0), m_tauorder(0), 
   m_Nproc(0),
   m_transform(""), 
+  m_transvarlocal(m_transvar),
   m_reweight(false),
   m_symmetrise(false),
   m_optimised(false),
@@ -238,7 +242,7 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_taumax   = (*setup)(9);
   m_tauorder = int((*setup)(10)+0.5);
 
-  m_transvar = (*setup)(11);
+  m_transvarlocal = (*setup)(11);
 
   m_Nproc    = int((*setup)(12)+0.5);
 
@@ -418,7 +422,7 @@ void appl::igrid::write(const std::string& name) {
   (*setup)(9)  = m_taumax;
   (*setup)(10) = m_tauorder;
 
-  (*setup)(11) = m_transvar;
+  (*setup)(11) = m_transvarlocal;
 
   (*setup)(12) = m_Nproc;
  
@@ -818,6 +822,9 @@ double appl::igrid::convolute(NodeCache* pdf0,
 			      double  fscale_factor,
 			      double Escale) 
 { 
+
+  m_transvar = m_transvarlocal;
+
   int nloop = std::fabs(_nloop);
 
   if ( pdf1==0 ) pdf1 = pdf0; 
@@ -992,6 +999,8 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 				  double  fscale_factor,
 				  double Escale) 
 { 
+
+  m_transvar = m_transvarlocal;
 
   //char name[]="appl_grid:igrid::convolute(): ";
   //  static const double twopi = 2*M_PI;

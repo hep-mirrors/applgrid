@@ -112,8 +112,8 @@ public:
 
   void reset() { this->clear(); _reset=_ncalls=_ncached=0; }
 
-  void diable() { _disabled = true; }
-  void enable() { _disabled = false; }
+  void disable() { _disabled = true; }
+  void enable()  { _disabled = false; }
 
 
 private:

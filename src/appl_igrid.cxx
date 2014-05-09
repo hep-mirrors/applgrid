@@ -91,8 +91,8 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   //  std::cout << "igrid::igrid() transform=" << m_transform << std::endl;
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
-  mfx=m_fmap[m_transform].mfx;
-  mfy=m_fmap[m_transform].mfy;
+  mfx = m_fmap.find(m_transform)->second.mfx;
+  mfy = m_fmap.find(m_transform)->second.mfy;
   
 
 
@@ -175,9 +175,10 @@ appl::igrid::igrid(const appl::igrid& g) :
 {
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
-  mfx=m_fmap[m_transform].mfx;
-  mfy=m_fmap[m_transform].mfy;
-  
+  mfx = m_fmap.find(m_transform)->second.mfx;
+  mfy = m_fmap.find(m_transform)->second.mfy;
+
+
   m_weight = new SparseMatrix3d*[m_Nproc];
   for( int ip=0 ; ip<m_Nproc ; ip++ )   m_weight[ip] = new SparseMatrix3d(*g.m_weight[ip]);
   //  construct();
@@ -206,10 +207,6 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
 { 
   //  std::cout << "igrid::igrid()" << std::endl;
   
-  //  mfx = igrid::_fx;
-  //  mfy = igrid::_fy;
-  //  mweightfun = igrid::_fun;
- 
   // using the title of a TH1D because I don't know 
   // how else to save a std::string in a root file 
   // TH1D* _transform = (TH1D*)f.Get((s+"/Transform").c_str());
@@ -222,8 +219,9 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
 
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
-  mfx = m_fmap[m_transform].mfx;
-  mfy = m_fmap[m_transform].mfy;
+  mfx = m_fmap.find(m_transform)->second.mfx;
+  mfy = m_fmap.find(m_transform)->second.mfy;
+
 
   // delete _transform;
   

@@ -130,25 +130,25 @@ public:
   // additional user defined transform pairs can *no longer* be added to the std::map since now
   // only local class functions can be used
 
-  transform_t mfy;
-  transform_t mfx;
-
   // transform 
   double fy(double x) const { return (this->*mfy)(x); }
   double fx(double x) const { return (this->*mfx)(x); }
 
   std::string transform() const { return m_transform; } 
 
+
+  transform_t mfy;
+  transform_t mfx;
+
   // initialise the transform map - no longer shared between class members
   void init_fmap() { 
     if ( m_fmap.size()==0 ) { 
-      std::map<const std::string, transform_vec>& fmap = m_fmap; 
-      fmap["f"]  = transform_vec( &igrid::_fx , &igrid::_fy  );
-      fmap["f0"] = transform_vec( &igrid::_fx0, &igrid::_fy0 );
-      fmap["f1"] = transform_vec( &igrid::_fx1, &igrid::_fy1 );
-      fmap["f2"] = transform_vec( &igrid::_fx2, &igrid::_fy2 );
-      fmap["f3"] = transform_vec( &igrid::_fx3, &igrid::_fy3 );
-      fmap["f4"] = transform_vec( &igrid::_fx4, &igrid::_fy4 );
+      add_transform( "f",  &igrid::_fx,  &igrid::_fy  );
+      add_transform( "f0", &igrid::_fx0, &igrid::_fy0  );
+      add_transform( "f1", &igrid::_fx1, &igrid::_fy1  );
+      add_transform( "f2", &igrid::_fx2, &igrid::_fy2  );
+      add_transform( "f3", &igrid::_fx3, &igrid::_fy3  );
+      add_transform( "f4", &igrid::_fx4, &igrid::_fy4  );
     }
   }
 
@@ -167,7 +167,7 @@ public:
   double _fy0(double x) const { return -std::log(x); } 
   double _fx0(double y) const { return  std::exp(-y); } 
 
-  double _fy1(double x) const { return std::sqrt(-log(x)); } 
+  double _fy1(double x) const { return std::sqrt(-std::log(x)); } 
   double _fx1(double y) const { return std::exp(-y*y); } 
 
   double _fy2(double x) const { return -std::log(x)+m_transvar*(1-x); }
@@ -196,12 +196,15 @@ public:
     return std::exp(-yp); 
   }
   
-  double _fy3(double x) const { return std::sqrt(-log10(x)); }
+  double _fy3(double x) const { return std::sqrt(-std::log10(x)); }
   double _fx3(double y) const { return std::pow(10,-y*y); } 
 
   // fastnlo dis transform
   double _fy4(double x) const { return -std::log10(x); }
-  double _fx4(double y) const { return std::pow(10,-y); } 
+  double _fx4(double y) const { return  std::pow(10,-y); } 
+
+
+
 
 
   // pdf weight function

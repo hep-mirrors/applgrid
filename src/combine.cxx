@@ -326,6 +326,9 @@ int main(int argc, char** argv) {
 
   /// start by reading all the reference histograms and calculating the means etc
 
+  std::cout << "reading grids:\n" << grids << std::endl;
+  std::cout << "output to: "      << output_grid << std::endl;
+
   std::vector<TH1D*> ref;
   ref.reserve(grids.size());
 
@@ -346,7 +349,11 @@ int main(int argc, char** argv) {
     }
   }
 
-  if ( ref.empty() ) return 0;
+
+  if ( ref.empty() ) { 
+    std::cerr << "grid list empty " << std::endl;
+    return 0;
+  }
 
   std::vector<std::string> newgrids;
   

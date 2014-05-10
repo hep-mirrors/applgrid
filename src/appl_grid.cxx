@@ -112,7 +112,8 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_documentation(""),
   m_type(STANDARD),
   m_read(false),
-  m_subproc(-1)
+  m_subproc(-1),
+  m_bin(-1)
 {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
@@ -147,7 +148,8 @@ appl::grid::grid(int Nobs, const double* obsbins,
   m_documentation(""),
   m_type(STANDARD),
   m_read(false),
-  m_subproc(-1)
+  m_subproc(-1),
+  m_bin(-1)
 {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
@@ -183,7 +185,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_documentation(""),
   m_type(STANDARD),
   m_read(false),
-  m_subproc(-1)
+  m_subproc(-1),
+  m_bin(-1)
 {
   
   if ( obs.size()==0 ) { 
@@ -225,7 +228,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_documentation(""),
   m_type(STANDARD),
   m_read(false),
-  m_subproc(-1)
+  m_subproc(-1),
+  m_bin(-1)
 { 
 
   if ( obs.size()==0 ) { 
@@ -267,7 +271,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_documentation(""),
   m_type(STANDARD),
   m_read(false),
-  m_subproc(-1)
+  m_subproc(-1),
+  m_bin(-1)
 {
   m_obs_bins_combined = m_obs_bins = 0;
 
@@ -278,15 +283,17 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
     throw exception(std::cerr << "grid::grid() cannot open file " << filename << std::endl ); 
   }
 
-  std::cout << "appl::grid() reading grid from file " << filename << std::endl;
+  std::cout << "appl::grid() reading grid from file " << filename;
   
   TFile* gridfilep = TFile::Open(filename.c_str());
 
   if (gridfilep==0 ) {
+    std::cout << std::endl;
     throw exception(std::cerr << "grid::grid() cannot open file: " << filename << std::endl ); 
   }
 
   if (gridfilep->IsZombie()) {
+    std::cout << std::endl;
     delete gridfilep;
     throw exception(std::cerr << "grid::grid() cannot open file: zombie " << filename << std::endl ); 
   }
@@ -306,7 +313,10 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   TFileString* _tagsp = (TFileString*)gridfilep->Get((dirname+"/Tags").c_str());  
 
-  if ( _tagsp==0 ) throw exception(std::cerr << "grid::grid() cannot get tags: " << filename << std::endl ); 
+  if ( _tagsp==0 ) { 
+    std::cout << std::endl;
+    throw exception(std::cerr << "grid::grid() cannot get tags: " << filename << std::endl ); 
+  }
 
   TFileString _tags = *_tagsp;
   // TFileString _tags = *(TFileString*)gridfile.Get("Tags");  
@@ -326,11 +336,15 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   // }
   //  m_version = _version;
   
-  //  std::cout << "appl::grid " << m_version << "\t" << m_documentation << std::endl; 
+  std::cout << "\tversion " << _version;
+
+  if ( _version != m_version ) std::cout  << " (transformed to " << m_version << ")";
+
+  std::cout << "\t" << m_documentation << std::endl; 
   
   //  std::cout << "Tags=" << _tags << std::endl;
 
-  //  std::cout << "grid::grid() read transform " << m_transform << " from file" << std::endl;
+  //  std::cout << "grid::grid() use transform " << m_transform << std::endl;
 
   // read state information
   // hmmm, have to use TVectorT<double> since TVector<int> 
@@ -482,11 +496,11 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  std::cout << "grid::grid() read obs bins" << std::endl;
 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    //  std::cout << "grid::grid() iorder=" << iorder << std::endl;
+    //    std::cout << "grid::grid() iorder=" << iorder << std::endl;
     m_grids[iorder] = new igrid*[Nobs_internal()];  
     for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
       char name[128];  sprintf(name, (dirname+"/weight[alpha-%d][%03d]").c_str(), iorder, iobs);
-      // std::cout << "grid::grid() reading " << name << "\tiobs=" << iobs << std::endl;
+      //   std::cout << "grid::grid() reading " << name << "\tiobs=" << iobs << std::endl;
 
       m_grids[iorder][iobs] = new igrid(*gridfilep, name);
       m_grids[iorder][iobs]->setparent( this ); 
@@ -534,11 +548,22 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   gridfilep->Close();
   delete gridfilep;
 
+  double tstop = appl_timer_stop( tstart );
+
+  unsigned usize = size();
+
+  struct timeval tstart2 =  appl_timer_start();
+
   trim();
 
-  double tstop = appl_timer_stop( tstart );
-  
-  std::cout << "appl::grid() read grid, size " << size()/1024 << " kB\tin " << tstop << " ms" << std::endl;
+  double tstop2 = appl_timer_stop( tstart2 );
+
+  std::cout << "appl::grid() read grid, size ";
+  if ( usize>1024*10 ) std::cout << usize/1024/1024 << " MB";
+  else                 std::cout << usize/1024      << " kB";
+  std::cout << "\tin " << tstop << " ms";
+
+  std::cout << "\ttrim in " << tstop2 << " ms" << std::endl;
 
 }
 
@@ -559,7 +584,8 @@ appl::grid::grid(const grid& g) :
   m_ckm2(g.m_ckm2),     /// need a deep copy of the contents
   m_ckm(g.m_ckm),       /// need a deep copy of the contents
   m_type(g.m_type),
-  m_read(g.m_read)
+  m_read(g.m_read),
+  m_bin(-1)
 {
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2();
@@ -1246,8 +1272,6 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
   double invNruns = 1;
   if ( (!m_normalised) && run() ) invNruns /= double(run());
 
-  //  std::cout << "grid::run() " << run() << std::endl; 
-
   //  TH1D* h = new TH1D(*m_obs_bins);
   //  h->SetName("xsec");
 
@@ -1291,6 +1315,8 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       /// changing the renormalisation and factorisation scale terms to give 
       /// what a dynamic scale would be in this bin
  
+      if ( m_bin!=-1 && iobs!=m_bin ) continue;
+
       double dynamic_factor = 1;
 
       if ( m_dynamicScale ) {
@@ -1585,6 +1611,19 @@ std::vector<double> appl::grid::vconvolute_subproc(int subproc,
 
 
 
+double appl::grid::vconvolute_bin(int bin,
+				  void (*pdf)(const double& , const double&, double* ), 
+				  double (*alphas)(const double&) ) {
+  /// set the subprocess index - this is tested by the 
+  /// igrid convolution
+  m_bin = bin;
+  std::vector<double> xsec = vconvolute( pdf, alphas );
+  m_bin = -1;
+  return xsec[bin];
+}
+
+
+
 
 
 TH1D* appl::grid::convolute(void (*pdf1)(const double& , const double&, double* ), 
@@ -1732,7 +1771,7 @@ void appl::grid::redefine(int iobs, int iorder,
   
 
 
-void appl::grid::setRange(int ilower, int iupper, double xScaleFactor) { 
+void appl::grid::setBinRange(int ilower, int iupper, double xScaleFactor) { 
   if ( ilower>=0 && iupper <Nobs_internal() ) {  
     double lower = getReference()->GetBinLowEdge(ilower+1);
     double upper = getReference()->GetBinLowEdge(iupper+2); 
@@ -1950,7 +1989,7 @@ bool appl::grid::applyCorrection(unsigned i, std::vector<double>& v) {
 
 
 template<typename T>
-std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) { 
+std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
   for ( unsigned i=0 ; i<v.size() ; i++ ) s << "\t" << v[i];
   return s;
 }
@@ -2273,6 +2312,7 @@ std::ostream& operator<<(std::ostream& s, const appl::grid& g) {
   if ( g.isOptimised() ) s << "Optimised grid" << std::endl;
   if ( g.isSymmetric() ) s << "Symmetrised in x1, x2" << std::endl;
   else                   s << "Unsymmetrised in x1, x2" << std::endl;
+  if ( g.getNormalised() ) s << "Normalised " << std::endl;
   s << "leading order of processes  "  << g.leadingOrder() << std::endl;
   s << "number of loops for grid    " << g.nloops() << std::endl;   
   s << "x->y coordinate transform:  "  << g.getTransform() << std::endl;

@@ -224,7 +224,10 @@ public:
   } 
   
 
-
+  double vconvolute_bin( int bin, 
+			 void (*pdf)(const double& , const double&, double* ), 
+			 double (*alphas)(const double&) ); 
+				       
 
   // perform the convolution to a specified number of loops
   // nloops=-1 gives the nlo part only
@@ -435,7 +438,7 @@ public:
 
   /// set the range of the observable bins, with an optional
   /// scaling of the observable valuesfor channging units
-  void setRange(int ilower, int iupper, double xScaleFactor=1);
+  void setBinRange(int ilower, int iupper, double xScaleFactor=1);
   void setRange(double lower, double upper, double xScaleFactor=1);
 
 
@@ -660,6 +663,7 @@ protected:
   std::vector<int> m_combine;
 
   int  m_subproc;
+  int  m_bin;
 
 };
 

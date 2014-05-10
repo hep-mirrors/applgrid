@@ -103,7 +103,9 @@ int appl_pdf::decideSubProcess( const int , const int  ) const { return -1; }
 
 bool appl_pdf::create_map() { 
 
+#ifdef DBG
   std::cout << "appl_pdf::create_map() creating pdf combination factory" << std::endl;
+#endif
 
   if ( __pdfmap.size()==0 ) { 
     

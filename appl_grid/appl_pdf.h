@@ -81,10 +81,10 @@ public:
 
   virtual int decideSubProcess( const int , const int  ) const;
 
-  int     Nproc() const { return m_Nproc; } 
-
   std::string   name() const { return m_name;  }
 
+  int     Nproc() const { return m_Nproc; } 
+  int     size()  const { return m_Nproc; } 
 
 
 

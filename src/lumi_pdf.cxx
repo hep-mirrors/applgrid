@@ -24,8 +24,6 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   appl_pdf(s), m_filename(s) //,  m_amcflag(amcflag)
 {
   
-  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << " lookup size " << m_lookup.size() << " " << this << std::endl; 
-
   /// need to decode the input std::vector
 
   if ( combinations.size() ) { 
@@ -96,6 +94,8 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   //  }
 
   m_Nproc = m_combinations.size();
+
+  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tcombinations " << size() << std::endl;  // << " lookup size " << m_lookup.size() << " " << this << std::endl; 
 
   // create the reverse lookup 
 
@@ -228,4 +228,12 @@ void lumi_pdf::write(std::ostream& s) const {
 void lumi_pdf::write(const std::string& filename) const {  
   std::ofstream s(filename.c_str());
   write(s);
+}
+
+
+// std::string lumi_pdf::summary(std::ostream& s=std::cout) const { 
+std::string lumi_pdf::summary() const { 
+  std::stringstream s;
+  s << "lumi_pdf::lumi_pdf() " << s << "\tsize " << m_combinations.size() << " lookup size " << m_lookup.size() << " " << this; 
+  return s.str();
 }

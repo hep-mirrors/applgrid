@@ -323,7 +323,6 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   m_transform  = _tags[0];
   m_genpdfname = _tags[1];
-
   std::string _version = _tags[2];
 
   //  std::cout << "tags:: transform: " << m_transform << "\tpdfname: " << m_genpdfname << "\tdoc: " << m_documentation << std::endl;  
@@ -337,11 +336,20 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  m_version = _version;
   
   std::cout << "\tversion " << _version;
+  if ( _version != m_version ) std::cout  << "(transformed to " << m_version << ")";
+  std::cout << std::endl;
 
-  if ( _version != m_version ) std::cout  << " (transformed to " << m_version << ")";
-
-  std::cout << "\t" << m_documentation << std::endl; 
+  if ( getDocumentation()!="" ) std::cout << "\t" << getDocumentation() << std::endl; 
   
+  bool added = false;
+
+  if ( m_genpdfname=="basic" ) { 
+    added = true;
+    m_genpdfname = "basic.config"; 
+    if ( contains(m_genpdfname, ".dat") ||  contains(m_genpdfname, ".config") ) addpdf(m_genpdfname);
+    findgenpdf( m_genpdfname );
+  }
+
   //  std::cout << "Tags=" << _tags << std::endl;
 
   //  std::cout << "grid::grid() use transform " << m_transform << std::endl;
@@ -422,7 +430,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   //  std::cout << "appl::grid() requested pdf combination " << m_genpdfname << std::endl;
   
-  if ( contains(m_genpdfname, ".config") ) { 
+
+  if ( !added && contains(m_genpdfname, ".config") ) { 
     /// decode the pdf combination if appropriate
 
     // find out if we have one combination per order or one overall
@@ -458,10 +467,6 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   
   /// retrieve the pdf routine 
   findgenpdf( m_genpdfname );
-
-  //  appl_pdf* lo  = genpdf(0);
-  //  appl_pdf* nlo = genpdf(1);
-  //  if ( lo->name().find(".config")!=std::string::npos ) std::cout << "pdf:: " << *dynamic_cast<lumi_pdf*>(lo) << "\t" << *dynamic_cast<lumi_pdf*>(nlo) << std::endl;
 
   //  std::cout << "grid::grid() read " << m_genpdfname << " " << m_genpdf[0]->getckmsum().size() << std::endl; 
 
@@ -2012,13 +2017,15 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
 
   /// loop over orders 
-  for( int iorder=0 ; iorder<2 ; iorder++ ) {
+  for( int iorder=0 ; iorder<m_order ; iorder++ ) {
 
     std::cout << "appl::grid::shrink() order " << iorder << std::endl;
     
     std::vector< std::vector<int> > pdf_combinations;
     pdf_combinations.reserve( Nobs_internal() );
     
+    //    std::cout << "appl::grid::shrink() observable bins " << Nobs_internal() << std::endl;
+
     /// ... for each observable bin ...
  
     for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
@@ -2040,7 +2047,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	//	std::pair< std::map< int, std::vector<int> >, bool> itr = 
 	//	  same.insert( std::map< int, std::vector<int> >::value_type( i, std::vector<int>() ) );
 	//	
-	//	if ( itr->second==false ) std::cerr << "OH SHIT!!!" << std::endl;
+	//  if ( itr->second==false ) std::cerr << "OH SHIT!!!" << std::endl;
 
 	int isize = ig->weightgrid(i)->size();
 
@@ -2084,20 +2091,30 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
       }
 
+
       if ( same.empty() ) continue;
+
+
 
       std::map< int, std::vector<int> >::iterator itr  = same.begin();
       std::map< int, std::vector<int> >::iterator iend = same.end();
-      
+
+      for ( int ik=0 ; ik<m_order ; ik++ ) std::cout << m_genpdf[iorder]->name() << std::endl;
+
       lumi_pdf*  _pdf = 0;
       if ( m_genpdf[iorder]->name().find(".config")!=std::string::npos ){ 
 	_pdf = dynamic_cast<lumi_pdf*>(m_genpdf[iorder]);
+      }
+      else { 
+	std::cerr << __FUNCTION__ << "\tpdf not found:" << m_genpdf[iorder]->name() << std::endl;
+	return;
       }
 
       std::vector<combination> combinations;
 
       int i=0;
       while ( itr!=iend ) { 
+
 	std::vector<int>& v = itr->second;
 	//	std::cout << "\t" << i++ << "\tproc: " << itr->first << ":" << sizeitr->second << "\t" << itr->second << " ( " << (*_pdf)[itr->first] << " )" << std::endl;
 	//	std::cout << "\t" << i << "\tproc: " << itr->first << ":" << sizeitr->second << "\t" << (*_pdf)[itr->first] << std::endl;
@@ -2106,7 +2123,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	std::vector<int> c(2);
 	c[0] = i;
 	c[1] = 0;
-	
+
 	const combination& comb = (*_pdf)[itr->first]; 
 
 	for ( unsigned ic=0 ; ic<comb.size() ; ic++ ) { 
@@ -2118,7 +2135,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	for ( unsigned iv=0 ; iv<v.size() ; iv++ ) { 
 
 	  const combination& comb = (*_pdf)[v[iv]]; 
-
+	  
 	  for ( unsigned ic=0 ; ic<comb.size() ; ic++ ) { 
 	    c[1]++;
 	    c.push_back( comb[ic].first );
@@ -2127,7 +2144,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	}
 
 	combinations.push_back( combination( c ) );
-	
+
 	i++;
 	itr++;
       }
@@ -2176,7 +2193,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
       genpdfname += name+label[iorder]+".config";
     }  
   }
-  
+
   std::cout << "appl::grid::shrink() genpdfname " << genpdfname << std::endl;
 
   //  if ( addpdf(m_genpdfname) )  findgenpdf( m_genpdfname );
@@ -2199,7 +2216,10 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
   addpdf( m_genpdfname );
   findgenpdf( genpdfname );
 
-  std::cout << "appl::grid::shrink()  new " << m_genpdf[0]->name() << " " <<  m_genpdf[1]->name() <<  std::endl;
+  std::cout << "appl::grid::shrink()  new " 
+	    << "\t" << m_genpdf[0]->name() << ":" << m_genpdf[0]->size() 
+	    << "\t" << m_genpdf[1]->name() << ":" << m_genpdf[1]->size() 
+	    <<  std::endl;
 
 }
 

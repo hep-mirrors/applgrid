@@ -71,7 +71,7 @@ void readgrid_(int& id, const char* s) {
 
 
   
-void printgrid_(int& id) { 
+void printgrid_(const int& id) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     std::cout << "grid id " << id << "\n" << *gitr->second << std::endl;
@@ -88,7 +88,7 @@ void printgrids_() {
 }
 
   
-void printgriddoc_(int& id) { 
+void printgriddoc_(const int& id) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     std::cout << "grid id " << id << "\n" << gitr->second->getDocumentation() << std::endl;
@@ -97,7 +97,7 @@ void printgriddoc_(int& id) {
 }
 
 
-void releasegrid_(int& id) { 
+void releasegrid_(const int& id) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() )     { 
     delete gitr->second; 
@@ -115,7 +115,7 @@ void releasegrids_() {
   }
 }
 
-void setckm_( int& id, const double* ckm ) { 
+void setckm_( const int& id, const double* ckm ) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) {
     gitr->second->setckm( ckm );
@@ -124,7 +124,7 @@ void setckm_( int& id, const double* ckm ) {
 }
 
 
-void getckm_( int& id, double* ckm ) { 
+void getckm_( const int& id, double* ckm ) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     std::vector<std::vector<double> > __ckm = gitr->second->getckm();
@@ -139,10 +139,10 @@ void getckm_( int& id, double* ckm ) {
 
 
 
-void redefine_(int& id, 
+void redefine_(const int& id, 
 	       const int& iobs, const int& iorder, 
-	       const int& NQ2, const double& Q2min, const double& Q2max, 
-	       const int& Nx,  const double&  xmin, const double&  xmax) 
+	       const int& NQ2,  const double& Q2min, const double& Q2max, 
+	       const int& Nx,   const double&  xmin, const double&  xmax) 
 {
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) {
@@ -156,25 +156,25 @@ void redefine_(int& id,
 
 
 
-int getnbins_(int& id) { 
+int getnbins_(const int& id) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) return gitr->second->Nobs();
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
 
-int getbinnumber_(int& id, double& x) { 
+int getbinnumber_(const int& id, double& x) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) return gitr->second->obsbin(x);
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
 
-double getbinlowedge_(int& id, int& bin) { 
+double getbinlowedge_(const int& id, int& bin) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) return gitr->second->obslow(bin);
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
 }
 
-double getbinwidth_(int& id, int& bin) { 
+double getbinwidth_(const int& id, const int& bin) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) return gitr->second->deltaobs(bin);
   else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
@@ -183,12 +183,12 @@ double getbinwidth_(int& id, int& bin) {
 
 
 
-void convolute_(int& id, double* data) { 
+void convolute_(const int& id, double* data) { 
   convolutewrap_(id, data, fnpdf_, fnalphas_); 
 }
 
 
-void convolutewrap_(int& id, double* data, 
+void convolutewrap_(const int& id, double* data, 
 		    void (*pdf)(const double& , const double&, double* ),  
 		    double (*alphas)(const double& ) ) {  
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
@@ -204,7 +204,7 @@ void convolutewrap_(int& id, double* data,
 
 
 
-void convoluteorder_(int& id, int& nloops, double* data) { 
+void convoluteorder_(const int& id, const int& nloops, double* data) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
@@ -217,11 +217,11 @@ void convoluteorder_(int& id, int& nloops, double* data) {
 
 
 
-void fullconvolutewrap_(int& id, double* data, 
+void fullconvolutewrap_(const int& id, double* data, 
 			void (*pdf)(const double& , const double&, double* ),  
 			double (*alphas)(const double& ),
-			int& nloops,
-			double& rscale, double& fscale  ) {  
+			const int& nloops,
+			const double& rscale, const double& fscale  ) {  
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
@@ -232,9 +232,9 @@ void fullconvolutewrap_(int& id, double* data,
 }
 
 
-void fullconvolute_(int& id, double* data, 
-		    int& nloops,
-		    double& rscale, double& fscale  ) {  
+void fullconvolute_(const int& id, double* data, 
+		    const int& nloops,
+		    const double& rscale, const double& fscale  ) {  
   fullconvolutewrap_( id, data, fnpdf_, fnalphas_, nloops, rscale, fscale);
 }
 
@@ -242,14 +242,14 @@ void fullconvolute_(int& id, double* data,
 
 /// convolute functions with beam energy scaling 
 
-void escaleconvolute_(int& id, double* data, double& Escale) { 
+void escaleconvolute_(const int& id, double* data, const double& Escale) { 
   escaleconvolutewrap_(id, data, fnpdf_, fnalphas_, Escale); 
 }
 
-void escaleconvolutewrap_(int& id, double* data, 
+void escaleconvolutewrap_(const int& id, double* data, 
 			  void (*pdf)(const double& , const double&, double* ),  
 			  double (*alphas)(const double& ), 
-			  double& Escale ) {  
+			  const double& Escale ) {  
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
@@ -261,12 +261,12 @@ void escaleconvolutewrap_(int& id, double* data,
 
 
 
-void escalefullconvolutewrap_(int& id, double* data, 
+void escalefullconvolutewrap_(const int& id, double* data, 
 			      void (*pdf)(const double& , const double&, double* ),  
 			      double (*alphas)(const double& ),
-			      int& nloops,
-			      double& rscale, double& fscale,
-			      double& Escale ) {  
+			      const int& nloops,
+			      const double& rscale, const double& fscale,
+			      const double& Escale ) {  
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     appl::grid*    g = gitr->second;
@@ -277,17 +277,17 @@ void escalefullconvolutewrap_(int& id, double* data,
 }
 
 
-void escalefullconvolute_(int& id, double* data, 
-			  int& nloops,
-			  double& rscale, double& fscale,
-			  double& Escale ) {  
+void escalefullconvolute_(const int& id, double* data, 
+			  const int& nloops,
+			  const double& rscale, const double& fscale,
+			  const double& Escale ) {  
   escalefullconvolutewrap_(id, data, 
 			   fnpdf_, fnalphas_, nloops, rscale, fscale, Escale );
   
 }
 
 
-void writegrid_(int& id, const char* s) { 
+void writegrid_(const int& id, const char* s) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
     std::cout << "writegrid_() writing " << s << "\tid " << id << std::endl;
@@ -301,7 +301,7 @@ void writegrid_(int& id, const char* s) {
 
 
 
-void fillgrid_(int& id, 
+void fillgrid_(const int& id, 
 	       const int& ix1, const int& ix2, const int& iQ,  
 	       const int& iobs, 
 	       const double* w, 

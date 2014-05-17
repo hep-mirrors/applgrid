@@ -21,7 +21,8 @@ class hoppet_init : public std::vector<double> {
 
 public:
 
-  hoppet_init();
+  /// default maximum scale for hoppet initialisation
+  hoppet_init( double Qmax=15000 );
 
   virtual ~hoppet_init();
 

@@ -21,18 +21,22 @@
 #endif
 
 
-hoppet_init::hoppet_init() {
+hoppet_init::hoppet_init( double Qmax ) {
 
   double dy = 0.1;   
   int nloop = 2;         
 
-  std::cout << "hoppet_init::hoppet_init()  dy = " << dy << "\tnloop = " << nloop << std::endl; 
+  std::cout << "hoppet_init::hoppet_init()  dy = " << dy << "\tnloop = " << nloop << "\tQmax " << Qmax << std::endl; 
   // the internal grid spacing (smaller->higher accuarcy)
   // 0.1 should provide at least 10^{-3} accuracy
   // the number of loops to initialise (max=3!)  
 
 #ifdef HAVE_HOPPET
-  hoppetstart_( dy, nloop );
+  //  hoppetstart_( dy, nloop );
+  /// NB: these parameters (except Qmax) should all be the default
+  ///     parameters from hoppet 
+  int MSbar = 1;
+  hoppetstartextended_( 12.0, dy, 1.0, Qmax, 0.25*dy, nloop, -6,  MSbar );
 #else
   std::cerr << " hoppet_init::hoppet_init() called but hoppet not included" << std::endl;
   exit(0);
@@ -55,7 +59,7 @@ void hoppet_init::fillCache( void (*pdf)(const double&, const double&, double* )
 
   clear();
 
-  for ( double lQ=2 ; lQ<=6 ; lQ+=2 ) { 
+  for ( double lQ=1 ; lQ<=4 ; lQ+=2 ) { 
     double Q = std::pow(10,lQ);
     for ( double lx=-5 ; lx<0 ; lx+=1 ) { 
       double x = std::pow(10,lx);
@@ -103,7 +107,7 @@ bool hoppet_init::compareCache( void (*pdf)(const double&, const double&, double
 
   std::vector<double> ccache;
     
-  for ( double lQ=2 ; lQ<=6 ; lQ+=2 ) { 
+  for ( double lQ=1 ; lQ<=4 ; lQ+=2 ) { 
     double Q = std::pow(10,lQ);
     for ( double lx=-5 ; lx<0 ; lx+=1 ) { 
       double x = std::pow(10,lx);

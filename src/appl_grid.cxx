@@ -1287,9 +1287,13 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
     if ( pdf2==0 || pdf1==pdf2 ) { 
 
-      if ( hoppet == 0 ) hoppet = new hoppet_init();
- 
-      bool newpdf = hoppet->compareCache(pdf1);
+      if ( hoppet == 0 ) { 
+	double Qmax = 15000;
+	if ( m_cmsScale>Qmax ) Qmax = m_cmsScale;
+	hoppet = new hoppet_init( Qmax );
+      } 
+
+      bool newpdf = hoppet->compareCache( pdf1 );
       
       if ( newpdf ) hoppet->fillCache( pdf1 );
 

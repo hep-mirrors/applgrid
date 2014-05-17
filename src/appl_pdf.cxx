@@ -41,7 +41,8 @@ std::vector<std::string> appl_pdf::__pdfpath;
 
 
 /// constructor and destructor
-appl_pdf::appl_pdf(const std::string& name) : m_Nproc(0), m_name(name) { 
+appl_pdf::appl_pdf(const std::string& name) : 
+  m_Nproc(0), m_name(name), m_ckmcharge(0) { 
    if ( m_name!="" ) addtopdfmap(m_name, this);
 }
   

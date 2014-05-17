@@ -1439,49 +1439,58 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	  /// this is the amcatnlo LO calculation (without FKS shower)
 	  label = "lo";
 	  /// work out how to call from the igrid - maybe just implement additional 
-	  double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
+	  double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0, rscale_factor, fscale_factor,  Escale );
  
    	  dsigma = dsigma_B;
       }
       else if ( nloops==1 || nloops==-1 ) {
-  	  /// this is the amcatnlo NLO calculation (without FKS shower)
+	  /// this is the amcatnlo NLO calculation (without FKS shower)
+	  /// Next-to-leading order contribution
 	  label = "nlo only"; /// for the time being ...
-	  /// work out how to call from the igrid - maybe just implement additional 
-	  /// convolution routines and call them here
-	  double dsigma_0 = m_grids[0][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
-	  double dsigma_R = m_grids[1][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
-	  double dsigma_F = m_grids[2][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
-	  
+
+	  // Scale independent contribution
+	  double dsigma_0 = m_grids[0][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order+1, 0,  rscale_factor, fscale_factor,  Escale );
 	  dsigma = dsigma_0;
-	  if ( rscale_factor!=1 ) dsigma += dsigma_R*std::log(rscale_factor*rscale_factor);
-	  if ( fscale_factor!=1 ) dsigma += dsigma_F*std::log(fscale_factor*fscale_factor);
+
+	  // Renormalization scale dependent contribution
+	  if ( rscale_factor!=1 ) { 
+	    double dsigma_R = m_grids[1][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0,  rscale_factor, fscale_factor,  Escale );
+	    dsigma += dsigma_R*std::log(rscale_factor*rscale_factor);
+	  }
+
+	  // Factorization scale dependent contribution
+	  if ( fscale_factor!=1 ) { 
+	    double dsigma_F = m_grids[2][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+1, 0,  rscale_factor, fscale_factor,  Escale );
+	    dsigma += dsigma_F*std::log(fscale_factor*fscale_factor);
+	  }
       
+	  /// Add the LO contribution if we want full NLO 
+	  /// rather than specific NLO contribution only  
 	  if ( nloops==1 ) { 
 	    /// this is the amcatnlo NLO calculation (without FKS shower)
 	    label = "nlo";
 	    /// work out how to call from the igrid - maybe just implement additional 
 	    /// convolution routines and call them here
-	    double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0, 1, 1, Escale );
-	
+	    double dsigma_B = m_grids[3][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[3], alphas, m_leading_order,   0,  rscale_factor, fscale_factor,  Escale );	
 	    dsigma += dsigma_B;
 	  }
       }
       else if ( nloops==-2 ) { 
         /// Only the convolution from the W0 grid
         label = "nlo_w0";
-	double dsigma_0 = m_grids[0][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order+1, 0, 1, 1, Escale );
+	double dsigma_0 = m_grids[0][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order+1, 0,  rscale_factor, fscale_factor,  Escale );
 	dsigma = dsigma_0;
       }
       else if ( nloops==-3 ) {
 	/// Only the convolution from the WR grid
 	label = "nlo_wR";
-	double dsigma_R = m_grids[1][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, 1, Escale );
+	double dsigma_R = m_grids[1][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[1], alphas, m_leading_order+1, 0, rscale_factor, fscale_factor,  Escale );
 	dsigma = dsigma_R * std::log(rscale_factor*rscale_factor)  ;
       }
       else if ( nloops==-4 ) { 
         /// Only the convolution from the WF grid
         label = "nlo_wF";
-	double dsigma_F = m_grids[2][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+1, 0, 1, fscale_factor, Escale );
+	double dsigma_F = m_grids[2][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+1, 0,  rscale_factor, fscale_factor,  Escale );
 	dsigma = dsigma_F * std::log(fscale_factor*fscale_factor) ;
       }
       else { 

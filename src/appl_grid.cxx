@@ -2162,8 +2162,8 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	itr++;
       }
 
-      std::set< int>::iterator eitr  = empty.begin();
-      std::set< int>::iterator eend  = empty.end();
+      //      std::set< int>::iterator eitr  = empty.begin();
+      //      std::set< int>::iterator eend  = empty.end();
 
       //      std::cout << "\tempty: " << empty.size() << " sub-processes";
       //      while ( eitr!=eend ) std::cout << " " << (*eitr++);

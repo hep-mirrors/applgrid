@@ -338,7 +338,7 @@ void generic_pdf::ReadSubprocessSteering(const std::string& fname){
 
 
 
-int generic_pdf::decideSubProcess(const int iflav1, const int iflav2)
+int generic_pdf::decideSubProcess(const int iflav1, const int iflav2) const
 {
   // 
   // iflav1 change from 0 to 21 (convention for gluons in sherpa)
@@ -348,16 +348,22 @@ int generic_pdf::decideSubProcess(const int iflav1, const int iflav2)
  
   if (m_debug) std::cout << "generic_pdf::decideSubProces: " << std::endl; 
   if (m_debug) std::cout << " iflav1 = " << iflav1 << " iflav2 = " << iflav2 << std::endl;
-  int ifl1=flavourtype[iflav1];
-  int ifl2=flavourtype[iflav2];
+  
+  std::map<int,int>::const_iterator flav1 = flavourtype.find(iflav1);
+  std::map<int,int>::const_iterator flav2 = flavourtype.find(iflav2);
+
+  if ( flav1==flavourtype.end() || flav2==flavourtype.end() ) return iProcess;
+
+  int ifl1=flav1->second;
+  int ifl2=flav2->second;
   
   for ( unsigned i=0 ; i<procname.size() ; i++ ) {
     if (iProcess!=-1) continue;
     if (m_debug) std::cout << " " << i << " name= " << procname[i]
-			 << " Flav1, Flav2 = " << Flav1[i] << " " << Flav2[i]
+			 << " Flav1, Flav2 = " << (Flav1.find(i)->second) << " " << (Flav1.find(i)->second)
 			 << std::endl; 
 
-    if ( Flav1[i]==ifl1 && Flav2[i]==ifl2 ) {
+    if ( (Flav1.find(i)->second)==ifl1 && (Flav2.find(i)->second)==ifl2 ) {
       iProcess=i;
       // std::cout << " iProcess found " << iProcess << std::endl;
     }
@@ -370,9 +376,11 @@ int generic_pdf::decideSubProcess(const int iflav1, const int iflav2)
   }
   // else
   //    std::cout << " ***decideSubProcess " << iflav1 << " <> " << iflav2 << " iProcess = " << iProcess << std::endl; 
-  currentsubprocess=iProcess;
+  //  currentsubprocess=iProcess;
+
   return iProcess;
 }
+
 
 
 // get ckm related information

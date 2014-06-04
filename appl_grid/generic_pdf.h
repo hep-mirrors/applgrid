@@ -54,23 +54,30 @@ public:
 
   //double* GetGeneralisedPdf(const double *,const double *); 
 
-  int  decideSubProcess(const int iflav1, const int iflav2);
+  int  decideSubProcess(const int iflav1, const int iflav2) const;
 
-  void SetSubCurrentProcess(int mypro) { currentsubprocess=mypro; }
-
-  int GetCurrentSubProcess() { 
-    if ( currentsubprocess==-1 ) std::cout << " generic_pdf: current subprocess not defined ! " << std::endl;
-    return currentsubprocess;
+  int  decideSubProcessSet(const int iflav1, const int iflav2) {
+    int ip = decideSubProcess( iflav1, iflav2 ); 
+    currentsubprocess=ip;
+    return ip;
   }
+
+
+  //  void SetSubCurrentProcess(int mypro) { currentsubprocess=mypro; }
+
+  //  int GetCurrentSubProcess() { 
+  //    if ( currentsubprocess==-1 ) std::cout << " generic_pdf: current subprocess not defined ! " << std::endl;
+  //    return currentsubprocess;
+  //  }
 
   std::string GetSubProcessName(int isub) {return procname[isub];};
 
-  void SetCurrentProcess(int mypro){ currentprocess=mypro; }
+  //  void SetCurrentProcess(int mypro){ currentprocess=mypro; }
   
-  int GetCurrentProcess() { 
-    if (currentprocess==-1) std::cout<<" generic_pdf: current process not defined ! "<< std::endl;
-    return currentprocess;
-  }
+  //  int GetCurrentProcess() { 
+  //    if (currentprocess==-1) std::cout<<" generic_pdf: current process not defined ! "<< std::endl;
+  //    return currentprocess;
+  //  }
   
   int GetnQuark() { return m_nQuark; }
 

@@ -378,8 +378,16 @@ public:
 
   // lowest order of process
   int  leadingOrder() const { return m_leading_order; } 
-  // maximum number of orders ( lo=1, nlo=2, nnlo=3 )  
-  int  nloops()       const { return m_order-1; } 
+
+  /// maximum number of orders ( lo=1, nlo=2, nnlo=3 )  
+  /// but aMC@NLO uses 4 grids for the NLO, so m_order
+  /// will be 4, but really it is still only available 
+  /// 1 loop, so take account of this 
+  int  nloops() const { 
+    if ( m_type!=AMCATNLO ) return m_order-1;
+    else if ( m_order>0 ) return 1;
+    else                  return 0;
+  } 
 
   // find out which transform and which pdf combination are being used
   std::string getTransform() const { return m_transform; }

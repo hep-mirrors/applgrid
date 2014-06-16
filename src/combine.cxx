@@ -30,8 +30,8 @@ int usage(std::ostream& s, int argc, char** argv) {
   s << "Configuration: \n";
   s << "    -o filename   \tname of output grid (filename required)\n\n";
   s << "Options: \n";
-  s << "    -r, --rscale value\trescale output grid by value, \n";
-  s << "    -h, --hscale value\trescale reference histogram by value, \n";
+  s << "    -g, --gscale value\trescale output grid by value, \n";
+  s << "    -r, --rscale value\trescale reference histogram by value, \n";
   s << "    -s, --scale  value\trescale both output grid and reference histogram by value\n";
   //  s << "    -a, --all     \tadd all grids (default)\n";
   s << "    -c, --chi2   value\tif set, exclude grids with a chi2 with respect\n"
@@ -282,7 +282,7 @@ int main(int argc, char** argv) {
       if ( i<argc ) d = std::atof(argv[i]);
       else  return usage( std::cerr, argc, argv );
     }
-    else if ( std::string(argv[i])=="-r" || std::string(argv[i])=="--rscale" ) { 
+    else if ( std::string(argv[i])=="-g" || std::string(argv[i])=="--gscale" ) { 
       ++i;
       if ( i<argc ) { 
 	rscale = std::atof(argv[i]);
@@ -290,7 +290,7 @@ int main(int argc, char** argv) {
       }
       else  return usage( std::cerr, argc, argv );
     }
-    else if ( std::string(argv[i])=="-h" || std::string(argv[i])=="--hscale" ) { 
+    else if ( std::string(argv[i])=="-r" || std::string(argv[i])=="--rscale" ) { 
       ++i;
       if ( i<argc ) { 
 	hscale = std::atof(argv[i]);
@@ -497,9 +497,10 @@ int main(int argc, char** argv) {
     }
   }    
 
-  if ( d!=1 ) g *= rscale;
+  if ( rscale!=1 ) g *= rscale;
 
-  if ( hscale!=rscale ) g.getReference()->Scale( hscale/rscale );
+  //  if ( hscale!=rscale ) g.getReference()->Scale( hscale/rscale );
+  if ( hscale!=1 ) g.getReference()->Scale( hscale );
 
   //  std::cout << "writing " << output_grid << std::endl;
   g.Write(output_grid);

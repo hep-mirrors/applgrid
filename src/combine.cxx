@@ -497,7 +497,10 @@ int main(int argc, char** argv) {
     }
   }    
 
-  if ( rscale!=1 ) g *= rscale;
+  if ( rscale!=1 ) { 
+    g *= rscale;
+    g.getReference()->Scale( 1/rscale );
+  }
 
   //  if ( hscale!=rscale ) g.getReference()->Scale( hscale/rscale );
   if ( hscale!=1 ) g.getReference()->Scale( hscale );

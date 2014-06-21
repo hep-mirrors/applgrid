@@ -556,6 +556,9 @@ public:
   double fx(double x) const;
   double fy(double x) const;
 
+  const appl_pdf* genpdf(int i) const { return m_genpdf[i]; }
+
+
 protected:
 
   // internal common construct for the different types of constructor

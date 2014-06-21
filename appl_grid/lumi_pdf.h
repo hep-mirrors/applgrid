@@ -60,7 +60,6 @@ public:
   void write(const std::string& filename) const;
  
   void write(std::ostream& s=std::cout) const; 
-  void write_latex(std::ostream& s=std::cout) const; 
 
   //  std::string summary(std::ostream& s=std::cout) const; 
   std::string summary() const; 

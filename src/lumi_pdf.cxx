@@ -108,8 +108,6 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   //  lumi_pdf* _pdf = dynamic_cast<lumi_pdf*>(appl::appl_pdf::getpdf(name()));
   //  std::cout << "done " << _pdf << _pdf->decideSubProcess( 0, 0 ) << std::endl;
 
-  //  write_latex();
-  
 }
 
 
@@ -141,7 +139,6 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<combination>& combina
 
   create_lookup();
   
-  //  write_latex();
 }
 
 
@@ -226,36 +223,6 @@ void lumi_pdf::write(std::ostream& s) const {
 
   }
 
-}
-
-void lumi_pdf::write_latex(std::ostream& s) const { 
-
-  unsigned imax = 0;
-  for ( unsigned i=0 ; i<m_combinations.size() ; i++ ) if ( m_combinations[i].size()>imax ) imax = m_combinations[i].size(); 
-
-  s << m_ckmcharge << "\n";
-  
-  std::cout << "\\begin{tabular}{l l ";
-  for ( unsigned i=0 ; i<imax ; i++ ) std::cout << "c"; 
-  std::cout << "}\n"; 
-
-  std::string _labels[13] = { 
-    "$\\bar{t}$", "$\\bar{b}$", "$\\bar{c}$", "$\\bar{s}$", "$\\bar{u}$", "$\\bar{d}$", 
-    "$g$",
-    "$d$",        "$u$",        "$s$",        "$c$",        "$b$",        "$t$"  };
-
-  std::string* labels = _labels+6;
-    
-  for ( unsigned i=0 ; i<m_combinations.size() ; i++ ) { 
-    s << m_combinations[i].index() << " & ";
-    s << m_combinations[i].size() << "";
-
-    for ( unsigned j=0 ; j<m_combinations[i].size() ; j++ ) { 
-      s << " & (" << labels[m_combinations[i][j].first] << ", " << labels[m_combinations[i][j].second] << ")";
-    }
-    s << "\\\\\n";
-  }
-  std::cout << "\\end{tabular}" << std::endl;
 }
 
 

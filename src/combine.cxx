@@ -30,11 +30,15 @@ int usage(std::ostream& s, int argc, char** argv) {
   s << "Configuration: \n";
   s << "    -o filename   \tname of output grid (filename required)\n\n";
   s << "Options: \n";
-  s << "    -g, --gscale value\trescale output grid by value, \n";
-  s << "    -r, --rscale value\trescale reference histogram by value, \n";
-  s << "    -s, --scale  value\trescale both output grid and reference histogram by value\n";
+  s << "    -g, --gscale  value\trescale output grid by value, \n";
+  s << "    -r, --rscale  value\trescale reference histogram by value, \n";
+  s << "    -s, --scale   value\trescale both output grid and reference histogram by value\n";
   //  s << "    -a, --all     \tadd all grids (default)\n";
-  s << "    -c, --chi2   value\tif set, exclude grids with a chi2 with respect\n"
+  s << "    -w, --weight  value\tset the value of the weight normalisation for the output grid\n";
+  s << "        --optimise     \tset optimise the output grid\n";
+  s << "        --compress     \tset try to reduce the number of parton luminosity\n"
+    << "                       \tcombinations\n";
+  s << "    -c, --chi2    value\tif set, exclude grids with a chi2 with respect\n"
     << "                      \tto the median larger than value\n";
   s << "        --verbose \tdisplay grid documentation during add\n";
   s << "    -v, --version \tdisplays the APPLgrid version\n";
@@ -268,6 +272,11 @@ int main(int argc, char** argv) {
   /// the list of grids to process
   std::vector<std::string> grids;
 
+  double reweight = 1;
+
+  bool optimise = false;
+  bool shrink   = false;
+  std::string newpdfname="";
  
   /// handle configuration parameters
   for ( int i=1 ; i<argc ; i++ ) { 
@@ -287,6 +296,22 @@ int main(int argc, char** argv) {
       if ( i<argc ) { 
 	rscale = std::atof(argv[i]);
 	rset = true;
+      }
+      else  return usage( std::cerr, argc, argv );
+    }
+    else if ( std::string(argv[i])=="--optimise" ) optimise = true;
+    else if ( std::string(argv[i])=="--compress" ) { 
+      ++i;
+      if ( i<argc ) { 
+	newpdfname = argv[i];
+	shrink = true;
+      }
+      else  return usage( std::cerr, argc, argv );
+    }
+    else if ( std::string(argv[i])=="-w" || std::string(argv[i])=="--weights" ) {  
+      ++i;
+      if ( i<argc ) { 
+	reweight = std::atof(argv[i]);
       }
       else  return usage( std::cerr, argc, argv );
     }
@@ -504,6 +529,22 @@ int main(int argc, char** argv) {
 
   //  if ( hscale!=rscale ) g.getReference()->Scale( hscale/rscale );
   if ( hscale!=1 ) g.getReference()->Scale( hscale );
+
+  if ( reweight!=1 ) g.run()=reweight;
+
+  if ( shrink ) { 
+    struct timeval toptstart = appl_timer_start(); 
+    g.shrink( newpdfname ); 
+    double topt = appl_timer_stop( toptstart ); 
+    std::cout << argv[0] << ": compressed grid in " << topt << " ms" << std::endl;   
+  }
+
+  if ( optimise ) { 
+    struct timeval toptstart = appl_timer_start(); 
+    g.optimise();
+    double topt = appl_timer_stop( toptstart ); 
+    std::cout << argv[0] << ": optimised grid in " << topt << " ms" << std::endl;   
+  }
 
   //  std::cout << "writing " << output_grid << std::endl;
   g.Write(output_grid);

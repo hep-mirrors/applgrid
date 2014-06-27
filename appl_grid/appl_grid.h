@@ -558,6 +558,8 @@ public:
 
   const appl_pdf* genpdf(int i) const { return m_genpdf[i]; }
 
+  std::vector<double>&       userdata()       { return m_userdata; }
+  const std::vector<double>& userdata() const { return m_userdata; }
 
 protected:
 
@@ -601,8 +603,7 @@ protected:
   void addpdf( const std::string& s, const std::vector<int>& combinations=std::vector<int>() );
 
   appl_pdf* genpdf(int i) { return m_genpdf[i]; }
-
-
+  
 public: 
 
   int subproc() const { return m_subproc; }
@@ -675,6 +676,8 @@ protected:
 
   int  m_subproc;
   int  m_bin;
+
+  std::vector<double> m_userdata;
 
 };
 

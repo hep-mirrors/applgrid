@@ -44,11 +44,13 @@
 
 
 
-template<class T> 
-std::ostream& operator<<( std::ostream& s, std::vector<T>& v ) {
-  for ( unsigned i=0 ; i<v.size() ; i++ ) std::cout << (i==0 ? "" : " " ) << v[i];
+
+template<typename T>
+std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
+  for ( unsigned i=0 ; i<v.size() ; i++ ) s << "\t" << v[i];
   return s;
 }
+
 
 /// this is a compatability flag for persistent versions 
 /// of the grid
@@ -339,7 +341,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   if ( _version != m_version ) std::cout  << "(transformed to " << m_version << ")";
   std::cout << std::endl;
 
-  if ( getDocumentation()!="" ) std::cout << "\t" << getDocumentation() << std::endl; 
+  if ( getDocumentation()!="" ) std::cout << getDocumentation() << std::endl; 
   
   bool added = false;
 
@@ -374,6 +376,9 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   if ( setup->GetNoElements()>7 ) m_applyCorrections = ( (*setup)(7)!=0 ? true : false );
   else                            m_applyCorrections = false;
+
+  int n_userdata = 0;
+  if ( setup->GetNoElements()>10 ) n_userdata = int((*setup)(10)+0.5);
 
   //  std::vector<double> _ckmsum;
   std::vector<std::vector<double> > _ckm2;
@@ -549,6 +554,13 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  std::cout << "grid::grid() read from file Nobs = " << Nobs_internal() << std::endl;
 
   //  std::cout << "read grid" << std::endl;
+
+  /// read in the user data
+  if ( n_userdata ) { 
+    TVectorT<double>* userdata=(TVectorT<double>*)gridfilep->Get((dirname+"/UserData").c_str());
+    m_userdata.clear();
+    for ( int i=0 ; i<n_userdata ; i++ ) m_userdata.push_back( (*userdata)(i) );
+  }
 
   gridfilep->Close();
   delete gridfilep;
@@ -1080,6 +1092,8 @@ void appl::grid::Write(const std::string& filename,
 
   (*setup)(9) = (int)m_type;
 
+  (*setup)(10) = m_userdata.size();
+
   setup->Write("State");
   
   if ( (*setup)(8) == 1 ) { 
@@ -1096,7 +1110,6 @@ void appl::grid::Write(const std::string& filename,
 
   }
 
-  
   /// encode the pdf combination if appropriate
   
   if ( contains( m_genpdfname, ".config" ) ) { 
@@ -1214,6 +1227,15 @@ void appl::grid::Write(const std::string& filename,
     TVectorT<double>* _combine = new TVectorT<double>(m_combine.size()); 
     for ( unsigned i=m_combine.size() ; i-- ; ) (*_combine)(i) = m_combine[i]+0.5; /// NB: add 0.5 to prevent root double -> int rounding errors
     _combine->Write( "CombineBins" );
+  }
+
+
+  /// now write out the user data
+
+  if ( m_userdata.size() ) { 
+    TVectorT<double>* userdata=new TVectorT<double>(m_userdata.size()); // add a few extra just in case 
+    for ( unsigned i=0 ; i<m_userdata.size() ; i++ ) (*userdata)(i) = m_userdata[i];
+    userdata->Write("UserData");
   }
 
 
@@ -2006,11 +2028,6 @@ bool appl::grid::applyCorrection(unsigned i, std::vector<double>& v) {
 }
 
 
-template<typename T>
-std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
-  for ( unsigned i=0 ; i<v.size() ; i++ ) s << "\t" << v[i];
-  return s;
-}
 
 
 

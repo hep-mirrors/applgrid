@@ -48,9 +48,9 @@ private:
 };
 
 
-inline std::ostream& operator<<( std::ostream& s, const correction& /* _c */ ) { 
-  return s;
-}
+// inline std::ostream& operator<<( std::ostream& s, const correction& /* _c */ ) { 
+//   return s;
+// }
 
 
 

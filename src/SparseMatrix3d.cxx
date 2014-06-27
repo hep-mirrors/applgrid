@@ -72,6 +72,11 @@ bool SparseMatrix3d::operator==(const SparseMatrix3d& s) const {
   for ( int i=0 ; i<m_xaxis.N() ; i++ ) { 
     for ( int j=0 ; j<m_yaxis.N() ; j++ ) { 
       for ( int k=0 ; k<m_zaxis.N() ; k++ ) { 
+
+	//	std::cout << i << " " << j << " " << k
+	//		  << " : " << (*this)(i,j,k) 
+	//		  << " " << s(i,j,k)  << "  : " << ((*this)(i,j,k)-s(i,j,k) ) << std::endl;
+
 	if ( (*this)(i,j,k) != s(i,j,k) ) return false;
 	if ( (*this)(i,j,k)!=0 ) nvalue++;
       }  

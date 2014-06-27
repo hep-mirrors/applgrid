@@ -89,9 +89,14 @@ public:
   /// NB: to avoid rounding errors, allow differences in the bin 
   ///     limits of 1e-10 the distance between the nodes   
   bool operator==(const axis& ax) const { 
-    return ( m_N==ax.m_N 
-	     && (std::fabs(m_min-ax.m_min)<m_delta*1e-10) 
-	     && (std::fabs(m_max-ax.m_max)<m_delta*1e-10) );
+    
+    //    std::cout << "axis::operator== m_N " << m_N << "\tax.m_N " << ax.m_N 
+    //	      << "\tdmin " << (m_min-ax.m_min) << " " << m_min << " " << ax.m_min 
+    //	      << "\tdmax " << (m_max-ax.m_max) << " " << m_max << " " << ax.m_max << std::endl;
+
+    return  ( m_N==ax.m_N 
+	      && (std::fabs(m_min-ax.m_min)<=m_delta*1e-10) 
+	      && (std::fabs(m_max-ax.m_max)<=m_delta*1e-10) );   
   }
 
 private:

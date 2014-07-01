@@ -308,7 +308,7 @@ int main(int argc, char** argv) {
       }
       else  return usage( std::cerr, argc, argv );
     }
-    else if ( std::string(argv[i])=="-w" || std::string(argv[i])=="--weights" ) {  
+    else if ( std::string(argv[i])=="-w" || std::string(argv[i])=="--weight" ) {  
       ++i;
       if ( i<argc ) { 
 	reweight = std::atof(argv[i]);

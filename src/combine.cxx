@@ -273,7 +273,7 @@ int main(int argc, char** argv) {
   /// the list of grids to process
   std::vector<std::string> grids;
 
-  double reweight = 0;
+  double weight = 0;
   double wscale   = 1;
 
   bool optimise = false;
@@ -310,10 +310,10 @@ int main(int argc, char** argv) {
       }
       else  return usage( std::cerr, argc, argv );
     }
-    else if ( std::string(argv[i])=="-w" || std::string(argv[i])=="--weight" ) {  
+    else if ( std::string(argv[i])=="--weight" ) {  
       ++i;
       if ( i<argc ) { 
-	reweight = std::atof(argv[i]);
+	weight = std::atof(argv[i]);
       }
       else  return usage( std::cerr, argc, argv );
     }
@@ -539,8 +539,8 @@ int main(int argc, char** argv) {
   //  if ( hscale!=rscale ) g.getReference()->Scale( hscale/rscale );
   if ( hscale!=1 ) g.getReference()->Scale( hscale );
 
-  if      ( wscale!=1 )   g.run() *= wscale;
-  else if ( reweight!=0 ) g.run() = reweight;
+  if      ( wscale!=1 ) g.run() *= wscale;
+  else if ( weight!=0 ) g.run()  = weight;
 
   if ( shrink ) { 
     struct timeval toptstart = appl_timer_start(); 

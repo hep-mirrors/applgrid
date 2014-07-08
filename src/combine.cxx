@@ -28,22 +28,22 @@ int usage(std::ostream& s, int argc, char** argv) {
   s << "Usage: " << argv[0] << " [OPTIONS] -o output_grid.root  input_grid.root [input_grid1.root ... input_gridN.root]\n\n";
   s << "  APPLgrid \'" << argv[0] << "\' adds " << PACKAGE_STRING << " grid files together into a single grid\n\n"; 
   s << "Configuration: \n";
-  s << "    -o filename   \tname of output grid (filename required)\n\n";
+  s << "    -o filename   \t name of output grid (filename required)\n\n";
   s << "Options: \n";
-  s << "    -g, --gscale  value\trescale output grid by value, \n";
-  s << "    -r, --rscale  value\trescale reference histogram by value, \n";
-  s << "    -s, --scale   value\trescale both output grid and reference histogram by value\n";
+  s << "    -g, --gscale  value\t rescale output grid by value, \n";
+  s << "    -r, --rscale  value\t rescale reference histogram by value, \n";
+  s << "    -s, --scale   value\t rescale both output grid and reference histogram by value\n";
   //  s << "    -a, --all     \tadd all grids (default)\n";
-  s << "    -w, --wscale  value\trescale the weight normalisation for the output grid\n";
-  s << "        --weight  value\tset the value of the weight normalisation for the output grid directly\n";
-  s << "        --optimise     \tset optimise the output grid\n";
-  s << "        --compress     \tset try to reduce the number of parton luminosity\n"
-    << "                       \tcombinations\n";
-  s << "    -c, --chi2    value\tif set, exclude grids with a chi2 with respect\n"
-    << "                      \tto the median larger than value\n";
-  s << "        --verbose \tdisplay grid documentation during add\n";
-  s << "    -v, --version \tdisplays the APPLgrid version\n";
-  s << "    -h, --help    \tdisplay this help\n";
+  s << "    -w, --wscale  value\t rescale the weight normalisation for the output grid\n";
+  s << "        --weight  value\t set the value of the weight normalisation for the output grid directly\n";
+  s << "        --optimise     \t optimise the output grid\n";
+  s << "        --compress     \t try to reduce the number of parton luminosity\n"
+    << "                       \t combinations\n";
+  s << "    -c, --chi2    value\t if set, exclude grids with a chi2 with respect\n"
+    << "                       \t to the median larger than value\n";
+  s << "        --verbose  \t display grid documentation during add\n";
+  s << "    -v, --version  \t displays the APPLgrid version\n";
+  s << "    -h, --help     \t display this help\n";
   s << "\nSee " << PACKAGE_URL << " for more details\n"; 
   s << "\nReport bugs to <" << PACKAGE_BUGREPORT << ">";
   s << std::endl;

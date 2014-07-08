@@ -34,7 +34,8 @@ int usage(std::ostream& s, int argc, char** argv) {
   s << "    -r, --rscale  value\trescale reference histogram by value, \n";
   s << "    -s, --scale   value\trescale both output grid and reference histogram by value\n";
   //  s << "    -a, --all     \tadd all grids (default)\n";
-  s << "    -w, --weight  value\tset the value of the weight normalisation for the output grid\n";
+  s << "    -w, --wscale  value\trescale the weight normalisation for the output grid\n";
+  s << "        --weight  value\tset the value of the weight normalisation for the output grid directly\n";
   s << "        --optimise     \tset optimise the output grid\n";
   s << "        --compress     \tset try to reduce the number of parton luminosity\n"
     << "                       \tcombinations\n";
@@ -272,7 +273,8 @@ int main(int argc, char** argv) {
   /// the list of grids to process
   std::vector<std::string> grids;
 
-  double reweight = 1;
+  double weight = 0;
+  double wscale   = 1;
 
   bool optimise = false;
   bool shrink   = false;
@@ -308,10 +310,17 @@ int main(int argc, char** argv) {
       }
       else  return usage( std::cerr, argc, argv );
     }
-    else if ( std::string(argv[i])=="-w" || std::string(argv[i])=="--weight" ) {  
+    else if ( std::string(argv[i])=="--weight" ) {  
       ++i;
       if ( i<argc ) { 
-	reweight = std::atof(argv[i]);
+	weight = std::atof(argv[i]);
+      }
+      else  return usage( std::cerr, argc, argv );
+    }
+    else if ( std::string(argv[i])=="-w" || std::string(argv[i])=="--wscale" ) {  
+      ++i;
+      if ( i<argc ) { 
+	wscale = std::atof(argv[i]);
       }
       else  return usage( std::cerr, argc, argv );
     }
@@ -530,7 +539,8 @@ int main(int argc, char** argv) {
   //  if ( hscale!=rscale ) g.getReference()->Scale( hscale/rscale );
   if ( hscale!=1 ) g.getReference()->Scale( hscale );
 
-  if ( reweight!=1 ) g.run()=reweight;
+  if      ( wscale!=1 ) g.run() *= wscale;
+  else if ( weight!=0 ) g.run()  = weight;
 
   if ( shrink ) { 
     struct timeval toptstart = appl_timer_start(); 

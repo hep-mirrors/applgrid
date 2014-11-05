@@ -44,10 +44,11 @@ public:
   std::string  operator[](int i) const { return mstring[i]; }
   
   // get the size
-  unsigned size()           const { return mstring.size(); } 
+  size_t size()           const { return mstring.size(); } 
 
   // add an element
-  void add(const std::string& s) { mstring.push_back(s); }
+  void push_back(const std::string& s) { mstring.push_back(s); }
+  void add(const std::string& s)       { mstring.push_back(s); }
 
 private:
   

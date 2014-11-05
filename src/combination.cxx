@@ -95,7 +95,7 @@ double combination::evaluate( const double* xfA, const double* xfB,
 	if ( m_pairs[i].second!=0  )  H += xfA[m_pairs[i].first]*xfB[m_pairs[i].second]*_ckmsum[m_pairs[i].second+6]; // gluon-q 
 	else                          H += xfA[m_pairs[i].first]*xfB[m_pairs[i].second]; /// gluon-gluon
       }
-    }  /// looop over pais 
+    }  /// looop over pairs 
   } /// use ckm matrix 
   
   return H;

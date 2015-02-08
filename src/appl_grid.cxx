@@ -661,7 +661,7 @@ void appl::grid::construct(int Nobs,
 
   // number of subprocesses 
 int appl::grid::subProcesses(int i) const { 
-  if ( i<0 || i>=m_order ) throw exception( std::cerr << "grid::subProcess(int i) " << i << " out or range [0-" << m_order-1 << "]" << std::endl );
+  if ( i<0 || i>=m_order ) throw exception( std::cerr << "grid::subProcess(int i) " << i << " out of range [0-" << m_order-1 << "]" << std::endl );
   return m_grids[i][0]->SubProcesses();     
 }  
 

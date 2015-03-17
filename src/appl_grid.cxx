@@ -1286,8 +1286,6 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
     _pdf2    = &cache2;
   }
 
- 
-
   //  struct timeval _ctimer = appl_timer_start();
   
   double Escale2 = 1;
@@ -1442,12 +1440,74 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 
       }
 
-      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
-      hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      //      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+      //      hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+
+    }
+
+    /// wait on results and combine the values from the different igrids
+
+   
+    if ( nloops==0 ) { 
+      /// LO only 
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma  = 0;
+	if ( m_grids[0][iobs]->ready() ) dsigma  = m_grids[0][iobs]->xsec(); 
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+	//      printf("iobs %d   xsec raw: %lf   %lf \n",  iobs, dsigma, invNruns*Escale2*dsigma/deltaobs );     
+      }    
+    }
+    else if ( nloops==1 || ( nloops==-1 && subproc()==-1 ) ) { 
+      /// NLO only or overall NLO only part
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigLO  = 0;
+	double dsigNLO = 0;
+	if ( m_grids[0][iobs]->ready() ) dsigLO  = m_grids[0][iobs]->xsec(); 
+	if ( m_grids[1][iobs]->ready() ) dsigNLO = m_grids[1][iobs]->xsec(); 
+	double dsigma = dsigLO + dsigNLO;
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+	//      printf("iobs %d   xsec raw: %lf   %lf \n",  iobs, dsigma, invNruns*Escale2*dsigma/deltaobs );     
+      }    
+    }
+    else if ( nloops==-1 && subproc()!=-1 ) { 
+      /// NLO only suboprocess only
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma = 0;
+	if ( m_grids[1][iobs]->ready() ) dsigma = m_grids[1][iobs]->xsec(); 
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      }
+    }
+    else if ( nloops==2 ) { 
+      /// NNLO only suboprocess only
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigLO  = 0;
+	double dsigNLO = 0;
+	double dsigNNLO = 0;
+	if ( m_grids[0][iobs]->ready() ) dsigLO   = m_grids[0][iobs]->xsec(); 
+	if ( m_grids[1][iobs]->ready() ) dsigNLO  = m_grids[1][iobs]->xsec(); 
+	if ( m_grids[2][iobs]->ready() ) dsigNNLO = m_grids[2][iobs]->xsec(); 
+	double dsigma = dsigLO + dsigNLO  + dsigNNLO;
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+	//      printf("iobs %d   xsec raw: %lf   %lf \n",  iobs, dsigma, invNruns*Escale2*dsigma/deltaobs );     
+      }    
+    }
+    else if ( nloops==-2 ) {
+      /// NNLO only
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma = 0;
+	if ( m_grids[2][iobs]->ready() ) dsigma = m_grids[2][iobs]->xsec(); 
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      }
     }
 
     first = false;
     
+
   }
   else if ( m_type==AMCATNLO ) {  
 
@@ -1519,9 +1579,86 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 
       }
 
-      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
-      hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      //  double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+      //  hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
     }
+
+
+
+
+    if ( nloops==0 ) { 
+      /// LO only 
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma  = 0;
+	if ( m_grids[3][iobs]->ready() ) dsigma  = m_grids[3][iobs]->xsec(); 
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+	//      printf("iobs %d   xsec raw: %lf   %lf \n",  iobs, dsigma, invNruns*Escale2*dsigma/deltaobs );     
+      }    
+    }
+    else if ( nloops==1 || nloops==-1 ) { 
+      /// NLO only or overall NLO only part
+	
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+
+	double dsig0 = 0;
+	double dsigF = 0;
+	double dsigR = 0;
+	double dsigB = 0;
+
+	if ( m_grids[0][iobs]->ready() ) dsig0  = m_grids[0][iobs]->xsec(); 
+	double dsigma = dsig0;
+
+	if ( nloops==1 ) { 
+	  if ( m_grids[3][iobs]->ready() ) dsigB  = m_grids[3][iobs]->xsec(); 
+	  dsigma += dsigB;
+	}
+	
+	if ( rscale_factor!=1 ) { 
+	  if ( m_grids[1][iobs]->ready() ) dsigR  = m_grids[1][iobs]->xsec(); 
+	  dsigma += dsigR*std::log(rscale_factor*rscale_factor);
+	}
+
+	if ( fscale_factor!=1 ) { 
+	  if ( m_grids[2][iobs]->ready() ) dsigF  = m_grids[2][iobs]->xsec(); 
+	  dsigma += dsigF*std::log(fscale_factor*fscale_factor);
+	}
+
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+	//      printf("iobs %d   xsec raw: %lf   %lf \n",  iobs, dsigma, invNruns*Escale2*dsigma/deltaobs );     
+      }         
+    }
+    else if ( nloops==-2) { 
+      /// NLO only suboprocess only
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma = 0;
+	if ( m_grids[0][iobs]->ready() ) dsigma = m_grids[0][iobs]->xsec(); 
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      }
+    }
+    else if ( nloops==-3) { 
+      /// NLO only suboprocess only
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma = 0;
+	if ( m_grids[1][iobs]->ready() ) dsigma = m_grids[1][iobs]->xsec(); 
+	dsigma  *= std::log(rscale_factor*rscale_factor)  ;
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      }
+    }
+    else if ( nloops==-4) { 
+      /// NLO only suboprocess only
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma = 0;
+	if ( m_grids[2][iobs]->ready() ) dsigma = m_grids[2][iobs]->xsec(); 
+	dsigma  *= std::log(fscale_factor*fscale_factor)  ;
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      }
+    }
+
   }
   else if ( m_type == SHERPA ) { 
     
@@ -1558,9 +1695,38 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       }
 
 
-      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
-      hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      //      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+      //      hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
     }
+
+    if    ( nloops==0 ) { 
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma = 0;
+	if ( m_grids[0][iobs]->ready() ) dsigma = m_grids[0][iobs]->xsec(); 
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      }
+    }
+    else if ( nloops==1 ) { 
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigLO = 0;
+	double dsigNLO = 0;
+	if ( m_grids[0][iobs]->ready() ) dsigLO  = m_grids[0][iobs]->xsec(); 
+	if ( m_grids[1][iobs]->ready() ) dsigNLO = m_grids[1][iobs]->xsec(); 
+	double dsigma  = dsigLO + dsigNLO;
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      }
+    }
+    else if ( nloops==-1 ) { 
+      for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
+	double dsigma = 0;
+	if ( m_grids[1][iobs]->ready() ) dsigma = m_grids[1][iobs]->xsec(); 
+	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
+	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );
+      }
+    }
+
 
   }
 

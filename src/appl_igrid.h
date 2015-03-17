@@ -35,6 +35,7 @@
 #include "appl_grid/appl_pdf.h"
 
 #include "SparseMatrix3d.h"
+#include "threadManager.h"
 
 #include "Cache.h"
 
@@ -44,7 +45,11 @@ class grid;
 
 
 
-class igrid {
+class igrid  : public threadManager {
+
+private: 
+
+  virtual void run_thread();
 
 private:
 
@@ -65,6 +70,38 @@ private:
     transform_t mfy;
   };
   
+
+  struct conv_param {
+
+    /// input parameters to the thread
+
+
+    int     lo_order;  
+    int     _nloop; 
+
+    double  rscale_factor;
+    double  fscale_factor;
+    double  Escale;
+
+    double* sig;
+    double* H;
+    double* HA;
+    double* HB;
+ 
+    appl_pdf* genpdf;
+
+    NodeCache* pdf0;    
+    NodeCache* pdf1;
+
+    double (*alphas)(const double& );
+
+    /// output from thread
+
+    double dsigma;
+
+  };
+
+
 
 public:
 
@@ -317,6 +354,9 @@ public:
   // get the interpolated pdf's
   //  void pdfinterp(double x1, double Q2, double* f);
 
+
+  void convolute_internal(); 
+
   double convolute(NodeCache* pdf0,
 		   NodeCache* pdf1,
 		   // void   (*pdf0)(const double& , const double&, double* ), 
@@ -329,6 +369,8 @@ public:
 		   double  fscale_factor=1,
 		   double Escale=1 );
   
+
+  void amc_convolute_internal();
 
   
   /// convolute method for amcatnlo grids
@@ -398,6 +440,8 @@ public:
 
   // ouput header
   std::ostream& header(std::ostream& s) const;
+
+  double xsec() const { return m_conv_param.dsigma; }
 
 
 private:
@@ -498,9 +542,13 @@ private:
   }
   
 
+  
+
 public:
 
   void setparent( grid* parent ) { m_parent=parent; }
+
+  grid* parent() const { return m_parent; }
 
 private:
 
@@ -568,6 +616,11 @@ private:
   // flag to emulate a 2d (Q2, x) grid of use the 
   // full 3d (Q2, x1, x2) grid
   bool m_DISgrid;
+
+private:
+
+  /// communication with internal process
+  conv_param m_conv_param;
 
 };
 

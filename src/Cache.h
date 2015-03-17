@@ -25,6 +25,10 @@
 /// then call using the evaluate() method instead of the calling 
 /// the pdf directly. 
 
+
+#include "pthread.h"
+
+
 template<typename T>
 class Cache : public std::map<T, std::vector<double> > {
  
@@ -42,8 +46,13 @@ private:
 public:
 
   /// give it the pdf function to use
-  Cache( pdffunction pdf=0, unsigned mx=20000 ) : _pdf(pdf), _max(mx), _ncalls(0), _ncached(0), _reset(0), _disabled(false), _printstats(false) { } 
-
+  Cache( pdffunction pdf=0, unsigned mx=20000 ) : _pdf(pdf), _max(mx), _ncalls(0), _ncached(0), _reset(0), _disabled(false), _printstats(false) {
+#   ifdef PDFTHREAD
+    pthread_mutex_t tmpcache_mux = PTHREAD_MUTEX_INITIALIZER;
+    cache_mux = tmpcache_mux;
+#   endif
+  } 
+  
   virtual ~Cache() { } 
 
   
@@ -62,7 +71,12 @@ public:
     _ncalls++;
 
     /// if we don't want to use the cache for some reason (it can get quite large)     
-    if ( _disabled ) return _pdf( x, Q2, xf ); 
+    if ( _disabled ) { 
+      lock_cache();
+      _pdf( x, Q2, xf ); 
+      unlock_cache();
+      return;
+    }
 
     //    _reset++;
 
@@ -74,20 +88,25 @@ public:
     
     if ( itr!=this->end() ) { 
       /// in the cache, simply copy to output ...
+      lock_cache();
       (*(partons*)xf) = (*(partons*)(&itr->second[0])); 
       _ncached++;
+      unlock_cache();
     } 
     else { 
       /// not in cache, call pdf function 
-      static std::vector<double> _xf(13);
+      std::vector<double> _xf(13);
 
       _pdf( x, Q2, &_xf[0] ); 
 
+
       /// add to cache if enough room
+      lock_cache();
       if ( this->size()<_max ) this->insert( typename _map::value_type( t, _xf ) );
 
       /// copy to output 
       (*(partons*)xf) = ( *((partons*)&_xf[0]) ); 
+      unlock_cache();
     }
   }
   
@@ -135,6 +154,16 @@ private:
 
   bool     _printstats;
 
+# ifdef PDFTHREAD
+  pthread_mutex_t cache_mux;
+  void lock_cache()   {  pthread_mutex_lock(&cache_mux); }
+  void unlock_cache() {  pthread_mutex_unlock(&cache_mux); }
+#else
+  void lock_cache()   {  }
+  void unlock_cache() {  }
+# endif
+
+  
 };
 
 

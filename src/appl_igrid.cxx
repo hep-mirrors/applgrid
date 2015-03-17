@@ -16,8 +16,10 @@
 
 #include "appl_igrid.h"
 #include "appl_grid/appl_grid.h"
+#include "appl_grid/appl_timer.h"
 
 #include "hoppet_init.h"
+#include "threadManager.h"
 
 
 #include "TFile.h"
@@ -42,7 +44,18 @@ void Splitting(const double& x, const double& Q, double* f);
 double appl::igrid::transvar = 5;
 
 
+static int ithread = 0;
+
+std::string label( int i ) { 
+  char lab[64];
+  std::sprintf( lab, "thread-%d", i );
+  return lab;
+}
+
+
+
 appl::igrid::igrid() : 
+  threadManager( label(ithread++) ),
   mfy(0),   mfx(0),
   m_parent(0),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),
@@ -71,6 +84,7 @@ appl::igrid::igrid() :
 appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order, 
 		   int Nx,  double xmin,  double xmax,  int xorder, 
 		   std::string transform, int Nproc, bool disflag ):
+  threadManager( label(ithread++) ),
   mfy(0),   mfx(0),
   m_parent(0),
   m_Ny1(Nx),   m_Ny2( disflag ? 1 : Nx ),  m_yorder(xorder), 
@@ -144,6 +158,8 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   
   m_weight = new SparseMatrix3d*[m_Nproc];
   construct();
+
+  this->start_thread();
 }
 
 
@@ -151,7 +167,8 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
 
 
 // copy constructor
-appl::igrid::igrid(const appl::igrid& g) : 
+appl::igrid::igrid(const appl::igrid& g) :
+  threadManager( label(ithread++) ), 
   mfy(0),  mfx(0),  
   m_parent(0),
   m_Ny1(g.m_Ny1),     
@@ -182,6 +199,8 @@ appl::igrid::igrid(const appl::igrid& g) :
   m_weight = new SparseMatrix3d*[m_Nproc];
   for( int ip=0 ; ip<m_Nproc ; ip++ )   m_weight[ip] = new SparseMatrix3d(*g.m_weight[ip]);
   //  construct();
+
+  this->start_thread();
 }
 
 
@@ -293,6 +312,8 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
     // m_weight[ip]->trim(); // trim the grid and do some book keeping
     // trimsize += m_weight[ip]->size();
   }
+
+  this->start_thread();
 }
 
 
@@ -830,22 +851,42 @@ double appl::igrid::convolute(NodeCache* pdf0,
 
   //  m_transvar = m_transvarlocal;
 
-  int nloop = std::fabs(_nloop);
-
   if ( pdf1==0 ) pdf1 = pdf0; 
 
+
+  m_conv_param.pdf0 = pdf0;
+  m_conv_param.pdf1 = pdf1;
+  m_conv_param.alphas = alphas;
+
+
+  m_conv_param.lo_order =  lo_order;
+  m_conv_param._nloop   = _nloop;
+  m_conv_param.Escale   =  Escale;
+
+  m_conv_param.rscale_factor = rscale_factor;
+  m_conv_param.fscale_factor = fscale_factor;
+
+  m_conv_param.genpdf = genpdf;
+
+  m_conv_param.dsigma = 0;
+
+  double dsigma  = 0; 
+
+
+#ifndef PDFTHREAD
+
+
   //char name[]="appl_grid:igrid::convolute(): ";
-  static const double twopi = 2*M_PI;
-  static const int nc = 3;
-  //TC   const int nf = 6;
-  static const int nf = 5;
-  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
+  //  static const double twopi = 2*M_PI;
+  //  static const int nc = 3;
+  //  //TC   const int nf = 6;
+  //  static const int nf = 5;
+  //  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
   //const bool debug=false;  
 
-  double alphas_tmp = 0.;  
-  double dsigma  = 0.; //, xsigma = 0.;
-  double _alphas = 1.;
-  double  alphaplus1 = 0.;
+  //  double alphas_tmp = 0.;  
+  //  double _alphas = 1.;
+  //  double  alphaplus1 = 0.;
   // do the convolution  
   // if (debug) std::cout<<name<<" nloop= "<<nloop<<endl;
   //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
@@ -853,7 +894,7 @@ double appl::igrid::convolute(NodeCache* pdf0,
   int size=0;
   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
     if ( !m_weight[ip]->trimmed() )  {
-      //  std::cout << "igrid::convolute() naughty, naughty!" << std::endl;
+      // std::cerr << "igrid::convolute() naughty, naughty!" << std::endl;
       m_weight[ip]->trim();
     }
     size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
@@ -864,10 +905,14 @@ double appl::igrid::convolute(NodeCache* pdf0,
   // grid is empty
   if ( size==0 )  return 0;
 
+  int nloop = std::fabs(_nloop); 
+
   // 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
   setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
 
+
+#if 0
   double* sig = new double[m_Nproc];  // weights from grid
   double* H   = new double[m_Nproc];  // generalised pdf  
   double* HA  = NULL;  // generalised splitting functions
@@ -878,6 +923,124 @@ double appl::igrid::convolute(NodeCache* pdf0,
   }
 
   // cross section for this igrid  
+
+  m_conv_param.sig = sig;
+  m_conv_param.H   = H;
+  m_conv_param.HA  = HA;
+  m_conv_param.HB  = HB;
+
+#endif
+
+#endif
+
+
+  /// convolute_internal();
+
+  process();
+
+
+  dsigma = m_conv_param.dsigma; 
+
+  return dsigma;
+}
+
+
+
+
+
+
+void appl::igrid::convolute_internal() { 
+
+  //  struct timeval mytimer = appl_timer_start();
+
+  int     lo_order = m_conv_param.lo_order;  
+  int     _nloop    = m_conv_param._nloop;  
+
+  int      nloop = std::fabs(_nloop); 
+
+  double  rscale_factor = m_conv_param.rscale_factor;  
+  double  fscale_factor = m_conv_param.fscale_factor;  
+
+  appl_pdf* genpdf = m_conv_param.genpdf;
+
+  //char name[]="appl_grid:igrid::convolute(): ";
+  //  static const double twopi = 2*M_PI;
+  //  static const int nc = 3;
+  //  //TC   const int nf = 6;
+  //  static const int nf = 5;
+  //  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
+  //const bool debug=false;  
+
+
+  double dsigma  = 0.; //, xsigma = 0.;
+
+
+#ifdef PDFTHREAD
+
+  double (*alphas)(const double& ) = m_conv_param.alphas;   
+
+  NodeCache* pdf0 = m_conv_param.pdf0;   
+  NodeCache* pdf1 = m_conv_param.pdf1;   
+  
+  double   Escale =  m_conv_param.Escale;   
+
+  //  double _alphas = 1.;
+  //  double  alphaplus1 = 0.;
+  // do the convolution  
+  // if (debug) std::cout<<name<<" nloop= "<<nloop<<endl;
+  //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
+  // is the grid empty
+  int size=0;
+  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
+    if ( !m_weight[ip]->trimmed() )  {
+      /// std::cerr << "igrid::convolute() naughty, naughty!" << std::endl;
+      m_weight[ip]->trim();
+    }
+    size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
+  }
+
+
+
+  // grid is empty
+  if ( size==0 )  return;
+
+
+  //  if ( m_fg1==NULL ) setuppdf(pdf);
+  setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
+
+#endif
+
+
+  double* sig = new double[m_Nproc];  // weights from grid
+  double* H   = new double[m_Nproc];  // generalised pdf  
+  double* HA  = 0;  // generalised splitting functions
+  double* HB  = 0;  // generalised splitting functions
+  if ( nloop==1 && fscale_factor!=1 ) { 
+    HA  = new double[m_Nproc];  // generalised splitting functions
+    HB  = new double[m_Nproc];  // generalised splitting functions
+  }
+  
+  // cross section for this igrid  
+
+
+
+
+  //char name[]="appl_grid:igrid::convolute(): ";
+  static const double twopi = 2*M_PI;
+  static const int nc = 3;
+  //TC   const int nf = 6;
+  static const int nf = 5;
+  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
+  //const bool debug=false;  
+
+  double alphas_tmp = 0.;  
+
+  double _alphas = 1.;
+  double  alphaplus1 = 0.;
+
+
+  m_conv_param.dsigma = 0;
+
 
   // loop over the grid 
   // 
@@ -907,16 +1070,8 @@ double appl::igrid::convolute(NodeCache* pdf0,
 	  // build the generalised pdfs from the actual pdfs
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
 	
-	  //	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) H[ip] = 1;
-	  //    std::cout << "H return" << std::endl;
-	  //    for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << H[ip] << std::endl;
-
-	  //	  for  ( int ipp=0 ; ipp<m_Nproc ; ipp++ ) H[ipp]=1;
-  
 	  // do the convolution
-
           double xsigma=0.;
-
 
 	  if ( m_parent && m_parent->subproc()!=-1 ) { 
 	    int ip=m_parent->subproc();
@@ -925,7 +1080,6 @@ double appl::igrid::convolute(NodeCache* pdf0,
 	  else { 
 	    for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+= sig[ip]*H[ip];
 	  }
-
 
 	  /// if want NLO part only, don't add in the born term
 	  if ( _nloop!=-1 ) dsigma += _alphas*xsigma;
@@ -967,6 +1121,7 @@ double appl::igrid::convolute(NodeCache* pdf0,
   
   //if (debug)  std::cout << name<<"     convoluted dsigma=" << dsigma << std::endl; 
   
+
   delete[] sig;
   delete[] H;
   delete[] HA;
@@ -979,10 +1134,15 @@ double appl::igrid::convolute(NodeCache* pdf0,
   // NB!!! the return value dsigma must be scaled by Escale*Escale which 
   // is done in grid::vconvolute. It would be better here, but is reduces 
   // the number of operations if in grid. 
-  return dsigma; 
+
+  m_conv_param.dsigma = dsigma;
+
+  //  double mytime = appl_timer_stop(mytimer);
+
+  //  std::printf("thread done: param: %lf internal time %lf ms\n", m_conv_param.dsigma, mytime );
+
+
 }
-
-
 
 
 
@@ -1005,24 +1165,26 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 				  double Escale) 
 { 
 
-  //  m_transvar = m_transvarlocal;
+  m_conv_param.pdf0 = pdf0;
+  m_conv_param.pdf1 = pdf1;
 
-  //char name[]="appl_grid:igrid::convolute(): ";
-  //  static const double twopi = 2*M_PI;
-  static const double eightpisquared = 8*M_PI*M_PI;
-  // static const int nc = 3;
-  //TC   const int nf = 6;
-  // static const int nf = 5;
-  //  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
-  //const bool debug=false;  
+  m_conv_param.alphas = alphas;
 
-  double alphas_tmp = 0.;  
-  double dsigma  = 0.; //, xsigma = 0.;
-  double _alphas = 1.;
-  //  double  alphaplus1 = 0.;
-  // do the convolution  
-  // if (debug) std::cout<<name<<" nloop= "<<nloop<<endl;
-  //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
+  m_conv_param.lo_order =  lo_order;
+
+  //  m_conv_param._nloop   =  nloop;
+  //  m_conv_param.Escale   =  Escale;
+
+  //  m_conv_param.rscale_factor = rscale_factor;
+  //  m_conv_param.fscale_factor = fscale_factor;
+
+  m_conv_param.genpdf = genpdf;
+
+  m_conv_param.dsigma = 0;
+
+  //  double dsigma  = 0; 
+
+
   // is the grid empty
   int size=0;
    for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
@@ -1033,14 +1195,41 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
     size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
   }
 
-
-
   // grid is empty
   if ( size==0 )  return 0;
 
   // 
   //  if ( m_fg1==NULL ) setuppdf(pdf);
   setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
+
+  //  amc_convolute_internal();
+  
+  process();
+
+  return m_conv_param.dsigma;
+}
+
+
+
+
+void appl::igrid::amc_convolute_internal() { 
+  
+  int     lo_order = m_conv_param.lo_order;  
+
+  //  int     _nloop    = m_conv_param._nloop;  
+  
+  //  int      nloop = std::fabs(_nloop); 
+  
+  //  double  rscale_factor = m_conv_param.rscale_factor;  
+  //  double  fscale_factor = m_conv_param.fscale_factor;  
+  
+  appl_pdf* genpdf = m_conv_param.genpdf;
+  
+  static const double eightpisquared = 8*M_PI*M_PI;
+  
+  double alphas_tmp = 0.;  
+  double dsigma  = 0.; //, xsigma = 0.;
+  double _alphas = 1.;
 
   double* sig = new double[m_Nproc];  // weights from grid
   double* H   = new double[m_Nproc];  // generalised pdf  
@@ -1086,28 +1275,6 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 	  for ( int ip=0 ; ip<m_Nproc ; ip++ ) xsigma+=sig[ip]*H[ip];
 	  dsigma += _alphas*xsigma;
 
-#if 0	
-	  /// JR scaling by R and F scale factors to grid::convoute() method 
-	  // now do the convolution for the variation of factorisation and 
-	  // renormalisation scales, proportional to the leading order weights
-
-	  // renormalisation scale dependent bit
-	  if ( rscale_factor!=1 ) { 
-	    // nlo relative ln mu_R^2 term 
-	    dsigma += _alphas*std::log(rscale_factor*rscale_factor)*xsigma;
-	    
-	  }
-	  else if ( fscale_factor!=1 ) {
-	    // factorisation scale dependent bit
-	    // nlo relative ln mu_F^2 term 
-	    dsigma += _alphas*std::log(fscale_factor*fscale_factor)*xsigma;
-	    //if (debug) 
-	    //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
-	  }
-	  else { 
-	    dsigma += _alphas*xsigma;
-	  }
-#endif	
 	}  // nonzero
       }  // iy2
     }  // iy1
@@ -1127,8 +1294,10 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
   // NB!!! the return value dsigma must be scaled by Escale*Escale which 
   // is done in grid::vconvolute. It would be better here, but is reduces 
   // the number of operations if done in grid. 
-  return dsigma; 
+  return; 
 }
+
+
 
 
 
@@ -1425,7 +1594,7 @@ std::ostream& appl::igrid::header(std::ostream& s) const {
     << "\t : " << "\t( order=" << yorder()   << " ) ]"; 
   s << "\t Q2: [ " 
     << Ntau() << " :\t "  << std::setw(7) << std::setprecision(6) << fQ2(taumin()) << " - " << std::setw(7) << std::setprecision(6) << fQ2(taumax()) 
-    << "\t( order=" << tauorder() << " ) ]";
+    << "\t( order=" << tauorder() << "  - reweight " << ( m_reweight ? "on " : "off" ) << ") ]";
   return s;
 }
 
@@ -1435,3 +1604,47 @@ std::ostream& operator<<(std::ostream& s, const appl::igrid& g) {
 }
 
 
+
+void appl::igrid::run_thread() {
+ 
+  lock_proc();
+  mprocessing = false;
+  unlock_proc();
+
+
+  while( true ) { 
+
+    //    std::cout << "thread " << this << " " << mname << " waiting ... " << std::endl; 
+
+    /// supend immediately
+    suspend();
+
+    //    std::cout << "thread " << this << " " << mname << " running ... " << std::endl; 
+
+
+    struct timeval mytimer = appl_timer_start();
+
+    /// put the actual convoluting steps in here  
+    /// once round the colbolution step, it puts itself to 
+    /// sleep again
+    
+    if ( parent()->calculation()==grid::AMCATNLO )  amc_convolute_internal();
+    else                                            convolute_internal();
+
+    //    std::cout << "param: " << m_conv_param.dsigma << std::endl;
+
+    //    std::printf("thread done: param: %lf internal\n", m_conv_param.dsigma );
+ 
+    /// after starting the processing step, the calling thread must 
+    /// wait for all the threads to finish
+
+    double mytime = appl_timer_stop(mytimer);
+
+    //    std::printf("thread done: param: %lf internal time %lf ms\n", m_conv_param.dsigma, mytime );
+
+    /// signal computation has finished
+    ///
+
+    //    std::cout << "thread " << this << " " << mname << " done [" << mytime << " ms" << "]" << std::endl; 
+  }
+}

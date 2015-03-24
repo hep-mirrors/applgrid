@@ -1,0 +1,74 @@
+\documentclass[12pt]{article}
+
+\usepackage{a4wide}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\newcommand{\as}{\alpha_s}
+\newcommand{\asbar}{{\bar \alpha}_s}
+\newcommand{\LO}{\text{LO}}
+\newcommand{\NLO}{\text{NLO}}
+\newcommand{\NNLO}{\text{NNLO}}
+\setlength\parskip{1em}
+
+\begin{document}
+%----------------------------------------------------------------------
+\section*{NNLO scale dependence terms}
+
+Incomplete DRAFT of NNLO scale terms; some terms are still to be
+double checked. Being put together by Mark, Pavel \& Gavin.
+
+First a few definition
+\begin{align}
+  \label{eq:defs}
+  L_R &= \ln \frac{\mu_R^2}{Q^2}\\
+  L_F &= \ln \frac{\mu_F^2}{Q^2}\\
+  \beta_0 &= \frac{11C_A - 2 n_f}{6}
+\end{align}
+where $Q^2$ is the scale that was used in the grid originally.
+%
+Splitting functions are taken to multiply powers of $\asbar(\mu_R^2) \equiv
+\frac{\as(\mu_R^2)}{2\pi}$. 
+%
+If the renormalisation scale is not specified, it's assumed to be
+$\mu_R^2$. 
+%
+If the factorisation scale is not specified, it's assumed to be
+$\mu_F^2$. 
+
+Next we introduce the following combinations of splitting functions
+and PDFs
+\begin{align}
+  f_\LO   &\equiv f\\
+  f_\NLO  &= - L_F P_\LO \otimes f\\
+  f_\NNLO &=  \frac12 L_F^2 P_\LO \otimes P_\LO \otimes f
+             - L_F P_\NLO \otimes f
+             - (\beta_0(L_R L_F - L_F^2)) P_\LO \otimes f
+\end{align}
+
+Now call the hard perturbative coefficients are $W_\LO$,
+$W_\NLO$, $W_\NNLO$,  multiplying powers of $\as2pi^p$,
+$\as2pi^{p+1}$, $\as2pi^{p+2}$.
+%
+We then have the full structure of the answer, which is
+\begin{multline}
+  \asbar^p W_\LO \otimes f_\LO^{(1)} \otimes f_\LO^{(2)}
+  \\
+  + \asbar^{p+1} \left[ 
+    (W_\NLO + p \beta_0 L_R W_\LO) \otimes f_\LO^{(1)}  \otimes f_\LO^{(2)}
+    + W_\LO \otimes (f_\NLO^{(1)}\otimes f_\LO^{(2)} + f_\LO^{(1)}\otimes f_\NLO^{(2)})
+  \right]
+  \\
+  + \asbar^{p+2} \left[ 
+    (W_\NNLO + (p+1) \beta_0 L_R W_\NLO + \cdots) \otimes f_\LO^{(1)}
+    \otimes f_\LO^{(2)}\right.
+  \\
+    + (W_\NLO + p \beta_0 L_R W_\LO) \otimes (f_\NLO^{(1)}\otimes f_\LO^{(2)}  + f_\LO^{(1)}\otimes f_\NLO^{(2)})
+    \\
+    \left.
+    + W_\LO  \otimes (f_\NNLO^{(1)}\otimes f_\LO^{(2)}  +
+    f_\NLO^{(1)}\otimes f_\NLO^{(2)} + f_\LO^{(1)}\otimes f_\NNLO^{(2)})
+  \right]
+\end{multline}
+
+\end{document}

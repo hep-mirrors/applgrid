@@ -72,9 +72,9 @@ public:
 
     /// if we don't want to use the cache for some reason (it can get quite large)     
     if ( _disabled ) { 
-      lock_cache();
+      //  lock_cache();
       _pdf( x, Q2, xf ); 
-      unlock_cache();
+      //   unlock_cache();
       return;
     }
 
@@ -85,13 +85,14 @@ public:
     /// find out if this x, Q2 node is in the cache ...
        
     typename _map::const_iterator itr = this->find( t );
+
     
     if ( itr!=this->end() ) { 
       /// in the cache, simply copy to output ...
-      lock_cache();
+      //  lock_cache();
       (*(partons*)xf) = (*(partons*)(&itr->second[0])); 
       _ncached++;
-      unlock_cache();
+      //  unlock_cache();
     } 
     else { 
       /// not in cache, call pdf function 
@@ -99,15 +100,24 @@ public:
 
       _pdf( x, Q2, &_xf[0] ); 
 
-
       /// add to cache if enough room
-      lock_cache();
+      //    lock_cache();
       if ( this->size()<_max ) this->insert( typename _map::value_type( t, _xf ) );
 
       /// copy to output 
       (*(partons*)xf) = ( *((partons*)&_xf[0]) ); 
-      unlock_cache();
+      //  unlock_cache();
     }
+
+
+    //    static int i=0; 
+
+    //    i++;
+
+    //    if ( i>10000 ) { 
+    //      std::cout << "(Cache stats : called " << ncalls() << "\tcached " << ncached() << std::endl;
+    //      i=0;
+    //    }
   }
   
 

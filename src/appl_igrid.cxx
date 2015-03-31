@@ -27,13 +27,12 @@
 #include "TObjString.h"
 #include "TH3D.h"
 #include "TVectorT.h"
+#include "Splitting.h"
 
 #include "TFileString.h"
 
 
 // splitting function code
-
-void Splitting(const double& x, const double& Q, double* f);
 
 
 // pdf reweighting
@@ -615,7 +614,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
   }
 #endif
 
-  void (*splitting)(const double& , const double&, double* ) = Splitting;
+  void (*splitting)(const double& , const double&, double*, int ) = Splitting;
 		     
   const int n_tau = Ntau();
   const int n_y1  = Ny1();
@@ -726,7 +725,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
       
       // splitting function table
       if ( nloop==1 && fscale_factor!=1 ) { 
-	splitting(x, fscale_factor*Q, m_fsplit1[itau][iy]);
+	splitting( x, fscale_factor*Q, m_fsplit1[itau][iy], 1 );
 	for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= invx;
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= fun;
       }
@@ -774,7 +773,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	
 	// splitting functions
 	if ( nloop==1 && fscale_factor!=1 ) { 
-	  splitting(x, fscale_factor*Q, m_fsplit2[itau][iy]);
+	  splitting( x, fscale_factor*Q, m_fsplit2[itau][iy], 1 );
 	  for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= invx;
 	  if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= fun;
 	}
@@ -827,6 +826,11 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 }
 #endif
 
+
+
+bool run_threads = true;
+
+
 // takes pdf as the pdf lib wrapper for the pdf set for the convolution.
 // takes genpdf as a function to form the generalised parton distribution.
 // alphas is a function for the calculation of alpha_s (surprisingly)
@@ -838,6 +842,7 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 // grids are seperate from the nlo grids, if nloop=1 then we must be calculating 
 // {r,f}scale_factor ie f*mu then *scale_factor=f
 // splitting, is the splitting function 
+
 double appl::igrid::convolute(NodeCache* pdf0,
 			      NodeCache* pdf1,
 			      appl_pdf*  genpdf,
@@ -911,33 +916,11 @@ double appl::igrid::convolute(NodeCache* pdf0,
   //  if ( m_fg1==NULL ) setuppdf(pdf);
   setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
 
-
-#if 0
-  double* sig = new double[m_Nproc];  // weights from grid
-  double* H   = new double[m_Nproc];  // generalised pdf  
-  double* HA  = NULL;  // generalised splitting functions
-  double* HB  = NULL;  // generalised splitting functions
-  if ( nloop==1 && fscale_factor!=1 ) { 
-    HA  = new double[m_Nproc];  // generalised splitting functions
-    HB  = new double[m_Nproc];  // generalised splitting functions
-  }
-
-  // cross section for this igrid  
-
-  m_conv_param.sig = sig;
-  m_conv_param.H   = H;
-  m_conv_param.HA  = HA;
-  m_conv_param.HB  = HB;
-
-#endif
-
 #endif
 
 
-  /// convolute_internal();
-
-  process();
-
+  if ( run_threads ) process();
+  else               convolute_internal();
 
   dsigma = m_conv_param.dsigma; 
 
@@ -963,13 +946,12 @@ void appl::igrid::convolute_internal() {
 
   appl_pdf* genpdf = m_conv_param.genpdf;
 
-  //char name[]="appl_grid:igrid::convolute(): ";
   //  static const double twopi = 2*M_PI;
   //  static const int nc = 3;
   //  //TC   const int nf = 6;
   //  static const int nf = 5;
   //  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
-  //const bool debug=false;  
+  //  const bool debug=false;  
 
 
   double dsigma  = 0.; //, xsigma = 0.;
@@ -1202,12 +1184,16 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
   //  if ( m_fg1==NULL ) setuppdf(pdf);
   setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
 
-  //  amc_convolute_internal();
   
-  process();
+
+  if ( run_threads ) process();
+  else               amc_convolute_internal();
 
   return m_conv_param.dsigma;
 }
+
+
+
 
 
 
@@ -1621,7 +1607,6 @@ void appl::igrid::run_thread() {
 
     //    std::cout << "thread " << this << " " << mname << " running ... " << std::endl; 
 
-
     struct timeval mytimer = appl_timer_start();
 
     /// put the actual convoluting steps in here  
@@ -1630,8 +1615,6 @@ void appl::igrid::run_thread() {
     
     if ( parent()->calculation()==grid::AMCATNLO )  amc_convolute_internal();
     else                                            convolute_internal();
-
-    //    std::cout << "param: " << m_conv_param.dsigma << std::endl;
 
     //    std::printf("thread done: param: %lf internal\n", m_conv_param.dsigma );
  
@@ -1643,8 +1626,9 @@ void appl::igrid::run_thread() {
     //    std::printf("thread done: param: %lf internal time %lf ms\n", m_conv_param.dsigma, mytime );
 
     /// signal computation has finished
-    ///
 
     //    std::cout << "thread " << this << " " << mname << " done [" << mytime << " ms" << "]" << std::endl; 
   }
 }
+
+

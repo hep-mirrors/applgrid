@@ -66,16 +66,6 @@ void hoppet_init::fillCache( void (*pdf)(const double&, const double&, double* )
       double xf[13];
       pdf( x, Q, xf ); 
       for ( int i=0 ; i<13 ; i++ ) push_back( xf[i] ); 
-
-      // for ( int i=0 ; i<13 ; i++ ) std::cout << "\t" << xf[i];
-      // std::cout << std::endl;
-
-      //      if ( lQ==2 || lQ==5 ) { 
-      //	std::cout << Q << "\t" << x << "\t\t";
-      //	for ( int i=0 ; i<13 ; i++ ) std::cout << xf[i] << "\t";
-      //	std::cout << std::endl;
-      //      }
-
     }
   }  
 

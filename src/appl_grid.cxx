@@ -42,7 +42,7 @@
 
 #include "amconfig.h"
 
-
+#include "Splitting.h"
 
 
 template<typename T>
@@ -72,8 +72,8 @@ std::string appl::grid::appl_version() const { return PACKAGE_VERSION; }
 
 static hoppet_init* hoppet = 0;
 
-void Splitting(const double& x, const double& Q, double* xf) {
-  static const int nLoops    = 1;
+void Splitting(const double& x, const double& Q, double* xf, int nLoops) {
+  //  static const int nLoops    = 1;
   static const int nFlavours = 5;
   hoppetevalsplit_( x, Q, nLoops, nFlavours, xf); 
   return;

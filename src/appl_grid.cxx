@@ -1342,10 +1342,11 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
     //    std::cout << "standard convolution" << std::endl;
 
-    if      ( nloops==0  ) label = "lo      ";
-    else if ( nloops==1  ) label = "nlo     ";
-    else if ( nloops==-1 ) label = "nlo only";
-    else if ( nloops==2 )  label = "nnlo    ";
+    if      ( nloops==0  ) label = "lo        ";
+    else if ( nloops==1  ) label = "nlo       ";
+    else if ( nloops==-1 ) label = "nlo only  ";
+    else if ( nloops==2 )  label = "nnlo      ";
+    else if ( nloops==-2 ) label = "nnlo only ";
     
     for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {  
 

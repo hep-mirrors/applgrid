@@ -87,6 +87,9 @@ private:
     double* H;
     double* HA;
     double* HB;
+    // spliited gen pdf at NNLO
+    double* HA2;
+    double* HB2;
  
     appl_pdf* genpdf;
 
@@ -609,6 +612,10 @@ private:
   // values from the splitting functions
   double*** m_fsplit1; 
   double*** m_fsplit2; 
+
+  // values from the splitting functions at NNLO
+  double*** m_fsplit12; 
+  double*** m_fsplit22; 
 
   // alpha_s table
   double*   m_alphas;

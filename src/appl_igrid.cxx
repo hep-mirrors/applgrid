@@ -71,6 +71,7 @@ appl::igrid::igrid() :
   m_weight(0),
   m_fg1(0),     m_fg2(0),
   m_fsplit1(0), m_fsplit2(0),
+  m_fsplit12(0), m_fsplit22(0),
   m_alphas(0) { 
 
   //  std::cout << "igrid() (default) Ntau=" << m_Ntau << "\t" << fQ2(m_taumin) << " - " << fQ2(m_taumax) << std::endl;
@@ -98,6 +99,7 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_weight(0),
   m_fg1(0),     m_fg2(0),  
   m_fsplit1(0), m_fsplit2(0),
+  m_fsplit12(0), m_fsplit22(0),
   m_alphas(0),
   m_DISgrid(disflag)   
 {
@@ -187,6 +189,7 @@ appl::igrid::igrid(const appl::igrid& g) :
   m_weight(NULL),
   m_fg1(NULL),     m_fg2(NULL),
   m_fsplit1(NULL), m_fsplit2(NULL),
+  m_fsplit12(NULL), m_fsplit22(NULL),
   m_alphas(NULL)   
 {
   init_fmap();
@@ -221,6 +224,7 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_weight(NULL), 
   m_fg1(NULL),     m_fg2(NULL),
   m_fsplit1(NULL), m_fsplit2(NULL),    
+  m_fsplit12(NULL), m_fsplit22(NULL),    
   m_alphas(NULL) 
 { 
   //  std::cout << "igrid::igrid()" << std::endl;
@@ -363,12 +367,22 @@ void appl::igrid::deletepdftable() {
     delete[] m_fsplit1;
     m_fsplit1=NULL;
   }
+  if ( m_fsplit12 ) { 
+    for ( int i=0 ; i<m_Ntau ; i++ ) {
+      for ( int j=0 ; j<Ny1() ; j++ )  delete[] m_fsplit12[i][j];
+      delete[] m_fsplit1[i];
+    }
+    delete[] m_fsplit12;
+    m_fsplit12=NULL;
+  }
 
   // if grid is symmetric, then don't need to deallocate 
   // x2 pdf values and splitting functions 
   if ( isSymmetric() ) { 
     m_fg2=NULL;
     m_fsplit2=NULL;
+    m_fg22=NULL;
+    m_fsplit22=NULL;
   }
   else { 
     if ( m_fg2 ) { 
@@ -389,6 +403,14 @@ void appl::igrid::deletepdftable() {
       }
       delete[] m_fsplit2;
       m_fsplit2=NULL;
+    }
+    if ( m_fsplit22 ) { 
+      for ( int i=0 ; i<m_Ntau ; i++ ) {
+	for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fsplit22[i][j];
+	delete[] m_fsplit22[i];
+      }
+      delete[] m_fsplit22;
+      m_fsplit22=NULL;
     }
   }
 
@@ -629,10 +651,15 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 
   // splitting function table for nlo 
   // factorisation scale dependence
-  if ( nloop==1 && fscale_factor!=1 ) { 
+  if ( nloop>=1 && fscale_factor!=1 ) { 
     m_fsplit1 = new double**[Ntau()];
     if ( isSymmetric() ) m_fsplit2 = m_fsplit1;
     else                 m_fsplit2 = new double**[Ntau()];
+    if ( nloop==2 ) {
+      m_fsplit12 = new double**[Ntau()];
+      if ( isSymmetric() ) m_fsplit22 = m_fsplit12;
+      else                 m_fsplit22 = new double**[Ntau()];
+    }
   }
 
   // alphas table
@@ -647,18 +674,26 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
     if ( !isSymmetric() && !isDISgrid() ) { 
       m_fg2[i] = new double*[n_y2];
       for ( int j=0 ; j<n_y2 ; j++ ) m_fg2[i][j] = new double[13];   
-    }    
+    }
     
     // splitting function table
-    if ( nloop==1 && fscale_factor!=1 ) { 
+    if ( nloop>=1 && fscale_factor!=1 ) { 
       m_fsplit1[i] = new double*[n_y1];
       for ( int j=0 ; j<n_y1 ; j++ ) m_fsplit1[i][j] = new double[13];
       if ( !isSymmetric() && !isDISgrid() ) { 
 	m_fsplit2[i] = new double*[n_y2];
 	for ( int j=0 ; j<n_y2 ; j++ ) m_fsplit2[i][j] = new double[13];   
       }
+      if (nloop == 2) {
+	m_fsplit12[i] = new double*[n_y1];
+	for ( int j=0 ; j<n_y1 ; j++ ) m_fsplit12[i][j] = new double[13];
+	if ( !isSymmetric() && !isDISgrid() ) { 
+	  m_fsplit22[i] = new double*[n_y2];
+	  for ( int j=0 ; j<n_y2 ; j++ ) m_fsplit22[i][j] = new double[13];   
+	}
+      }
     }
-  }  
+  }
   
   bool scale_beams = false;
   if ( beam_scale!=1 ) scale_beams = true;
@@ -710,8 +745,10 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	x *= beam_scale;
 	if ( x>=1 ) { 
 	  for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip]=0; 
-	  if ( nloop==1 && fscale_factor!=1 ) { 
+	  if ( nloop>=1 && fscale_factor!=1 ) { 
 	    for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] = 0;
+	    if (nloop==2)
+	      for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit12[itau][iy][ip] = 0;
 	  }
 	  continue; 
 	}    
@@ -724,10 +761,16 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
       if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg1[itau][iy][ip] *= fun;
       
       // splitting function table
-      if ( nloop==1 && fscale_factor!=1 ) { 
+      if ( nloop>=1 && fscale_factor!=1 ) { 
 	splitting( x, fscale_factor*Q, m_fsplit1[itau][iy], 1 );
 	for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= invx;
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit1[itau][iy][ip] *= fun;
+	//
+	if (nloop==2) {
+	  //	splitting( x, fscale_factor*Q, m_fsplit12[itau][iy], 1 ); placeholder for hoppet call
+	  for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit12[itau][iy][ip] *= invx;
+	  if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit12[itau][iy][ip] *= fun;
+	}
       }
     }
   }
@@ -758,8 +801,10 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	  x *= beam_scale;	
 	  if ( x>=1 ) { 
 	    for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip]=0; 
-	    if ( nloop==1 && fscale_factor!=1 ) { 
+	    if ( nloop>=1 && fscale_factor!=1 ) { 
 	      for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] = 0;
+	      if (nloops==2)
+		for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit22[itau][iy][ip] = 0;
 	    }
 	    continue; 
 	  }
@@ -772,10 +817,15 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip] *= fun;      
 	
 	// splitting functions
-	if ( nloop==1 && fscale_factor!=1 ) { 
+	if ( nloop>=1 && fscale_factor!=1 ) { 
 	  splitting( x, fscale_factor*Q, m_fsplit2[itau][iy], 1 );
 	  for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= invx;
 	  if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] *= fun;
+	  if (nloop == 2) {
+	    //splitting( x, fscale_factor*Q, m_fsplit22[itau][iy], 1 );
+	    for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit22[itau][iy][ip] *= invx;
+	    if ( m_reweight ) for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit22[itau][iy][ip] *= fun;
+	  }
 	}
       }
 
@@ -997,9 +1047,16 @@ void appl::igrid::convolute_internal() {
   double* H   = new double[m_Nproc];  // generalised pdf  
   double* HA  = 0;  // generalised splitting functions
   double* HB  = 0;  // generalised splitting functions
-  if ( nloop==1 && fscale_factor!=1 ) { 
+  double* HA2 = 0;  // generalised splitting functions at NNLO
+  double* HB2 = 0;  // generalised splitting functions at NNLO
+  if ( nloop>=1 && fscale_factor!=1 ) { 
     HA  = new double[m_Nproc];  // generalised splitting functions
     HB  = new double[m_Nproc];  // generalised splitting functions
+    if (nloops == 2 )
+      {
+	HA2  = new double[m_Nproc];  // generalised splitting functions at NNLO
+	HB2  = new double[m_Nproc];  // generalised splitting functions at NNLO
+      }
   }
   
   // cross section for this igrid  
@@ -1012,13 +1069,15 @@ void appl::igrid::convolute_internal() {
   static const int nc = 3;
   //TC   const int nf = 6;
   static const int nf = 5;
-  static double beta0=(11.*nc-2.*nf)/(6.*twopi);
+  static double beta0=(11.*nc - 2.*nf)/(6.*twopi);
+  static double beta1=(34.*nc*nc - 3.*(nc-1/nc)*nf - 10.*nc*nf)/(6.*twopi);
   //const bool debug=false;  
 
   double alphas_tmp = 0.;  
 
   double _alphas = 1.;
   double  alphaplus1 = 0.;
+  double  alphaplus2 = 0.;
 
 
   m_conv_param.dsigma = 0;
@@ -1031,6 +1090,7 @@ void appl::igrid::convolute_internal() {
     alphas_tmp = m_alphas[itau];
     for ( int iorder=0 ; iorder<lo_order ; iorder++ ) _alphas *= alphas_tmp;
     alphaplus1 = _alphas*alphas_tmp;
+    alphaplus2 = alphaplus1*alphas_tmp;
 
     //    for ( int iy1=0 ; iy1<Ny1() ; iy1++ ) {            
     //      for ( int iy2=0 ; iy2<Ny2() ; iy2++ ) { 
@@ -1064,15 +1124,16 @@ void appl::igrid::convolute_internal() {
 	  }
 
 	  /// if want NLO part only, don't add in the born term
-	  if ( _nloop!=-1 ) dsigma += _alphas*xsigma;
+	  if ( _nloop < 0 ) dsigma += _alphas*xsigma;
 
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights
-	  if ( nloop==1 ) { 
+	  if ( nloop>=1 ) { 
 	  // renormalisation scale dependent bit
 	    if ( rscale_factor!=1 ) { 
 	      // nlo relative ln mu_R^2 term 
-	      dsigma+= alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
+	      if (nloop==1)
+		dsigma+= alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
   	    }
 
 	    // factorisation scale dependent bit

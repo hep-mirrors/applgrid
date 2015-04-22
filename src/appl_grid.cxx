@@ -2011,12 +2011,12 @@ void appl::grid::setRange(double lower, double upper, double xScaleFactor) {
       limits.push_back( m_obs_bins->GetBinLowEdge(i) );
       contents.push_back( m_obs_bins->GetBinContent(i) );
       errors.push_back( m_obs_bins->GetBinError(i) );
-
+      //  std::cout << "keep bin " << i << " : " << m_obs_bins->GetBinLowEdge(i) << " - " << m_obs_bins->GetBinLowEdge(i+1) << std::endl;
       last = m_obs_bins->GetBinLowEdge(i+1);
       used.push_back(true);
     }
     else { 
-      //      std::cout << "skip bin " << i << " : " << m_obs_bins->GetBinLowEdge(i) << " - " << m_obs_bins->GetBinLowEdge(i+1) << std::endl;
+      // std::cout << "skip bin " << i << " : " << m_obs_bins->GetBinLowEdge(i) << " - " << m_obs_bins->GetBinLowEdge(i+1) << std::endl;
       used.push_back(false);
     }
   }
@@ -2039,6 +2039,8 @@ void appl::grid::setRange(double lower, double upper, double xScaleFactor) {
   }
 
   std::cout << "grid::SetRange() bins chosen " << firstbin << " - " << lastbin << std::endl;
+
+  std::cout << "before setrange: " << m_obs_bins->GetNbinsX() << std::endl;
 
 
   /// copy the range of the reference histogram
@@ -2065,6 +2067,8 @@ void appl::grid::setRange(double lower, double upper, double xScaleFactor) {
     m_obs_bins->SetBinContent( i+1, contents[i] );
     m_obs_bins->SetBinError( i+1, errors[i] );
   }
+
+  std::cout << "after combine:  " << m_obs_bins->GetNbinsX() << std::endl;
 
   /// copy the igrids for the observable bins in the range 
 
@@ -2419,6 +2423,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
 
 void appl::grid::combineReference(bool force) { 
+  //  std::cout << "grid::combineReference() " << m_obs_bins->GetNbinsX();
 
   if ( m_combine.empty() ) return;
 
@@ -2428,6 +2433,8 @@ void appl::grid::combineReference(bool force) {
       m_obs_bins_combined = 0;
     }
   }
+
+  //  std::cout << "\tcombine " << m_obs_bins_combined << " " << m_obs_bins << std::endl;; 
 
   if ( m_obs_bins_combined && m_obs_bins_combined!=m_obs_bins) return; 
 
@@ -2463,6 +2470,8 @@ void appl::grid::combineReference(bool force) {
   }
 
   m_obs_bins_combined = h;
+
+  //  std::cout << " -> " << m_obs_bins->GetNbinsX() << std::endl;
   
 }
 

@@ -445,7 +445,7 @@ public:
 
 
   /// set the range of the observable bins, with an optional
-  /// scaling of the observable valuesfor channging units
+  /// scaling of the observable values for channging units
   void setBinRange(int ilower, int iupper, double xScaleFactor=1);
   void setRange(double lower, double upper, double xScaleFactor=1);
 
@@ -546,7 +546,11 @@ public:
   void shrink(const std::string& name, int ckmcharge=0);
 
   /// set bins to be combined after the convolution
-  void combine( std::vector<int>& v) { if ( (m_combine=v).size() ) combineReference(true); }
+  void combine( std::vector<int>& v) {
+    m_combine = v;
+    //    std::cout << "grid::combine(): " << v.size() << std::endl;
+    if ( m_combine.size() ) combineReference(true); 
+  }
 
   /// set combine the  be combined after the convolution
   void combineReference(bool force=false);
@@ -569,6 +573,28 @@ protected:
 		 int Nx=50,   double xmin=1e-5,     double xmax=0.9,         int xorder=3,
 		 int order=2, 
 		 std::string transform="f" );
+
+
+  int serialise( double& x1, double& x2, double& Q2, std::vector<double>& w, bool b=true ) {
+    static int i=0;
+    if ( b==true ) { 
+      i=0;
+      /// work out how many entries there are 
+      /// and return that
+      return 0;
+    }
+    /// iterate through every node, in every subprocess, in every 
+    /// observable bin
+    
+    /// get next entry
+
+    /// set x1, x2 etc ...
+
+
+    i++;
+
+    return i;
+  } 
   
 protected:
 

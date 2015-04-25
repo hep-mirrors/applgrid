@@ -1463,8 +1463,11 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) {
 	double dsigLO  = 0;
 	double dsigNLO = 0;
-	if ( m_grids[0][iobs]->ready() ) dsigLO  = m_grids[0][iobs]->xsec(); 
-	if ( m_grids[1][iobs]->ready() ) dsigNLO = m_grids[1][iobs]->xsec(); 
+	if ( m_grids[0][iobs]->ready() ) { 
+	  dsigLO  = m_grids[0][iobs]->xsec(); 
+	  dsigNLO = m_grids[0][iobs]->xsecNLO(); 
+	} 
+	if ( m_grids[1][iobs]->ready() ) dsigNLO += m_grids[1][iobs]->xsec(); 
 	double dsigma = dsigLO + dsigNLO;
 	double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
 	hvec.push_back( invNruns*Escale2*dsigma/deltaobs );

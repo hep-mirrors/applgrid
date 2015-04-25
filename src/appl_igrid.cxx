@@ -892,9 +892,11 @@ double appl::igrid::convolute(NodeCache* pdf0,
 
   m_conv_param.genpdf = genpdf;
 
-  m_conv_param.dsigma = 0;
+  m_conv_param.dsigma    = 0;
+  m_conv_param.dsigmaNLO = 0;
 
-  double dsigma  = 0; 
+  double dsigma    = 0; 
+  double dsigmaNLO = 0; 
 
 
 #ifndef PDFTHREAD
@@ -941,7 +943,8 @@ double appl::igrid::convolute(NodeCache* pdf0,
   if ( run_threads ) process();
   else               convolute_internal();
 
-  dsigma = m_conv_param.dsigma; 
+  dsigma    = m_conv_param.dsigma; 
+  dsigmaNLO = m_conv_param.dsigmaNLO; 
 
   return dsigma;
 }
@@ -973,7 +976,8 @@ void appl::igrid::convolute_internal() {
   //  const bool debug=false;  
 
 
-  double dsigma  = 0.; //, xsigma = 0.;
+  double dsigma    = 0.; //, xsigma = 0.;
+  double dsigmaNLO = 0.; //, xsigma = 0.;
 
 
 #ifdef PDFTHREAD
@@ -1048,7 +1052,8 @@ void appl::igrid::convolute_internal() {
   double  alphaplus2 = 0.;
 
 
-  m_conv_param.dsigma = 0;
+  m_conv_param.dsigma    = 0;
+  m_conv_param.dsigmaNLO = 0;
 
 
   // loop over the grid 
@@ -1101,7 +1106,7 @@ void appl::igrid::convolute_internal() {
 	    if ( rscale_factor!=1 ) { 
 	      // nlo relative ln mu_R^2 term 
 	      if (nloop==1)
-		dsigma+= alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
+		dsigmaNLO += alphaplus1*twopi*beta0*lo_order*log(rscale_factor*rscale_factor)*xsigma;
   	    }
 
 	    // factorisation scale dependent bit
@@ -1120,7 +1125,7 @@ void appl::igrid::convolute_internal() {
 	      }
 
 
-	      dsigma -= alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
+	      dsigmaNLO -= alphaplus1*log(fscale_factor*fscale_factor)*xsigma;
 	      //if (debug) 
               //cout <<name<<" fscale= " << fscale_factor << " dsigma= "<<dsigma << std::endl;
 	    }
@@ -1146,7 +1151,8 @@ void appl::igrid::convolute_internal() {
   // is done in grid::vconvolute. It would be better here, but is reduces 
   // the number of operations if in grid. 
 
-  m_conv_param.dsigma = dsigma;
+  m_conv_param.dsigma    = dsigma;
+  m_conv_param.dsigmaNLO = dsigmaNLO;
 
   //  double mytime = appl_timer_stop(mytimer);
 
@@ -1636,7 +1642,7 @@ void appl::igrid::run_thread() {
 
     //    std::cout << "thread " << this << " " << mname << " running ... " << std::endl; 
 
-    struct timeval mytimer = appl_timer_start();
+    //    struct timeval mytimer = appl_timer_start();
 
     /// put the actual convoluting steps in here  
     /// once round the colbolution step, it puts itself to 
@@ -1650,7 +1656,7 @@ void appl::igrid::run_thread() {
     /// after starting the processing step, the calling thread must 
     /// wait for all the threads to finish
 
-    double mytime = appl_timer_stop(mytimer);
+    //    double mytime = appl_timer_stop(mytimer);
 
     //    std::printf("thread done: param: %lf internal time %lf ms\n", m_conv_param.dsigma, mytime );
 

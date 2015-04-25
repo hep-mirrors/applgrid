@@ -101,6 +101,7 @@ private:
     /// output from thread
 
     double dsigma;
+    double dsigmaNLO;
 
   };
 
@@ -444,7 +445,8 @@ public:
   // ouput header
   std::ostream& header(std::ostream& s) const;
 
-  double xsec() const { return m_conv_param.dsigma; }
+  double xsec()    const { return m_conv_param.dsigma; }
+  double xsecNLO() const { return m_conv_param.dsigmaNLO; }
 
 
 private:

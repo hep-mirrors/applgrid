@@ -343,75 +343,44 @@ appl::igrid::~igrid() {
 
 
 
+
+double*** delete_array( double*** a, unsigned Nx, unsigned Ny ) { 
+  if ( a ) { 
+    for ( unsigned i=0 ; i<Nx ; i++ ) {
+      for ( unsigned j=0 ; j<Ny ; j++ )  delete[] a[i][j];
+      delete[] a[i];
+    }
+    delete[] a;
+  }
+  return 0;
+}
+
+
 // clean up internal pdf table (could be moved to local variable)
 void appl::igrid::deletepdftable() { 
 
   //  std::cout << "deleting pdf tables" << std::endl;
 
-  if ( m_fg1 ) { 
-    for ( int i=0 ; i<m_Ntau ; i++ ) {
-      for ( int j=0 ; j<Ny1() ; j++ )  delete[] m_fg1[i][j];
-      delete[] m_fg1[i];
-    }
-    delete[] m_fg1;
-    m_fg1=NULL;
-  }
-  
-  //  std::cout << "deleting splitting tables" << std::endl;
-
-  if ( m_fsplit1 ) { 
-    for ( int i=0 ; i<m_Ntau ; i++ ) {
-      for ( int j=0 ; j<Ny1() ; j++ )  delete[] m_fsplit1[i][j];
-      delete[] m_fsplit1[i];
-    }
-    delete[] m_fsplit1;
-    m_fsplit1=NULL;
-  }
-  if ( m_fsplit12 ) { 
-    for ( int i=0 ; i<m_Ntau ; i++ ) {
-      for ( int j=0 ; j<Ny1() ; j++ )  delete[] m_fsplit12[i][j];
-      delete[] m_fsplit1[i];
-    }
-    delete[] m_fsplit12;
-    m_fsplit12=NULL;
-  }
+  //  std::cout << "deleting pdf and splitting tables" << std::endl;
+  m_fg1       = delete_array( m_fg1,       m_Ntau, Ny1() );
+  m_fsplit1   = delete_array( m_fsplit1,   m_Ntau, Ny1() );
+  m_fsplit12  = delete_array( m_fsplit12,  m_Ntau, Ny1() );
+  //  m_fsplit111 = delete_array( m_fsplit111, m_Ntau, Ny1() );
 
   // if grid is symmetric, then don't need to deallocate 
   // x2 pdf values and splitting functions 
   if ( isSymmetric() ) { 
-    m_fg2=NULL;
-    m_fsplit2=NULL;
-    m_fg22=NULL;
-    m_fsplit22=NULL;
+    m_fg2       = 0;
+    m_fsplit2   = 0;
+    m_fsplit22  = 0;
+    //   m_fsplit211 = 0;
   }
   else { 
-    if ( m_fg2 ) { 
-      for ( int i=0 ; i<m_Ntau ; i++ ) {
-	for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fg2[i][j];
-	delete[] m_fg2[i];
-      }
-      delete[] m_fg2;
-      m_fg2=NULL;
-    }
-    
-    
-    //  std::cout << "deleting splitting tables" << std::endl;
-    if ( m_fsplit2 ) { 
-      for ( int i=0 ; i<m_Ntau ; i++ ) {
-	for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fsplit2[i][j];
-	delete[] m_fsplit2[i];
-      }
-      delete[] m_fsplit2;
-      m_fsplit2=NULL;
-    }
-    if ( m_fsplit22 ) { 
-      for ( int i=0 ; i<m_Ntau ; i++ ) {
-	for ( int j=0 ; j<Ny2() ; j++ )  delete[] m_fsplit22[i][j];
-	delete[] m_fsplit22[i];
-      }
-      delete[] m_fsplit22;
-      m_fsplit22=NULL;
-    }
+    //  std::cout << "deleting pdf and splitting tables" << std::endl;
+    m_fg2       = delete_array( m_fg2,       m_Ntau, Ny1() );
+    m_fsplit2   = delete_array( m_fsplit2,   m_Ntau, Ny1() );
+    m_fsplit22  = delete_array( m_fsplit22,  m_Ntau, Ny1() );
+    //    m_fsplit211 = delete_array( m_fsplit211, m_Ntau, Ny1() );
   }
 
   //  std::cout << "delete alphas table" << std::endl;
@@ -803,7 +772,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	    for ( int ip=0 ; ip<13 ; ip++ ) m_fg2[itau][iy][ip]=0; 
 	    if ( nloop>=1 && fscale_factor!=1 ) { 
 	      for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit2[itau][iy][ip] = 0;
-	      if (nloops==2)
+	      if (nloop==2)
 		for ( int ip=0 ; ip<13 ; ip++ ) m_fsplit22[itau][iy][ip] = 0;
 	    }
 	    continue; 
@@ -1052,11 +1021,10 @@ void appl::igrid::convolute_internal() {
   if ( nloop>=1 && fscale_factor!=1 ) { 
     HA  = new double[m_Nproc];  // generalised splitting functions
     HB  = new double[m_Nproc];  // generalised splitting functions
-    if (nloops == 2 )
-      {
-	HA2  = new double[m_Nproc];  // generalised splitting functions at NNLO
-	HB2  = new double[m_Nproc];  // generalised splitting functions at NNLO
-      }
+    if (nloop == 2 ) {
+      HA2  = new double[m_Nproc];  // generalised splitting functions at NNLO
+      HB2  = new double[m_Nproc];  // generalised splitting functions at NNLO
+    }
   }
   
   // cross section for this igrid  
@@ -1124,7 +1092,7 @@ void appl::igrid::convolute_internal() {
 	  }
 
 	  /// if want NLO part only, don't add in the born term
-	  if ( _nloop < 0 ) dsigma += _alphas*xsigma;
+	  if ( _nloop >= 0 ) dsigma += _alphas*xsigma;
 
 	  // now do the convolution for the variation of factorisation and 
 	  // renormalisation scales, proportional to the leading order weights

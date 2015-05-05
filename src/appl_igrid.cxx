@@ -1640,6 +1640,8 @@ void appl::igrid::run_thread() {
     /// supend immediately
     suspend();
 
+    if ( mterminate ) break;
+
     //    std::cout << "thread " << this << " " << mname << " running ... " << std::endl; 
 
     //    struct timeval mytimer = appl_timer_start();
@@ -1664,6 +1666,9 @@ void appl::igrid::run_thread() {
 
     //    std::cout << "thread " << this << " " << mname << " done [" << mytime << " ms" << "]" << std::endl; 
   }
+
+  suspend(false);
+  
 }
 
 

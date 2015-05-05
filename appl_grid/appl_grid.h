@@ -575,8 +575,7 @@ protected:
 		 std::string transform="f" );
 
 
-  //  int serialise( const double& x1, const double& x2, const double& Q2, const std::vector<double>& w, bool b=true ) const {
-  int serialise( const double& , const double& , const double& , const std::vector<double>& , bool b=true ) const {
+  int serialise( double& /*x1*/, double& /*x2*/, double& /*Q2*/, std::vector<double>& /*w*/, bool b=true ) {
     static int i=0;
     if ( b==true ) { 
       i=0;
@@ -590,7 +589,6 @@ protected:
     /// get next entry
 
     /// set x1, x2 etc ...
-
 
     i++;
 

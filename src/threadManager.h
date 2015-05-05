@@ -19,10 +19,10 @@ class threadManager {
 public:
 
   threadManager(const string& s="") : 
-    mname(s), mrunning(false), mprocessing(false) { } 
+    mname(s), mrunning(false), mprocessing(false), mterminate(false) { } 
   
   threadManager(const threadManager& t) : 
-    mname(t.mname), mrunning(false), mprocessing(false) { }   
+    mname(t.mname), mrunning(false), mprocessing(false), mterminate(false) { }   
 
   virtual void start_thread() {
 
@@ -56,8 +56,21 @@ public:
 
   }
   
-  virtual ~threadManager() { pthread_cancel(mthread); }
+  virtual ~threadManager() { 
+    if ( mrunning ) { 
+      //      std::cout << "cancelling thread " << mname << " " << this << " ..." << std::endl;
+      terminate();
+      
+      if ( this->ready() ) {  
+	/// do we need to cancel the thread if it has been told to 
+	/// finish and it has completed the processing?  
+	pthread_cancel(mthread); 
+	//	std::cout << "cancelled " << std::endl;
+      }
+    }
+  }
   
+
   void    name(const string& name) { mname = name; }  
   string  name() const             { return mname; }  
 
@@ -76,7 +89,7 @@ public:
 
 
 
-  void suspend() { 
+  void suspend(bool _wait=true) { 
     lock_proc();
 
     lock_run(); 
@@ -87,9 +100,8 @@ public:
     }
     unlock_run(); 
 
-    //    do {
-    wait_proc();
-    //  } while ( !mrunning );
+    if ( _wait ) wait_proc();
+
     unlock_proc();
   } 
   
@@ -105,6 +117,22 @@ public:
       return;
     }
     mprocessing=true; 
+    pthread_cond_signal(&proc_cv);
+    unlock_proc();
+  } 
+
+  void terminate() {
+    lock_proc(); 
+    if ( mprocessing ) { 
+      /// should never happen - any attempt to start the thread 
+      /// processing should immediately be followed by waiting for 
+      /// the thread to return itself to the suspended state   
+      std::cerr << "error: thread already processing" << std::endl;
+      unlock_proc(); 
+      return;
+    }
+    mprocessing = true;
+    mterminate  = true; 
     pthread_cond_signal(&proc_cv);
     unlock_proc();
   } 
@@ -145,6 +173,7 @@ protected:
   static void* manage(void* _this) {
     threadManager* me = (threadManager*)_this;
     me->run_thread();
+    ///    std::cout << "thread completed " << me << std::endl; 
     return 0;
   }
 
@@ -164,6 +193,7 @@ protected:
 protected:
 
   bool            mprocessing;
+  bool            mterminate;
 
   pthread_mutex_t proc_mux;
   pthread_cond_t  proc_cv;

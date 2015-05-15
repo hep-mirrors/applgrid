@@ -69,6 +69,13 @@ extern "C" void convolutewrap_(const int& id, double* data,
 			       double (*alphas)(const double& ) );
 
 
+extern "C" void convoluteppbar_(const int& id, double* data);
+
+extern "C" void convoluteppbarwrap_(const int& id, double* data, 
+				    void (*pdf)(const double& , const double&, double* ),
+				    double (*alphas)(const double& ) );
+
+
 /// allow different loop order
 extern "C" void convoluteorder_(const int& id, const int& nloops, double* data);
 

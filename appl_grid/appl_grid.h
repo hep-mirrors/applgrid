@@ -385,8 +385,9 @@ public:
   /// 1 loop, so take account of this 
   int  nloops() const { 
     if ( m_type!=AMCATNLO ) return m_order-1;
-    else if ( m_order>0 ) return 1;
-    else                  return 0;
+    //    else if ( m_order>0 ) return 1;
+    //    else                  return 0;
+    else return m_order;
   } 
 
   // find out which transform and which pdf combination are being used

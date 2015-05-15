@@ -203,6 +203,40 @@ void convolutewrap_(const int& id, double* data,
 
 
 
+/// for the pdf of an anti-particle given a pdf
+void (*_pdf)(const double& x, const double& Q, double* f) = 0;
+
+extern "C" void  antipdf(const double& x, const double& Q, double* f) { 
+  if ( _pdf!=0 ) { 
+    double xf[13];
+    _pdf( x, Q, xf );
+    for ( int i=0 ; i<13 ; i++ ) f[i] = xf[12-i]; 
+  }
+}
+
+
+
+void convoluteppbar_(const int& id, double* data) { 
+  convoluteppbarwrap_(id, data, fnpdf_, fnalphas_); 
+}
+
+
+void convoluteppbarwrap_(const int& id, double* data, 
+			 void (*pdf)(const double& , const double&, double* ),  
+			 double (*alphas)(const double& ) ) {  
+  std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
+  if ( gitr!=_grid.end() ) { 
+    _pdf = pdf;
+    appl::grid* g = gitr->second;
+    std::vector<double> v = g->vconvolute( pdf, antipdf, alphas, g->nloops() );
+    for ( unsigned i=0 ; i<v.size() ; i++ ) data[i] = v[i];
+    _pdf = 0;
+  }
+  else throw appl::grid::exception( std::cerr << "No grid with id " << id << std::endl );
+}
+
+
+
 
 void convoluteorder_(const int& id, const int& nloops, double* data) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);

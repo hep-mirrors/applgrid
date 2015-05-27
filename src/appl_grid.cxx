@@ -2159,7 +2159,7 @@ void appl::grid::addCorrection(TH1D* h, const std::string& label, double scale, 
 // find the number of words used for storage
 int appl::grid::size() const { 
     int _size = 0;
-    for( int iorder=0 ; iorder<2 ; iorder++ ) {
+    for( int iorder=0 ; iorder<m_order ; iorder++ ) {
       for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) _size += m_grids[iorder][iobs]->size();
     }
     return _size;

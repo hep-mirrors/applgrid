@@ -189,7 +189,7 @@ public:
     }
   }  
 
-  int ymin() { 
+  int ymin() const { 
     int minx = m_Ny;
     tsparse2d<T>** mvp = m_v;
     for ( int i=m_lx ; i<=m_ux ; i++ ) { 
@@ -199,7 +199,7 @@ public:
     return minx;
   }
 
-  int ymax() { 
+  int ymax() const { 
     int maxx = -1;
     tsparse2d<T>** mvp = m_v;
     for ( int i=m_lx ; i<=m_ux ; i++ ) { 
@@ -212,7 +212,7 @@ public:
   }
 
 
-  int zmin() { 
+  int zmin() const { 
     int minx = m_Nz;
     tsparse2d<T>** mvp = m_v;
     for ( int i=m_lx ; i<=m_ux ; i++ ) { 
@@ -222,7 +222,7 @@ public:
     return minx;
   }
 
-  int zmax() { 
+  int zmax() const { 
     int maxx = -1;
     tsparse2d<T>** mvp = m_v;
     for ( int i=m_lx ; i<=m_ux ; i++ ) { 

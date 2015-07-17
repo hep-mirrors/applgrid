@@ -318,9 +318,32 @@ public:
   double getx2min()   const { return fx(y2max()); }
   double getx2max()   const { return fx(y2min()); }
 
-  //  int    getNx()     const { return getNx1(); } 
-  //  double getxmin()   const { return getx2max(); }
-  //  double getxmax()   const { return getx1max(); }
+
+  /// limits on the *actual* filled nodes of the grids
+  int  itaufilledmin() const { return m_taufilledmin; }
+  int  itaufilledmax() const { return m_taufilledmax; }
+
+  int  iy1filledmin() const { return m_y1filledmin; }
+  int  iy1filledmax() const { return m_y1filledmax; }
+
+  int  iy2filledmin() const { return m_y2filledmin; }
+  int  iy2filledmax() const { return m_y2filledmax; }
+
+  /// tranformed the grid values back to x and Q2 limits
+  double x1filledmin() const { return getx1(iy1filledmax()); }
+  double x1filledmax() const { return getx1(iy1filledmin()); }
+
+  double x2filledmin() const { return getx2(iy2filledmax()); }
+  double x2filledmax() const { return getx2(iy2filledmin()); }
+
+  double Q2filledmin() const { return getQ2(itaufilledmax()); } 
+  double Q2filledmax() const { return getQ2(itaufilledmin()); } 
+	
+  /// transforms from grid node, to actual Q2 or x1, x2 values 
+  double getQ2( int itau ) const { return  fQ2(gettau(itau)); }
+
+  double getx1( int iy ) const { return fx(gety1(iy)); }
+  double getx2( int iy ) const { return fx(gety2(iy)); }
 
   /// these set the static class used to initialise the 
   /// local variables upon grid creation, since a value may 
@@ -631,6 +654,31 @@ private:
   /// communication with internal process
   conv_param m_conv_param;
 
+  /// limits on *actual* *filled* occupancy for this grid 
+  /// NOT just the limits of the grid itself, but the actual
+  /// limits of the filled portion as *indices* into the 
+  /// grid rather than actual values
+ 
+  /// NB:  calculate these when reading in grid, not defined 
+  ///      while filling grid 
+  
+  int m_taufilledmin;
+  int m_taufilledmax;
+
+  int  m_y1filledmin;
+  int  m_y1filledmax;
+
+  int  m_y2filledmin;
+  int  m_y2filledmax;
+
+public:
+
+  static void disable_threads(bool b=true) { threads_disabled = b; } 
+
+private: 
+
+  static bool threads_disabled;
+  
 };
 
 };

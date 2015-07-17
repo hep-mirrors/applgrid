@@ -41,7 +41,7 @@
 
 // variable tranformation parameters
 double appl::igrid::transvar = 5;
-
+bool   appl::igrid::threads_disabled = false;
 
 static int ithread = 0;
 
@@ -72,7 +72,10 @@ appl::igrid::igrid() :
   m_fg1(0),     m_fg2(0),
   m_fsplit1(0), m_fsplit2(0),
   m_fsplit12(0), m_fsplit22(0),
-  m_alphas(0) { 
+  m_alphas(0),
+  m_taufilledmin(-1),  m_taufilledmax(-1),
+  m_y1filledmin(-1),   m_y1filledmax(-1),
+  m_y2filledmin(-1),   m_y2filledmax(-1) { 
 
   //  std::cout << "igrid() (default) Ntau=" << m_Ntau << "\t" << fQ2(m_taumin) << " - " << fQ2(m_taumax) << std::endl;
 
@@ -101,8 +104,10 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_fsplit1(0), m_fsplit2(0),
   m_fsplit12(0), m_fsplit22(0),
   m_alphas(0),
-  m_DISgrid(disflag)   
-{
+  m_DISgrid(disflag),   
+  m_taufilledmin(-1),  m_taufilledmax(-1),
+  m_y1filledmin(-1),   m_y1filledmax(-1),
+  m_y2filledmin(-1),   m_y2filledmax(-1) {
   //  std::cout << "igrid::igrid() transform=" << m_transform << std::endl;
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
@@ -190,7 +195,10 @@ appl::igrid::igrid(const appl::igrid& g) :
   m_fg1(NULL),     m_fg2(NULL),
   m_fsplit1(NULL), m_fsplit2(NULL),
   m_fsplit12(NULL), m_fsplit22(NULL),
-  m_alphas(NULL)   
+  m_alphas(NULL),
+  m_taufilledmin(g.m_taufilledmin),  m_taufilledmax(g.m_taufilledmax),
+  m_y1filledmin(g.m_y1filledmin),    m_y1filledmax(g.m_y1filledmax),
+  m_y2filledmin(g.m_y2filledmin),    m_y2filledmax(g.m_y2filledmax)
 {
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
@@ -204,6 +212,17 @@ appl::igrid::igrid(const appl::igrid& g) :
 
   this->start_thread();
 }
+
+
+
+void setlimits( int& _min, int& _max, const int _mint, const int _maxt ) {  
+  if ( _mint<=_maxt ) { 
+    if ( _min==-1 || _min>_mint ) _min = _mint;
+    if ( _max==-1 || _max>_maxt ) _max = _maxt;
+  }
+}
+
+
 
 
 // read from a file 
@@ -225,7 +244,10 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_fg1(NULL),     m_fg2(NULL),
   m_fsplit1(NULL), m_fsplit2(NULL),    
   m_fsplit12(NULL), m_fsplit22(NULL),    
-  m_alphas(NULL) 
+  m_alphas(NULL), 
+  m_taufilledmin(-1),  m_taufilledmax(-1),
+  m_y1filledmin(-1),   m_y1filledmax(-1),
+  m_y2filledmin(-1),   m_y2filledmax(-1)
 { 
   //  std::cout << "igrid::igrid()" << std::endl;
   
@@ -314,6 +336,26 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
     // rawsize += m_weight[ip]->size();
     // m_weight[ip]->trim(); // trim the grid and do some book keeping
     // trimsize += m_weight[ip]->size();
+  }
+
+  /// now calculate the actual limits of this grid
+  
+  //  static double _ctime = 0;
+
+  if ( m_weight ) { 
+    //   struct timeval _tstart = appl_timer_start(); 
+    for ( int i=0 ; i<m_Nproc ; i++ ) {
+      const SparseMatrix3d* _weight = m_weight[i];
+      if ( _weight ) { 
+	if ( _weight->empty() ) continue;
+	setlimits( m_taufilledmin, m_taufilledmax,  _weight->xmin(),  _weight->xmax() ); 
+	setlimits( m_y1filledmin,  m_y1filledmax,   _weight->ymin(),  _weight->ymax() ); 
+	setlimits( m_y2filledmin,  m_y2filledmax,   _weight->zmin(),  _weight->zmax() ); 
+      }
+    }
+    //    double _time = appl_timer_stop( _tstart );
+    //    _ctime += _time; 
+    //    std::cout << "empty test timer " << _time << " ms" << " (cumulative time " << _ctime << " ms )" << std::endl; 
   }
 
   this->start_thread();
@@ -582,6 +624,9 @@ void appl::igrid::fill_index(const int ix1, const int ix2, const int iQ2, const 
 
 
 
+
+
+
 void appl::igrid::setuppdf(double (*alphas)(const double&),
 			   NodeCache* pdf0,
 			   NodeCache* pdf1,
@@ -590,6 +635,13 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 			   double fscale_factor,
 			   double beam_scale ) 
 {
+
+  /// if this igrid is empty, don't do anything 
+
+  if ( ( m_taufilledmin==-1 || m_taufilledmax==-1 ) ||
+       (  m_y1filledmin==-1 ||  m_y1filledmax==-1 ) ||
+       (  m_y2filledmin==-1 ||  m_y2filledmax==-1 ) ) return; 
+  
 
   int nloop = std::fabs(_nloop);
 
@@ -674,6 +726,8 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
   //  for ( int itau=m_Ntau ; itau-- ; ) {
   for ( int itau=0 ; itau<m_Ntau ; itau++  ) {
     
+    if ( itau<m_taufilledmin || itau>m_taufilledmax ) continue;
+
     double tau = gettau(itau);
     double Q2  = fQ2(tau);
     double Q   = std::sqrt(Q2); 
@@ -705,6 +759,8 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
     // y1 tables
     for ( int iy=n_y1 ; iy-- ;  ) { 
       
+      if ( iy<m_y1filledmin || iy>m_y1filledmax ) continue;
+
       double y = gety1(iy);
       double x = fx(y);
       double fun = 1;
@@ -749,18 +805,22 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
   if ( ( !isSymmetric() && !isDISgrid() ) || ( pdf1 && pdf1!=pdf0 ) ) {
     
     for ( int itau=0 ; itau<m_Ntau ; itau++  ) {
-    
+ 
+      if ( itau<m_taufilledmin || itau>m_taufilledmax ) continue;
+
       double tau = gettau(itau);
       double Q2  = fQ2(tau);
       double Q   = std::sqrt(Q2); 
-      
+
       /// alpha_s table has already been filled  
       /// m_alphas[itau] = alphas(rscale_factor*Q)*invtwopi;
       
       // y2 tables
       //    for ( int iy=iymin2 ; iy<=iymax2 ; iy++ ) { 
       for ( int iy=n_y2 ; iy-- ;  ) { 
-	
+
+	if ( iy<m_y2filledmin || iy>m_y2filledmax ) continue;
+		
 	double y = gety2(iy);
 	double x = fx(y);
 	double fun = 1;
@@ -778,7 +838,7 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
 	    continue; 
 	  }
 	}
-	
+
 	pdf1->evaluate(x, fscale_factor*Q, m_fg2[itau][iy]);
 	
 	double invx = 1/x;
@@ -846,8 +906,6 @@ void igrid::pdfinterp(double x, double Q2, double* f)
 #endif
 
 
-
-bool run_threads = true;
 
 
 // takes pdf as the pdf lib wrapper for the pdf set for the convolution.
@@ -940,8 +998,8 @@ double appl::igrid::convolute(NodeCache* pdf0,
 #endif
 
 
-  if ( run_threads ) process();
-  else               convolute_internal();
+  if ( threads_disabled ) convolute_internal();
+  else                    process();            
 
   dsigma    = m_conv_param.dsigma; 
   dsigmaNLO = m_conv_param.dsigmaNLO; 
@@ -1221,8 +1279,8 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
 
   
 
-  if ( run_threads ) process();
-  else               amc_convolute_internal();
+  if ( threads_disabled ) amc_convolute_internal();
+  else                    process();
 
   return m_conv_param.dsigma;
 }

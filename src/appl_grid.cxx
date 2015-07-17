@@ -52,6 +52,9 @@ std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
 }
 
 
+static bool appl_first = true;
+
+
 /// this is a compatability flag for persistent versions 
 /// of the grid
 /// NB: ONLY change the major version if the persistent 
@@ -70,7 +73,7 @@ std::string appl::grid::appl_version() const { return PACKAGE_VERSION; }
 
 // include hoppet splitting function code
 
-static hoppet_init* hoppet = 0;
+static appl::hoppet_init* hoppet = 0;
 
 void Splitting(const double& x, const double& Q, double* xf, int nLoops) {
   //  static const int nLoops    = 1;
@@ -276,6 +279,12 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_subproc(-1),
   m_bin(-1)
 {
+
+  if ( appl_first ) { 
+    appl_first = false;
+    std::cout << "appl::grid() version " << VERSION << " compiled " << __DATE__ << std::endl;
+  }
+  
   m_obs_bins_combined = m_obs_bins = 0;
 
   struct timeval tstart = appl_timer_start();
@@ -503,7 +512,13 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   if ( m_normalised && m_optimised ) m_read = true;
 
 
-  //  std::cout << "grid::grid() read obs bins" << std::endl;
+  ///  std::cout << "grid::grid() read obs bins" << std::endl;
+
+  /// also calculate maximum, values for Q2 and y=ln(1/x)
+  /// for hoppet initialisation
+
+  double _Q2max = 0;
+  double _xmin  = 2; // always bigger than 1
 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     //    std::cout << "grid::grid() iorder=" << iorder << std::endl;
@@ -515,10 +530,24 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
       m_grids[iorder][iobs] = new igrid(*gridfilep, name);
       m_grids[iorder][iobs]->setparent( this ); 
 
+      double x1 = m_grids[iorder][iobs]->x1filledmin();
+      double x2 = m_grids[iorder][iobs]->x1filledmin();
+      double Q2 = m_grids[iorder][iobs]->Q2filledmax();
+
+      if (  Q2>_Q2max ) _Q2max = Q2;
+      if (  x1<_xmin )   _xmin = x1;
+      if (  x2<_xmin )   _xmin = x2;
+
       //    _size += m_grids[iorder][iobs]->size();
       //      std::cout << "grid::grid() done" << std::endl;
     }
   }
+
+  if ( _Q2max>0 ) m_Qmax = std::sqrt(_Q2max);
+  if ( _xmin>0  ) m_ymax = std::log(1/_xmin);
+
+  //  std::cout << "Qmax " << m_Qmax << std::endl; 
+  //  std::cout << "ymax " << m_ymax << std::endl;
 
   //  d.pop();
 
@@ -1248,6 +1277,8 @@ void appl::grid::Write(const std::string& filename,
 }
 
 
+void appl::grid::disable_threads(bool b) { appl::igrid::disable_threads(b); }
+
 
 // takes pdf as the pdf lib wrapper for the pdf set for the convolution.
 // type specifies which sort of partons should be included:
@@ -1261,6 +1292,8 @@ std::vector<double> appl::grid::vconvolute(void (*pdf)(const double& , const dou
 { 
   return vconvolute( pdf, 0, alphas, nloops, rscale_factor, fscale_factor, Escale );
 }
+
+
 
 std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const double&, double* ), 
 					   void (*pdf2)(const double& , const double&, double* ), 
@@ -1303,14 +1336,72 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 #ifdef HAVE_HOPPET
   // check if we need to use the splitting function, and if so see if we 
   // need to initialise it again, and do so if required
+
+#if 0
+  for ( int ig=0 ; ig<m_order ; ig++ ) { 
+    for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ )  { 	
+      if ( m_grids[ig][iobs] ) { 
+	std::cout << "\tgrid limits " << iobs 
+		  << "\t x1min " << m_grids[ig][iobs]->getx1min() << " (" << std::log(1/m_grids[ig][iobs]->getx1min()) << ")"
+		  << "\t x1max " << m_grids[ig][iobs]->getx1max() << " (" << std::log(1/m_grids[ig][iobs]->getx1max()) << ")"
+		  << "\t x2min " << m_grids[ig][iobs]->getx2min() << " (" << std::log(1/m_grids[ig][iobs]->getx2min()) << ")"
+		  << "\t x2max " << m_grids[ig][iobs]->getx2max() << " (" << std::log(1/m_grids[ig][iobs]->getx2max()) << ")"
+		  << "\t Q2min " << m_grids[ig][iobs]->getQ2min() 
+		  << "\t Q2max " << m_grids[ig][iobs]->getQ2max() << std::endl;
+      }
+    }    
+  }
+#endif
+
   if ( fscale_factor!=1 || m_dynamicScale ) {
 
     if ( pdf2==0 || pdf1==pdf2 ) { 
+      
+      /// fixed and shared between 
+      /// all instances of the grid
+      static double Qmax = 26000;
+      static double ymax = 12; 
 
-      if ( hoppet == 0 ) { 
-	double Qmax = 15000;
-	if ( m_cmsScale>Qmax ) Qmax = m_cmsScale;
-	hoppet = new hoppet_init( Qmax );
+      //      double _xmin = xmin();
+      // double _ymax = std::log(1/_xmin);
+
+      double _ymax = ymax;
+
+      bool restart_hoppet = false;
+
+      /// Qmax limit needs to be recalulated
+      if ( m_cmsScale>Qmax ) { 
+	if ( hoppet ) restart_hoppet = true;
+	Qmax = m_cmsScale;
+      }
+
+      /// ymax limit needs to be recalculated
+      if ( _ymax>ymax ) { 
+	if ( hoppet ) restart_hoppet = true;
+
+	double dymax = (_ymax - ymax);
+
+	/// NB: this 0.1 is just dy from hoppet init - would be better to caluclate the values and set this in hoppet init
+	double iy = dymax/0.1; 
+
+	std::cout << "appl::grid changing hoppet yrange " << ymax << "\t" << iy << "\t" << (0.1+int(iy)*0.1) << std::endl;
+
+	/// make sure that we are on a dy integer multiple
+	if ( int(iy)!=iy )  ymax += 0.1+int(iy)*0.1;
+	else                ymax +=     int(iy)*0.1;
+      }
+
+      if ( hoppet && restart_hoppet ) { 
+	std::cout << "appl::grid deleting old hoppet" << std::endl;
+	delete hoppet;
+	hoppet = 0;
+      }  
+
+      if ( hoppet == 0 ) {  
+	std::cout << "appl::grid initialising hoppet" << std::endl;
+	//	double Qmax = 15000;
+	//	double ymax
+	hoppet = new appl::hoppet_init( Qmax, ymax );	
       } 
 
       bool newpdf = hoppet->compareCache( pdf1 );

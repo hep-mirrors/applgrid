@@ -634,6 +634,8 @@ public:
 
   int subproc() const { return m_subproc; }
 
+  static void disable_threads(bool b=true);
+
 protected:
 
   // histograms for saving the observable
@@ -704,6 +706,15 @@ protected:
   int  m_bin;
 
   std::vector<double> m_userdata;
+
+  /// limits on y=log(1/x) and Q=sqrt(Q2) - have as class 
+  /// variables, so we can calculate them once and for all 
+  /// when grid is read in 
+  /// NB: not definied for new grids that are still being 
+  ///     filled
+
+  double m_ymax;
+  double m_Qmax; 
 
 };
 

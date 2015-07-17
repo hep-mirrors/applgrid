@@ -325,6 +325,7 @@ private:
 
 // stream IO template
 template<class T>std::ostream& operator<<(std::ostream& s, const tsparse2d<T>& sp) { 
+#if 0
   for ( int i=0 ; i<sp.Nx() ; i++ ) { 
     for ( int j=0 ; j<sp.Ny() ; j++ ) { 
       s << sp(i,j) << "\t"; 
@@ -332,6 +333,16 @@ template<class T>std::ostream& operator<<(std::ostream& s, const tsparse2d<T>& s
     s << "\n";
   }
   return s;
+#else
+  for ( int i=0 ; i<sp.Nx() ; i++ ) { 
+    for ( int j=0 ; j<sp.Ny() ; j++ ) { 
+      if ( sp(i,j) ) s << "X";
+      else           s << ".";
+    }
+    s << "\n";
+  }
+  return s;
+#endif
 }
 
 

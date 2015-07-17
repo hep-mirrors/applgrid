@@ -61,8 +61,10 @@ public:
 
   bool operator==(int i) const { return size()==i; } 
 
-  int xmin() { return m_lx; } 
-  int xmax() { return m_ux; } 
+  int xmin() const { return m_lx; } 
+  int xmax() const { return m_ux; } 
+
+  bool empty() const { return ( m_ux<m_lx ); }
 
   // shouldn't really be in here, it's just for printing 
   static double mant(double x) { 

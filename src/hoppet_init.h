@@ -15,14 +15,14 @@
 #include <iostream>
 #include <vector>
 
-
+namespace appl { 
 
 class hoppet_init : public std::vector<double> {
 
 public:
 
   /// default maximum scale for hoppet initialisation
-  hoppet_init( double Qmax=15000 );
+  hoppet_init( double _Qmax=15000, double _ymax=12 );
 
   virtual ~hoppet_init();
 
@@ -34,10 +34,10 @@ public:
 
 };
 
+}
 
-
-inline std::ostream& operator<<( std::ostream& s, const hoppet_init& _h ) { 
-  return s << "hoppet_init size: " << _h.size();
+inline std::ostream& operator<<( std::ostream& s, const appl::hoppet_init& _h ) { 
+  return s << "appl::hoppet_init size: " << _h.size();
 }
 
 

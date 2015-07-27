@@ -55,6 +55,10 @@ public:
 
   int  decideSubProcess(const int iflav1, const int iflav2) const ;
 
+  size_t  nSubProcesses(const int iflav1, const int iflav2) const ;
+
+  std::vector<int> decideSubProcesses(const int iflav1, const int iflav2) const ;
+
   std::vector<int> serialise() const;
 
   void write(const std::string& filename) const;
@@ -89,7 +93,7 @@ private:
   //  bool m_amcflag;
 
   /// lookup table for decideSubprocess
-  std::vector<std::vector<int> >  m_lookup;
+  std::vector<std::vector<std::vector<int> > >  m_lookup;
 
 };
 

@@ -581,7 +581,11 @@ void appl::igrid::fill(const double x1, const double x2, const double Q2, const 
 	  //  } 
 	  //  else {
 
-	  //	  std::cout << "weight[" << ip << "]=" << weight[ip] << "\tfillweight=" << fillweight << std::endl;;
+	  //	  static int iw = 0;
+	  //	  if ( iw<1000 ) { 
+	  //	    std::cout << "weight[" << ip << "]=" << weight[ip] << "\tfillweight=" << fillweight << std::endl;;
+	  //	    iw++;
+	  //	  }
 
 	  (*m_weight[ip])(k3+i3, k1+i1, k2+i2) += fillweight;	  
 	  //  }	  

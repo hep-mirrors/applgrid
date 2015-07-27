@@ -108,6 +108,8 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   //  lumi_pdf* _pdf = dynamic_cast<lumi_pdf*>(appl::appl_pdf::getpdf(name()));
   //  std::cout << "done " << _pdf << _pdf->decideSubProcess( 0, 0 ) << std::endl;
 
+  std::cout << *this << std::endl;
+
 }
 
 
@@ -146,10 +148,10 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<combination>& combina
 void lumi_pdf::create_lookup() { 
   if ( m_lookup.size()==0 ) { 
     /// create a 13 x 13 lookup table 
-    m_lookup = std::vector<std::vector<int> >(13, std::vector<int>(13, -1) ); 
+    m_lookup = std::vector<std::vector<std::vector<int> > >(13, std::vector<std::vector<int> >(13) ); 
     for ( unsigned i=size() ; i-- ; ) { 
       const combination& c = m_combinations[i];
-      for ( unsigned j=c.size() ; j-- ; ) m_lookup[ c[j].first+6 ][ c[j].second+6 ] = i;
+      for ( unsigned j=c.size() ; j-- ; ) m_lookup[ c[j].first+6 ][ c[j].second+6 ].push_back(i);
     } 
   }
 }
@@ -175,9 +177,21 @@ void lumi_pdf::evaluate(const double* xfA, const double* xfB, double* H) {
 
 int  lumi_pdf::decideSubProcess(const int iflav1, const int iflav2) const { 
   //  std::cout << "lumi_pdf::decideSubProcess() " << name() << " " << m_lookup.size() << std::endl;
-  return m_lookup[iflav1+6][iflav2+6];
+  if ( m_lookup[iflav1+6][iflav2+6].size()==1 ) return m_lookup[iflav1+6][iflav2+6][0];
+  else                                          return -1;
 }
 
+
+size_t  lumi_pdf::nSubProcesses(const int iflav1, const int iflav2) const { 
+  //  std::cout << "lumi_pdf::decideSubProcess() " << name() << " " << m_lookup.size() << std::endl;
+  return m_lookup[iflav1+6][iflav2+6].size();
+}
+
+
+std::vector<int> lumi_pdf::decideSubProcesses(const int iflav1, const int iflav2) const { 
+  //  std::cout << "lumi_pdf::decideSubProcess() " << name() << " " << m_lookup.size() << std::endl;
+  return m_lookup[iflav1+6][iflav2+6];
+}
 
 
 std::vector<int> lumi_pdf::serialise() const { 

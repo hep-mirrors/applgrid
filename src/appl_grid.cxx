@@ -530,21 +530,25 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
       m_grids[iorder][iobs] = new igrid(*gridfilep, name);
       m_grids[iorder][iobs]->setparent( this ); 
 
-      double x1 = m_grids[iorder][iobs]->x1filledmin();
-      double x2 = m_grids[iorder][iobs]->x1filledmin();
-      double Q2 = m_grids[iorder][iobs]->Q2filledmax();
+      if (  !m_grids[iorder][iobs]->empty() ) { 
 
-      if (  Q2>_Q2max ) _Q2max = Q2;
-      if (  x1<_xmin )   _xmin = x1;
-      if (  x2<_xmin )   _xmin = x2;
+	double x1 = m_grids[iorder][iobs]->x1filledmin();
+	double x2 = m_grids[iorder][iobs]->x1filledmin();	
+	double Q2 = m_grids[iorder][iobs]->Q2filledmax();
+	
+	
+	if (  Q2>_Q2max ) _Q2max = Q2;
+	if (  x1<_xmin )   _xmin = x1;
+	if (  x2<_xmin )   _xmin = x2;
+      }
 
       //    _size += m_grids[iorder][iobs]->size();
       //      std::cout << "grid::grid() done" << std::endl;
     }
   }
 
-  if ( _Q2max>0 ) m_Qmax = std::sqrt(_Q2max);
-  if ( _xmin>0  ) m_ymax = std::log(1/_xmin);
+  if ( _Q2max>0 )           m_Qmax = std::sqrt(_Q2max);
+  if ( _xmin>0 && _xmin<2 ) m_ymax = std::log(1/_xmin);
 
   //  std::cout << "Qmax " << m_Qmax << std::endl; 
   //  std::cout << "ymax " << m_ymax << std::endl;

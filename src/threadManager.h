@@ -18,7 +18,7 @@ class threadManager {
 
 public:
 
-  threadManager(const string& s="") : 
+  threadManager(const string& s) : 
     mname(s), mrunning(false), mprocessing(false), mterminate(false) { } 
   
   threadManager(const threadManager& t) : 

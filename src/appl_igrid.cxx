@@ -191,11 +191,11 @@ appl::igrid::igrid(const appl::igrid& g) :
   m_reweight(g.m_reweight),
   m_symmetrise(g.m_symmetrise),
   m_optimised(g.m_optimised),
-  m_weight(NULL),
-  m_fg1(NULL),     m_fg2(NULL),
-  m_fsplit1(NULL), m_fsplit2(NULL),
-  m_fsplit12(NULL), m_fsplit22(NULL),
-  m_alphas(NULL),
+  m_weight(0),
+  m_fg1(0),     m_fg2(0),
+  m_fsplit1(0), m_fsplit2(0),
+  m_fsplit12(0), m_fsplit22(0),
+  m_alphas(0),
   m_taufilledmin(g.m_taufilledmin),  m_taufilledmax(g.m_taufilledmax),
   m_y1filledmin(g.m_y1filledmin),    m_y1filledmax(g.m_y1filledmax),
   m_y2filledmin(g.m_y2filledmin),    m_y2filledmax(g.m_y2filledmax)
@@ -218,7 +218,7 @@ appl::igrid::igrid(const appl::igrid& g) :
 void setlimits( int& _min, int& _max, const int _mint, const int _maxt ) {  
   if ( _mint<=_maxt ) { 
     if ( _min==-1 || _min>_mint ) _min = _mint;
-    if ( _max==-1 || _max>_maxt ) _max = _maxt;
+    if ( _max==-1 || _max<_maxt ) _max = _maxt;
   }
 }
 
@@ -227,6 +227,7 @@ void setlimits( int& _min, int& _max, const int _mint, const int _maxt ) {
 
 // read from a file 
 appl::igrid::igrid(TFile& f, const std::string& s) :
+  threadManager( label(ithread++) ), 
   mfy(0),  mfx(0),  
   m_parent(0),
   m_Ny1(0),   m_y1min(0),   m_y1max(0),   m_deltay1(0),   
@@ -240,23 +241,17 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_reweight(false),
   m_symmetrise(false),
   m_optimised(false),
-  m_weight(NULL), 
-  m_fg1(NULL),     m_fg2(NULL),
-  m_fsplit1(NULL), m_fsplit2(NULL),    
-  m_fsplit12(NULL), m_fsplit22(NULL),    
-  m_alphas(NULL), 
+  m_weight(0), 
+  m_fg1(0),     m_fg2(0),
+  m_fsplit1(0), m_fsplit2(0),    
+  m_fsplit12(0), m_fsplit22(0),    
+  m_alphas(0), 
   m_taufilledmin(-1),  m_taufilledmax(-1),
   m_y1filledmin(-1),   m_y1filledmax(-1),
   m_y2filledmin(-1),   m_y2filledmax(-1)
 { 
   //  std::cout << "igrid::igrid()" << std::endl;
   
-  // using the title of a TH1D because I don't know 
-  // how else to save a std::string in a root file 
-  // TH1D* _transform = (TH1D*)f.Get((s+"/Transform").c_str());
-  // m_transform = _transform->GetTitle();
-  // delete _transform;
- 
   // get the name of the transform pair
   TFileString _tag = *(TFileString*)f.Get((s+"/Transform").c_str());
   m_transform = _tag[0];
@@ -317,17 +312,18 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_weight = new SparseMatrix3d*[m_Nproc];
 
   for( int ip=0 ; ip<m_Nproc ; ip++ ) {
-    char name[128];  sprintf(name,"/weight[%i]", ip );
+    char _name[128];  sprintf(_name,"/weight[%i]", ip );
     // get storage histogram
-    TH3D* htmp = (TH3D*)f.Get((s+name).c_str()); 
+    TH3D* htmp = (TH3D*)f.Get((s+_name).c_str()); 
  
-    //    std::cout << "igrid::igrid() read " << name << std::endl;
+    //    std::cout << "igrid::igrid() read " << _name << std::endl;
 
     // create grid
     m_weight[ip]=new SparseMatrix3d(htmp);
 
     // save some space
     m_weight[ip]->trim();
+
     // delete storage histogram
     delete htmp;
 
@@ -352,13 +348,15 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
 	setlimits( m_y1filledmin,  m_y1filledmax,   _weight->ymin(),  _weight->ymax() ); 
 	setlimits( m_y2filledmin,  m_y2filledmax,   _weight->zmin(),  _weight->zmax() ); 
       }
+
     }
     //    double _time = appl_timer_stop( _tstart );
     //    _ctime += _time; 
     //    std::cout << "empty test timer " << _time << " ms" << " (cumulative time " << _ctime << " ms )" << std::endl; 
   }
-
+  
   this->start_thread();
+
 }
 
 
@@ -429,7 +427,7 @@ void appl::igrid::deletepdftable() {
 
   if ( m_alphas ) { 
     delete[] m_alphas;
-    m_alphas=NULL;
+    m_alphas=0;
   }
 }
 
@@ -442,7 +440,7 @@ void appl::igrid::deleteweights() {
   if ( m_weight ) { 
     for ( int ip=0 ; ip<m_Nproc ; ip++ ) if (m_weight[ip]) delete m_weight[ip];
     delete[] m_weight;
-    // m_weight=NULL;
+    // m_weight=0;
   }
 }
 
@@ -450,8 +448,8 @@ void appl::igrid::deleteweights() {
 
 
 // write to file
-void appl::igrid::write(const std::string& name) { 
-  Directory d(name);
+void appl::igrid::write(const std::string& _name) { 
+  Directory d(_name);
   d.push();
 
   // using a TH1D to store the transform pair tag since I don't know how 
@@ -497,7 +495,7 @@ void appl::igrid::write(const std::string& name) {
   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
 
     char hname[128];
-    //    sprintf(hname,"%s[%d]", name.c_str(), ip);
+    //    sprintf(hname,"%s[%d]", _name.c_str(), ip);
     sprintf(hname,"weight[%d]", ip);
 
     //    int oldsize = m_weight[ip]->size();
@@ -516,8 +514,8 @@ void appl::igrid::write(const std::string& name) {
   }
 
 #if 0
-  //    std::cout << name << " trimmed" << std::endl;
-  std::cout << name << "\tsize=" << igridsize << "\t-> " << igridtrimsize;
+  //    std::cout << _name << " trimmed" << std::endl;
+  std::cout << _name << "\tsize=" << igridsize << "\t-> " << igridtrimsize;
   if ( igridsize ) std::cout << "\t( " << igridtrimsize*100/igridsize << "% )";
   std::cout << std::endl;
 #endif
@@ -579,19 +577,10 @@ void appl::igrid::fill(const double x1, const double x2, const double Q2, const 
 	  //    if ( abs(k1+i1)<abs(k2+i2) )  (*m_weight[ip])(k3+i3, k2+i2, k1+i1) += fillweight;   
 	  //    else                          (*m_weight[ip])(k3+i3, k1+i1, k2+i2) += fillweight;  
 	  //  } 
-	  //  else {
-
-	  //	  static int iw = 0;
-	  //	  if ( iw<1000 ) { 
-	  //	    std::cout << "weight[" << ip << "]=" << weight[ip] << "\tfillweight=" << fillweight << std::endl;;
-	  //	    iw++;
-	  //	  }
 
 	  (*m_weight[ip])(k3+i3, k1+i1, k2+i2) += fillweight;	  
-	  //  }	  
-	  
+	 	  
 	  //	  m_weight[ip]->print();	  
-
 	  //	  m_weight[ip]->fill_fast(k3+i3, k1+i1, k2+i2) += fillweight/wfun;	  
 	}
       }
@@ -963,7 +952,6 @@ double appl::igrid::convolute(NodeCache* pdf0,
 
 #ifndef PDFTHREAD
 
-
   //char name[]="appl_grid:igrid::convolute(): ";
   //  static const double twopi = 2*M_PI;
   //  static const int nc = 3;
@@ -988,15 +976,11 @@ double appl::igrid::convolute(NodeCache* pdf0,
     size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
   }
 
-
-
   // grid is empty
   if ( size==0 )  return 0;
 
   int nloop = std::fabs(_nloop); 
 
-  // 
-  //  if ( m_fg1==NULL ) setuppdf(pdf);
   setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
 
 #endif
@@ -1058,7 +1042,10 @@ void appl::igrid::convolute_internal() {
   //  std::cout << "\torder=" << lo_order << "\tnloop=" << nloop << std::endl;
   // is the grid empty
   int size=0;
-  for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
+  for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
+    
+    if ( m_weight[ip]->empty() ) continue;
+
     if ( !m_weight[ip]->trimmed() )  {
       /// std::cerr << "igrid::convolute() naughty, naughty!" << std::endl;
       m_weight[ip]->trim();
@@ -1066,13 +1053,9 @@ void appl::igrid::convolute_internal() {
     size += m_weight[ip]->xmax() - m_weight[ip]->xmin() + 1;
   }
 
-
-
   // grid is empty
   if ( size==0 )  return;
 
-
-  //  if ( m_fg1==NULL ) setuppdf(pdf);
   setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
 
 #endif
@@ -1277,11 +1260,7 @@ double appl::igrid::amc_convolute(NodeCache* pdf0,
   // grid is empty
   if ( size==0 )  return 0;
 
-  // 
-  //  if ( m_fg1==NULL ) setuppdf(pdf);
-  setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);
-
-  
+  setuppdf( alphas, pdf0, pdf1, nloop, rscale_factor, fscale_factor, Escale);  
 
   if ( threads_disabled ) amc_convolute_internal();
   else                    process();
@@ -1648,8 +1627,8 @@ appl::igrid& appl::igrid::operator=(const appl::igrid& g) {
 
   m_tauorder = g.m_tauorder;
  
-  m_fg1      = NULL;
-  m_fg2      = NULL;
+  m_fg1      = 0;
+  m_fg2      = 0;
   
   //  construct();
 
@@ -1667,8 +1646,7 @@ appl::igrid& appl::igrid::operator=(const appl::igrid& g) {
 
 
 std::ostream& appl::igrid::header(std::ostream& s) const { 
-  //  s << "interpolation orders: x=" << g.yorder() << "\tQ2=" << g.tauorder() << std::endl;
-  
+  //  s << "interpolation orders: x=" << g.yorder() << "\tQ2=" << g.tauorder() << std::endl;  
   s << "\t x:  [ "  << std::setw(2) 
     //    << Ny1() << " ;\t" << std::setw(7) << fx(y1max())  << " - " << std::setw(7) << std::setprecision(6) << fx(y1min()) << "\t : " 
     //    << Ny2() << " ;\t" << std::setw(7) << fx(y2max())  << " - " << std::setw(7) << std::setprecision(6) << fx(y2min()) 

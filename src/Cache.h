@@ -121,6 +121,7 @@ public:
   }
   
 
+  void evaluate( const double& x, const double& Q2, std::vector<double>&  xf ) { evaluate( x, Q2, &xf[0] ); } 
 
 
   /// print some useful stats

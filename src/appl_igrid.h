@@ -233,7 +233,7 @@ public:
     }
     // exceeded maximum iterations 
     std::cerr << "_fx2() iteration limit reached y=" << y << std::endl; 
-    std::cout << "_fx2() iteration limit reached y=" << y << std::endl; 
+    //    std::cout << "_fx2() iteration limit reached y=" << y << std::endl; 
     return std::exp(-yp); 
   }
   
@@ -343,6 +343,7 @@ public:
   double getQ2( int itau ) const { return  fQ2(gettau(itau)); }
 
   double getx1( int iy ) const { return fx(gety1(iy)); }
+
   double getx2( int iy ) const { return fx(gety2(iy)); }
 
   /// these set the static class used to initialise the 
@@ -471,6 +472,16 @@ public:
   double xsec()    const { return m_conv_param.dsigma; }
   double xsecNLO() const { return m_conv_param.dsigmaNLO; }
 
+
+  /// is this grid actually empty
+
+  bool empty() const {
+    if ( m_weight==0 ) return true;
+    for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
+      if ( m_weight[ip] ) if ( !m_weight[ip]->empty() ) return false;
+    }
+    return true;
+  }
 
 private:
 
@@ -631,6 +642,7 @@ private:
 
   // pdf value table for convolution 
   // (NB: doesn't need to be a class variable)
+
   double*** m_fg1; 
   double*** m_fg2; 
 

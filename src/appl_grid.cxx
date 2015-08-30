@@ -1310,7 +1310,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
   NodeCache cache1( pdf1 );
   NodeCache cache2;
-
+ 
   cache1.reset();
 
   NodeCache* _pdf1 = &cache1;

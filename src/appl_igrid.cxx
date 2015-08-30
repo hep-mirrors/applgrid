@@ -215,7 +215,7 @@ appl::igrid::igrid(const appl::igrid& g) :
 
 
 
-void setlimits( int& _min, int& _max, const int _mint, const int _maxt ) {  
+void _setlimits( int& _min, int& _max, const int _mint, const int _maxt ) {  
   if ( _mint<=_maxt ) { 
     if ( _min==-1 || _min>_mint ) _min = _mint;
     if ( _max==-1 || _max<_maxt ) _max = _maxt;
@@ -338,27 +338,29 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   
   //  static double _ctime = 0;
 
+  setlimits();
+
+  this->start_thread();
+
+}
+
+
+
+
+void appl::igrid::setlimits() { 
   if ( m_weight ) { 
     //   struct timeval _tstart = appl_timer_start(); 
     for ( int i=0 ; i<m_Nproc ; i++ ) {
       const SparseMatrix3d* _weight = m_weight[i];
       if ( _weight ) { 
 	if ( _weight->empty() ) continue;
-	setlimits( m_taufilledmin, m_taufilledmax,  _weight->xmin(),  _weight->xmax() ); 
-	setlimits( m_y1filledmin,  m_y1filledmax,   _weight->ymin(),  _weight->ymax() ); 
-	setlimits( m_y2filledmin,  m_y2filledmax,   _weight->zmin(),  _weight->zmax() ); 
+	_setlimits( m_taufilledmin, m_taufilledmax,  _weight->xmin(),  _weight->xmax() ); 
+	_setlimits( m_y1filledmin,  m_y1filledmax,   _weight->ymin(),  _weight->ymax() ); 
+	_setlimits( m_y2filledmin,  m_y2filledmax,   _weight->zmin(),  _weight->zmax() ); 
       }
-
     }
-    //    double _time = appl_timer_stop( _tstart );
-    //    _ctime += _time; 
-    //    std::cout << "empty test timer " << _time << " ms" << " (cumulative time " << _ctime << " ms )" << std::endl; 
   }
-  
-  this->start_thread();
-
-}
-
+}    
 
 
 
@@ -729,8 +731,8 @@ void appl::igrid::setuppdf(double (*alphas)(const double&),
     m_alphas[itau] = alphas(rscale_factor*Q)*invtwopi;
 
     //    std::cout << itau << "\ttau " << tau 
-    //	      << "\tQ2 " << Q2 << "\tQ " << Q 
-    //	      << "\talphas " << m_alphas[itau] << std::endl; 
+    //    	    << "\tQ2 " << Q2 << "\tQ " << Q 
+    //   	    << "\talphas " << m_alphas[itau] << std::endl; 
 
 #if 0
     int iymin1 = m_weight[0]->ymin();
@@ -1087,7 +1089,8 @@ void appl::igrid::convolute_internal() {
   //TC   const int nf = 6;
   static const int nf = 5;
   static double beta0=(11.*nc - 2.*nf)/(6.*twopi);
-  static double beta1=(34.*nc*nc - 3.*(nc-1/nc)*nf - 10.*nc*nf)/(6.*twopi);
+  // not ready yet ...
+  // static double beta1=(34.*nc*nc - 3.*(nc-1/nc)*nf - 10.*nc*nf)/(6.*twopi);
   //const bool debug=false;  
 
   double alphas_tmp = 0.;  
@@ -1113,12 +1116,15 @@ void appl::igrid::convolute_internal() {
     //    for ( int iy1=0 ; iy1<Ny1() ; iy1++ ) {            
     //      for ( int iy2=0 ; iy2<Ny2() ; iy2++ ) { 
     for ( int iy1=Ny1() ; iy1-- ;  ) {            
+
       for ( int iy2=Ny2() ; iy2-- ;  ) { 
  	// test if this element is actually filled
 	// if ( !m_weight[0]->trimmed(itau,iy1,iy2) ) continue; 
 	bool nonzero = false;
 	// basic convolution order component for either the born level
 	// or the convolution of the nlo grid with the pdf 
+	
+
 	for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
 	  if ( (sig[ip] = (*(const SparseMatrix3d*)m_weight[ip])(itau,iy1,iy2)) ) nonzero = true;
 	}
@@ -1128,8 +1134,9 @@ void appl::igrid::convolute_internal() {
 
 	if ( nonzero ) { 	
 	  // build the generalised pdfs from the actual pdfs
+
 	  genpdf->evaluate( m_fg1[itau][iy1],  m_fg2[itau][iy2], H );
-	
+
 	  // do the convolution
           double xsigma=0.;
 
@@ -1182,7 +1189,6 @@ void appl::igrid::convolute_internal() {
   
   //if (debug)  std::cout << name<<"     convoluted dsigma=" << dsigma << std::endl; 
   
-
   delete[] sig;
   delete[] H;
   delete[] HA;

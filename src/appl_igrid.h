@@ -483,6 +483,8 @@ public:
     return true;
   }
 
+  void setlimits();
+
 private:
 
   // internal common construct for the different types of constructor

@@ -343,7 +343,8 @@ fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
     m_grid[irap]->symmetrise(true);
     m_grid[irap]->setCMSScale(Ecms);
     m_grid[irap]->setDocumentation(_docstring);
-    
+    //   m_grid[irap]->disable_threads(true);
+
     std::cout << "reading fastnlo grid: " << _docstring << std::endl; 
 
     for ( int ipt=0 ; ipt<Npt[irap] ; ipt++ ) {
@@ -432,11 +433,16 @@ fastnlo::fastnlo( const std::string& filename ) : m_manage_grids(true) {
 	      }
 	      ix++;
 	    }
+
 	  }
 	  // loops over x1, x2 and Q2 bins
 	  
 	} // Nsubproc
+
+	g->setlimits();
+
       }
+
 
       ibin++;	
       

@@ -101,3 +101,12 @@ double combination::evaluate( const double* xfA, const double* xfB,
   return H;
 }
 
+
+
+bool combination::operator==( const combination& c ) const { 
+  if ( size()!=c.size() ) return false;
+  for ( int i=size() ; i-- ; ) { 
+    if ( (*this)[i]!=c[i] ) return false; 
+  }
+  return true;
+} 

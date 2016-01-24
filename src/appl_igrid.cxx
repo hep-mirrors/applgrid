@@ -1406,15 +1406,14 @@ bool appl::igrid::shrink( const std::vector<int>& keep ) {
    
 void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {     
 
-  std::cout << "\tsize(untrimmed)=" << m_weight[0]->size();
+  //  std::cout << "\tsize(untrimmed)=" << m_weight[0]->size();
 
   //  std::cout << "ymin=" << gety(0) << "\tymax=" << gety(m_Ny-1) 
   //       << "\txmin=" << fx(gety(m_Ny-1)) << "\txmax=" << fx(gety(0)) << std::endl;
 
   for ( int i=0 ; i<m_Nproc ; i++ )  m_weight[i]->trim();
 
-  std::cout << "\tsize(trimmed)=" << m_weight[0]->size() << std::endl;
-
+  //  std::cout << "\tsize(trimmed)=" << m_weight[0]->size() << std::endl;
 
 #if 1
 

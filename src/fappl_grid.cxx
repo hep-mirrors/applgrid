@@ -58,7 +58,8 @@ void bookgrid_(int& id, const int& Nobs, const double* binlims)
 }
 
 
-void readgrid_(int& id, const char* s) {
+void readgrid_(int& id, const char* _s, int _len) {
+  std::string s(_s,0,_len);
   id = idcounter++;
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr==_grid.end() ) { 
@@ -321,9 +322,10 @@ void escalefullconvolute_(const int& id, double* data,
 }
 
 
-void writegrid_(const int& id, const char* s) { 
+void writegrid_(const int& id, const char* _s, int _len) {
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) { 
+    std::string s(_s,0,_len);
     std::cout << "writegrid_() writing " << s << "\tid " << id << std::endl;
     appl::grid* g = gitr->second;
     g->trim();
@@ -350,7 +352,9 @@ void fillgrid_(const int& id,
 }
 
 
-void readfastnlogrids_( int* ids, const char* s ) { 
+void readfastnlogrids_( int* ids, const char* _s, int _len ) { 
+
+  std::string s(_s,0,_len);
 
   /// create the fastnlo grids
   fastnlo f(s);

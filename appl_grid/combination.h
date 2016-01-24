@@ -62,6 +62,8 @@ public:
   cpair&       operator[](int i)       { return m_pairs[i]; } 
   const cpair& operator[](int i) const { return m_pairs[i]; } 
 
+  bool operator==( const combination& c ) const;
+
 private:
 
   /// actually construct combination from the pair list
@@ -77,22 +79,22 @@ private:
   
   std::vector<cpair> m_pairs;
 
-  static int         gindex;
+  //  static int         gindex;
   
 };
 
 
 
 
-inline std::ostream& operator<<( std::ostream& s, const combination& _c ) { 
-  s << "[ " << _c.index() << " : ";
-  if ( _c.size()>10 ) { 
-    for ( int i=0 ; i<4 ; i++ ) s << "\t(" << _c[i].first << ", " << _c[i].second << ")";
+inline std::ostream& operator<<( std::ostream& s, const combination& c ) { 
+  s << "[ " << c.index() << " : ";
+  if ( c.size()>10 ) { 
+    for ( int i=0 ; i<4 ; i++ ) s << "\t(" << c[i].first << ", " << c[i].second << ")";
     s << "\t  ... ";
-    for ( unsigned i=_c.size()-3 ; i<_c.size() ; i++ ) s << "\t(" << _c[i].first << ", " << _c[i].second << ")";
+    for ( unsigned i=c.size()-3 ; i<c.size() ; i++ ) s << "\t(" << c[i].first << ", " << c[i].second << ")";
   }
   else { 
-    for ( unsigned i=0 ; i<_c.size() ; i++ ) s << "\t(" << _c[i].first << ", " << _c[i].second << ")";
+    for ( unsigned i=0 ; i<c.size() ; i++ ) s << "\t(" << c[i].first << ", " << c[i].second << ")";
   }
   s << " ]";
   return s;

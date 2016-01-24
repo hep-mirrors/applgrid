@@ -21,7 +21,9 @@
 
 
 lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) : // , int Wcharge ) :  //, bool amcflag ) : 
-  appl_pdf(s), m_filename(s) //,  m_amcflag(amcflag)
+  appl_pdf(s), m_filename(s), 
+  m_lookup( std::vector<std::vector<std::vector<int> > >(0) ) 
+  //,  m_amcflag(amcflag)
 {
   
   /// need to decode the input std::vector
@@ -54,9 +56,9 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
     if ( iv<combinations.size() ) m_ckmcharge = combinations[iv];
 
   }
-  else { 
+  else if ( m_filename!="" ) {  
     /// else read from file ...
-    
+  
     std::ifstream& infile = openpdf( m_filename  );
 
     /// will never fail, appl_pdf::open() would have thrown already
@@ -108,7 +110,7 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   //  lumi_pdf* _pdf = dynamic_cast<lumi_pdf*>(appl::appl_pdf::getpdf(name()));
   //  std::cout << "done " << _pdf << _pdf->decideSubProcess( 0, 0 ) << std::endl;
 
-  std::cout << *this << std::endl;
+  //  std::cout << *this << std::endl;
 
 }
 
@@ -117,7 +119,8 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
 
 
 lumi_pdf::lumi_pdf(const std::string& s, const std::vector<combination>& combinations, int ckmcharge ) : 
-  appl_pdf(s), m_filename(s), m_combinations(combinations)
+  appl_pdf(s), m_filename(s), m_combinations(combinations),
+  m_lookup( std::vector<std::vector<std::vector<int> > >(0) ) 
 {
   
   //  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tv size " << combinations.size() << " lookup size " << m_lookup.size() << " " << this << std::endl; 

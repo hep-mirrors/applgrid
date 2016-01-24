@@ -2007,9 +2007,9 @@ void appl::grid::optimise(bool force) {
   if ( !force && m_optimised ) return;
   m_optimised = true;
   m_read = false;
+  std::cout << "grid::optimise() " << std::endl;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ )  { 
-      std::cout << "grid::optimise() bin " << iobs << "\t";
       m_grids[iorder][iobs]->optimise();
     }
   }
@@ -2327,7 +2327,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
  
     for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
       
-      //      std::cout << "shrink() order: " << iorder << "\t obs: " << iobs;
+      std::cout << "shrink() order: " << iorder << "\t obs: " << iobs;
       
       igrid* ig = m_grids[iorder][iobs];
     
@@ -2353,7 +2353,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	  continue;
 	}
 
-	//	std::cout << i << " : ";
+	std::cout << i << " : ";
 
 	keep[iorder].push_back( i );
 
@@ -2373,7 +2373,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	    continue;
 	  }
 	  
-	  //	  std::cout << "\t" << j << ":" << jsize;
+	  std::cout << "\t" << j << ":" << jsize;
 	   
 	  if ( (*ig->weightgrid(i)) == (*ig->weightgrid(j)) ) { 
 	    //  std::cout << "!"; 
@@ -2382,7 +2382,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	  }
 
 	}
-	//	std::cout << std::endl;
+       	std::cout << std::endl;
 
 	same.insert( std::map< int, std::vector<int> >::value_type( i, vec ) );
 
@@ -2390,8 +2390,6 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
 
       if ( same.empty() ) continue;
-
-
 
       std::map< int, std::vector<int> >::iterator itr  = same.begin();
       std::map< int, std::vector<int> >::iterator iend = same.end();
@@ -2468,8 +2466,8 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
     
       if ( pdf_combinations[ipdf].size()>0 ) {
 	if ( pdf_combinations[ipdf]!=pdf_combinations[ipdf-1] ) { 
-	  /// std::cout << "pdfs " << ipdf << " and " << ipdf-1 << " don't match" << std::endl; 
-	  //		    << lumi_pdf("duff.config", pdf_combinations[ipdf]) 
+	  std::cout << "pdfs " << ipdf << " and " << ipdf-1 << " don't match" << std::endl; 
+	  // << lumi_pdf("duff.config", pdf_combinations[ipdf]) 
 	  common = false;
 	}  
       } 
@@ -2502,7 +2500,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
   
   for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
     for( int iorder=0 ; iorder<2 ; iorder++ ) {
-      //      std::cout << "appl::grid::shrink()  obs " << iobs << "\torder " << iorder << std::endl;       
+      std::cout << "appl::grid::shrink()  obs " << iobs << "\torder " << iorder << std::endl;       
       m_grids[iorder][iobs]->shrink( keep[iorder] );
     }
   }

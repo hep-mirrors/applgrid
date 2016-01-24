@@ -556,6 +556,7 @@ int main(int argc, char** argv) {
     std::cout << argv[0] << ": optimised grid in " << topt << " ms" << std::endl;   
   }
 
+
   //  std::cout << "writing " << output_grid << std::endl;
   g.Write(output_grid);
 

@@ -67,13 +67,18 @@ public:
 
   //  std::string summary(std::ostream& s=std::cout) const; 
   std::string summary() const; 
-  
-private:
+
+  // private:
 
   /// add a combination
-  void add(const combination& c) {  m_combinations.push_back(c); }
+  void add(const combination& c) {  
+    m_combinations.push_back(c);
+    m_Nproc = m_combinations.size();
+  }
 
   void create_lookup();
+  
+  void clear_lookup() { m_lookup.clear(); } 
 
 private:
 

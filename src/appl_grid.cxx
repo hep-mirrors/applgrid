@@ -607,10 +607,12 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   trim();
 
   double tstop2 = appl_timer_stop( tstart2 );
+ 
+  unsigned tsize = size();
 
   std::cout << "appl::grid() read grid, size ";
-  if ( usize>1024*10 ) std::cout << usize/1024/1024 << " MB";
-  else                 std::cout << usize/1024      << " kB";
+  if ( usize>1024*10 ) std::cout << usize/1024./1024. << " MB";
+  else                 std::cout << usize/1024.      << " kB";
   std::cout << "\tin " << tstop << " ms";
 
   std::cout << "\ttrim in " << tstop2 << " ms" << std::endl;
@@ -2308,7 +2310,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
   std::string genpdfname="";
 
-  std::vector<int> keep[2];
+  std::vector<std::vector<int> > keep(m_order);
 
   bool found = false;
 
@@ -2327,7 +2329,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
  
     for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
       
-      std::cout << "shrink() order: " << iorder << "\t obs: " << iobs;
+      //      std::cout << "shrink() order: " << iorder << "\t obs: " << iobs;
       
       igrid* ig = m_grids[iorder][iobs];
     
@@ -2353,7 +2355,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	  continue;
 	}
 
-	std::cout << i << " : ";
+	//	std::cout << i << " : ";
 
 	keep[iorder].push_back( i );
 
@@ -2373,7 +2375,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	    continue;
 	  }
 	  
-	  std::cout << "\t" << j << ":" << jsize;
+	  // std::cout << "\t" << j << ":" << jsize;
 	   
 	  if ( (*ig->weightgrid(i)) == (*ig->weightgrid(j)) ) { 
 	    //  std::cout << "!"; 
@@ -2382,7 +2384,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 	  }
 
 	}
-       	std::cout << std::endl;
+	//	std::cout << std::endl;
 
 	same.insert( std::map< int, std::vector<int> >::value_type( i, vec ) );
 
@@ -2391,10 +2393,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
 
       if ( same.empty() ) continue;
 
-      std::map< int, std::vector<int> >::iterator itr  = same.begin();
-      std::map< int, std::vector<int> >::iterator iend = same.end();
-
-      for ( int ik=0 ; ik<m_order ; ik++ ) std::cout << m_genpdf[iorder]->name() << std::endl;
+      //      for ( int ik=0 ; ik<m_order ; ik++ ) std::cout << m_genpdf[iorder]->name() << std::endl;
 
       lumi_pdf*  _pdf = 0;
       if ( m_genpdf[iorder]->name().find(".config")!=std::string::npos ){ 
@@ -2408,6 +2407,10 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
       std::vector<combination> combinations;
 
       int i=0;
+
+      std::map< int, std::vector<int> >::iterator itr  = same.begin();
+      std::map< int, std::vector<int> >::iterator iend = same.end();
+
       while ( itr!=iend ) { 
 
 	std::vector<int>& v = itr->second;
@@ -2456,7 +2459,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
       pdf_combinations.push_back( newpdf.serialise() );
       
       //      std::cout << newpdf << std::endl;
- 
+
       if ( found ) break;
 
     }
@@ -2499,8 +2502,8 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
   /// loop over the igrids, telling each grid which processes to keep
   
   for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
-    for( int iorder=0 ; iorder<2 ; iorder++ ) {
-      std::cout << "appl::grid::shrink()  obs " << iobs << "\torder " << iorder << std::endl;       
+    for( int iorder=0 ; iorder<m_order ; iorder++ ) {
+      //      std::cout << "appl::grid::shrink()  obs " << iobs << "\torder " << iorder << std::endl;       
       m_grids[iorder][iobs]->shrink( keep[iorder] );
     }
   }

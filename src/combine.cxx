@@ -30,17 +30,17 @@ int usage(std::ostream& s, int argc, char** argv) {
   s << "Configuration: \n";
   s << "    -o filename   \t name of output grid (filename required)\n\n";
   s << "Options: \n";
-  s << "    -g, --gscale  value\t rescale output grid by value, \n";
-  s << "    -r, --rscale  value\t rescale reference histogram by value, \n";
-  s << "    -s, --scale   value\t rescale both output grid and reference histogram by value\n";
+  s << "    -g, --gscale   value\t rescale output grid by value, \n";
+  s << "    -r, --rscale   value\t rescale reference histogram by value, \n";
+  s << "    -s, --scale    value\t rescale both output grid and reference histogram by value\n";
   //  s << "    -a, --all     \tadd all grids (default)\n";
-  s << "    -w, --wscale  value\t rescale the weight normalisation for the output grid\n";
-  s << "        --weight  value\t set the value of the weight normalisation for the output grid directly\n";
-  s << "        --optimise     \t optimise the output grid\n";
-  s << "        --compress     \t try to reduce the number of parton luminosity\n"
-    << "                       \t combinations\n";
-  s << "    -c, --chi2    value\t if set, exclude grids with a chi2 with respect\n"
-    << "                       \t to the median larger than value\n";
+  s << "    -w, --wscale   value\t rescale the weight normalisation for the output grid\n";
+  s << "        --weight   value\t set the value of the weight normalisation for the output grid directly\n";
+  s << "        --optimise      \t optimise the output grid\n";
+  s << "        --compress value\t try to reduce the number of parton luminosity\n"
+    << "                        \t combinations\n";
+  s << "    -c, --chi2     value\t if set, exclude grids with a chi2 with respect\n"
+    << "                        \t to the median larger than value\n";
   s << "        --verbose  \t display grid documentation during add\n";
   s << "    -v, --version  \t displays the APPLgrid version\n";
   s << "    -h, --help     \t display this help\n";
@@ -370,19 +370,25 @@ int main(int argc, char** argv) {
   std::vector<std::string>::iterator gitr=grids.begin();
   while ( gitr!=grids.end()  ) { 
     TFile f(gitr->c_str());
-    TH1D* _h = (TH1D*)f.Get("grid/reference");
+    TH1D* h_ = (TH1D*)f.Get("grid/reference");
+
 
     /// remove obvious non-grid files
-    if ( _h ) { 
-      _h->SetDirectory(0);
-      ref.push_back(_h);
+    if ( h_ ) { 
+      h_->SetDirectory(0);
+      TH1D* h = (TH1D*)h_->Clone();
+      h->SetDirectory(0);
+      ref.push_back(h);
+      delete h_;
       gitr++;
     }
     else {
       grids.erase( gitr );
     }
+    f.Close();
   }
 
+  std::cout << "main() read reference histograms" << std::endl;
 
   if ( ref.empty() ) { 
     std::cerr << "grid list empty " << std::endl;
@@ -393,6 +399,8 @@ int main(int argc, char** argv) {
   
   if ( grids.size()==1 ) addall = true;
     
+
+
   if ( !addall ) { 
 
     /// now get cross section measures and the rms, medians etc
@@ -460,6 +468,8 @@ int main(int argc, char** argv) {
     newgrids = grids;
   }
   
+  std::cout << "newgrids.empty() " << newgrids.empty() << std::endl;
+
   if ( newgrids.empty() ) return 0;
 
   grids = newgrids;

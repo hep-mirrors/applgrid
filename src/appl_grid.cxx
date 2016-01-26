@@ -608,8 +608,6 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   double tstop2 = appl_timer_stop( tstart2 );
  
-  unsigned tsize = size();
-
   std::cout << "appl::grid() read grid, size ";
   if ( usize>1024*10 ) std::cout << usize/1024./1024. << " MB";
   else                 std::cout << usize/1024.      << " kB";

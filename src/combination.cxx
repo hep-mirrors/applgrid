@@ -28,7 +28,7 @@ combination::combination(const std::vector<int>& v) {
 }
 
 
-combination::combination(const std::string& line) : m_index(-1), m_size(0) { 
+combination::combination(const std::string& line) : m_size(0) { 
 
   //  std::cout << "combination::combination() std::string " << line << std::endl;
 
@@ -54,7 +54,7 @@ void combination::construct(const std::vector<int>& v) { // : m_index(v.at(0)), 
 
   //  if ( v.size()<4 || v.size()%2!=0 ) throw appl::appl_pdf::exception("not enough entries for combination");
 
-  m_index = v[0];
+  m_index.push_back( v[0] );
   m_size  = v[1];
 
   for ( unsigned i=2 ; i<v.size() ; i+=2 ) { 

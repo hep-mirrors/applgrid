@@ -23,6 +23,8 @@
 #ifndef  LUMI_PDF_H
 #define  LUMI_PDF_H
 
+#include <vector>
+#include <map>
 #include <iostream>
 
 #include "appl_grid/appl_pdf.h" 
@@ -52,12 +54,18 @@ public:
   //  bool initialised() const { return m_initialised; }
 
   const combination& operator[](int i) const { return m_combinations.at(i); }  
+  const combination& at(int i)         const { return m_combinations.at(i); }  
+  combination&       at(int i)               { return m_combinations.at(i); }  
 
   int  decideSubProcess(const int iflav1, const int iflav2) const ;
 
   size_t  nSubProcesses(const int iflav1, const int iflav2) const ;
 
   std::vector<int> decideSubProcesses(const int iflav1, const int iflav2) const ;
+
+
+  int  decideSubProcess(const int iproc ) const;
+
 
   std::vector<int> serialise() const;
 
@@ -80,6 +88,8 @@ public:
   
   void clear_lookup() { m_lookup.clear(); } 
 
+  void removeDuplicates();
+
 private:
 
   /// this might eventually become a std::string encoding the grid
@@ -99,6 +109,9 @@ private:
 
   /// lookup table for decideSubprocess
   std::vector<std::vector<std::vector<int> > >  m_lookup;
+
+  /// NNLO code process lookup 
+  std::map<int, int>  m_proclookup;
 
 };
 

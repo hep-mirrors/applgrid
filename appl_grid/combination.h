@@ -52,7 +52,9 @@ public:
   /// do any of these remaining need to be public?
 
   /// index
-  int    index()     const { return m_index; }
+  const std::vector<int>&  index()  const { return m_index; }
+
+  void add_index( int i )  { m_index.push_back(i); }
 
   /// accessors to the pairs themselves
   cpair  pair(int i) const { return m_pairs[i]; }
@@ -74,7 +76,7 @@ private:
 
 private:
 
-  int                m_index;
+  std::vector<int>   m_index;
   unsigned           m_size;
   
   std::vector<cpair> m_pairs;
@@ -87,7 +89,9 @@ private:
 
 
 inline std::ostream& operator<<( std::ostream& s, const combination& c ) { 
-  s << "[ " << c.index() << " : ";
+  s << "[ (";
+  for ( unsigned ic=0 ; ic<c.index().size() ; ic++ ) s << " " << c.index()[ic]; 
+  s << ") : ";
   if ( c.size()>10 ) { 
     for ( int i=0 ; i<4 ; i++ ) s << "\t(" << c[i].first << ", " << c[i].second << ")";
     s << "\t  ... ";

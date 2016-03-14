@@ -150,17 +150,33 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<combination>& combina
 
 void lumi_pdf::create_lookup() { 
   if ( m_lookup.size()==0 ) { 
-    /// create a 13 x 13 lookup table 
-    m_lookup = std::vector<std::vector<std::vector<int> > >(13, std::vector<std::vector<int> >(13) ); 
+    /// create a 14 x 14 lookup table (including a photon contribution! 
+    m_lookup = std::vector<std::vector<std::vector<int> > >(14, std::vector<std::vector<int> >(14) ); 
     for ( unsigned i=size() ; i-- ; ) { 
       const combination& c = m_combinations[i];
       for ( unsigned j=c.size() ; j-- ; ) m_lookup[ c[j].first+6 ][ c[j].second+6 ].push_back(i);
     } 
   }
+
+  m_proclookup.clear();
+
+  for ( unsigned i=size() ; i-- ; ) { 
+    const combination& c = m_combinations[i];
+    for ( unsigned j=c.index().size() ; j-- ; ) { 
+      std::map<int,int>::iterator itr = m_proclookup.find(c.index()[j]);
+      if ( itr==m_proclookup.end() ) m_proclookup.insert( std::map<int,int>::value_type( c.index()[j], i ) );
+    }
+  } 
+  
 }
 
 
 
+int lumi_pdf::decideSubProcess(const int iproc ) const {
+  std::map<int,int>::const_iterator itr = m_proclookup.find(iproc);
+  if ( itr==m_proclookup.end() ) return -1;
+  else return itr->second;
+}
 
 
 void lumi_pdf::evaluate(const double* xfA, const double* xfB, double* H) { 
@@ -230,7 +246,7 @@ void lumi_pdf::write(std::ostream& s) const {
 
   for ( unsigned i=0 ; i<m_combinations.size() ; i++ ) { 
     s << m_combinations[i].index() << " ";
-    s << m_combinations[i].size() << " ";
+    s << m_combinations[i].size()  << " ";
 
     for ( unsigned j=0 ; j<m_combinations[i].size() ; j++ ) { 
       s << "  " << m_combinations[i][j].first << " " << m_combinations[i][j].second;
@@ -255,3 +271,30 @@ std::string lumi_pdf::summary() const {
   s << "lumi_pdf::lumi_pdf() " << s << "\tsize " << m_combinations.size() << " lookup size " << m_lookup.size() << " " << this; 
   return s.str();
 }
+
+
+
+void lumi_pdf::removeDuplicates() { 
+
+  std::vector<combination> combinations;
+
+  for ( unsigned i=0 ; i<size() ; i++ ) {
+    bool unique = true;
+    for ( unsigned j=0 ; j<combinations.size() ; j++ ) {
+      if ( at(i) == combinations[j] ) {
+	unique = false;
+	// std::cout << "duplicate:\n" << at(i) << "\n" << at(j) << std::endl;
+	combinations[j].add_index( at(i).index()[0] );
+      }
+    }
+    if ( unique ) combinations.push_back( at(i) );
+  }
+
+  m_combinations = combinations;
+
+  m_Nproc = m_combinations.size();
+
+  create_lookup();
+  
+}
+   

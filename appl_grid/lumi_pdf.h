@@ -54,6 +54,7 @@ public:
   //  bool initialised() const { return m_initialised; }
 
   const combination& operator[](int i) const { return m_combinations.at(i); }  
+  combination&       operator[](int i)       { return m_combinations.at(i); }  
   const combination& at(int i)         const { return m_combinations.at(i); }  
   combination&       at(int i)               { return m_combinations.at(i); }  
 
@@ -89,6 +90,8 @@ public:
   void clear_lookup() { m_lookup.clear(); } 
 
   void removeDuplicates();
+
+  void restoreDuplicates();
 
 private:
 

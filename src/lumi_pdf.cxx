@@ -213,7 +213,7 @@ std::vector<int> lumi_pdf::decideSubProcesses(const int iflav1, const int iflav2
 }
 
 
-std::vector<int> lumi_pdf::serialise() const { 
+std::vector<int> lumi_pdf::serialise() const  { 
 
   std::vector<int> v;
 
@@ -297,4 +297,37 @@ void lumi_pdf::removeDuplicates() {
   create_lookup();
   
 }
+   
+
+
+
+
+void lumi_pdf::restoreDuplicates() { 
+
+  std::vector<combination> combinations;
+
+  for ( unsigned i=0 ; i<size() ; i++ ) {
+
+    std::vector<int> indices = at(i).index();
+
+    for ( unsigned j=0 ; j<indices.size() ; j++ ) {
+
+      combination c = at(i);
+
+      c.index().clear();
+      c.index().push_back(indices[j]);
+
+      combinations.push_back( c );
+    }
+  }
+
+  m_combinations = combinations;
+
+  m_Nproc = m_combinations.size();
+
+  create_lookup();
+  
+}
+
+
    

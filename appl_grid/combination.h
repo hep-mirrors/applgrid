@@ -53,6 +53,7 @@ public:
 
   /// index
   const std::vector<int>&  index()  const { return m_index; }
+  std::vector<int>&        index()        { return m_index; }
 
   void add_index( int i )  { m_index.push_back(i); }
 

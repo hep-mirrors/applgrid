@@ -67,6 +67,11 @@ public:
 
   bool operator==( const combination& c ) const;
 
+  /// some spurious logical operators
+  bool operator<(  const combination& c ) const { return m_index[0]<c.m_index[0]; }
+  bool operator>(  const combination& c ) const { return m_index[0]>c.m_index[0]; }
+  bool operator<=(  const combination& c ) const { return m_index[0]<=c.m_index[0]; }
+
 private:
 
   /// actually construct combination from the pair list

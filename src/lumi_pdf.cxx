@@ -14,6 +14,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <algorithm>
 
 
 #include "appl_grid/lumi_pdf.h"
@@ -221,9 +222,9 @@ std::vector<int> lumi_pdf::serialise() const  {
 
   for ( int i=0 ; i<Nproc() ; i++ ) { 
 
-    v.push_back(i);
-
     const combination& c = m_combinations[i];
+
+    v.push_back( c.index()[0] );
 
     v.push_back( c.size() );
     for ( unsigned j=0 ; j<c.size() ; j++ ) { 
@@ -321,12 +322,17 @@ void lumi_pdf::restoreDuplicates() {
     }
   }
 
+  std::sort( combinations.begin(), combinations.end() );
+
   m_combinations = combinations;
+
+
 
   m_Nproc = m_combinations.size();
 
   create_lookup();
   
+
 }
 
 

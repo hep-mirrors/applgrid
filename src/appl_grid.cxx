@@ -1161,6 +1161,14 @@ void appl::grid::Write(const std::string& filename,
 
       std::cout << "'nduff\n" <<  *dynamic_cast<lumi_pdf*>(m_genpdf[i]) << std::endl;
 
+      lumi_pdf* lpdf = dynamic_cast<lumi_pdf*>(m_genpdf[i]);
+
+      std::cout << "lumi pdf: " << *lpdf << std::endl;
+
+      lpdf->restoreDuplicates();
+
+      std::cout << "lumi pdf: " << *lpdf << std::endl;
+
       std::vector<int>   combinations = dynamic_cast<lumi_pdf*>(m_genpdf[i])->serialise();
       TVectorT<double>* _combinations = new TVectorT<double>(combinations.size());
       for ( unsigned ic=0 ; ic<combinations.size() ; ic++ ) { 
@@ -2400,6 +2408,7 @@ void appl::grid::shrink(const std::string& name, int ckmcharge) {
       lumi_pdf*  _pdf = 0;
       if ( m_genpdf[iorder]->name().find(".config")!=std::string::npos ){ 
 	_pdf = dynamic_cast<lumi_pdf*>(m_genpdf[iorder]);
+	if ( _pdf ) std::cout << "read lumi pdf: " << *_pdf << std::endl; 
       }
       else { 
 	std::cerr << __FUNCTION__ << "\tpdf not found:" << m_genpdf[iorder]->name() << std::endl;

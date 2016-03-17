@@ -882,9 +882,12 @@ void appl::grid::fill_phasespace(const double x1, const double x2, const double 
 				 const double obs, 
 				 const double* weight, const int iorder) {
   int iobs = m_obs_bins->FindBin(obs)-1;
+
+  std::cout << "grid::fill() iobs " << iobs << "\tobs=" << obs << std::endl;
+
   if ( iobs<0 || iobs>=Nobs_internal() ) {
-    //  cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
-    //  cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
+    std::cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
+    std::cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
     return;
   }
   if ( m_symmetrise && x2<x1 )  m_grids[iorder][iobs]->fill_phasespace(x2, x1, Q2, weight);
@@ -1157,7 +1160,7 @@ void appl::grid::Write(const std::string& filename,
     
     for ( unsigned i=0 ; i<namevec.size() && i<unsigned(m_order) ; i++ ) {  
 
-      dynamic_cast<lumi_pdf*>(m_genpdf[i])->restoreDuplicates();
+      //      dynamic_cast<lumi_pdf*>(m_genpdf[i])->restoreDuplicates();
 
       std::cout << "'nduff\n" <<  *dynamic_cast<lumi_pdf*>(m_genpdf[i]) << std::endl;
 
@@ -1165,7 +1168,7 @@ void appl::grid::Write(const std::string& filename,
 
       std::cout << "lumi pdf: " << *lpdf << std::endl;
 
-      lpdf->restoreDuplicates();
+      //      lpdf->restoreDuplicates();
 
       std::cout << "lumi pdf: " << *lpdf << std::endl;
 
@@ -1474,6 +1477,8 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       /// now do the convolution proper
 
      
+      std::cout << "nloops " << nloops << std::endl;
+
       if ( nloops==0 ) {
 	/// leading order cross section
 	if ( subproc()==-1 ) {  

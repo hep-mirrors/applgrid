@@ -29,10 +29,10 @@ extern "C" void releasegrid_(const int& id);
 extern "C" void releasegrids_();
 
 /// read a grid from a file
-extern "C" void readgrid_(int& id, const char* s);
+extern "C" void readgrid_(int& id, const char* s, int _len);
 
 /// write to a file 
-extern "C" void writegrid_(const int& id, const char* s);
+extern "C" void writegrid_(const int& id, const char* s, int _len);
 
 /// add an entry 
 extern "C" void fillgrid_(const int& id, 
@@ -135,7 +135,7 @@ extern "C" void printgrids_();
 extern "C" void printgriddoc_(const int& id);
 
 /// create grids from fastnlo
-extern "C" void readfastnlogrids_( int* ids, const char* s );
+extern "C" void readfastnlogrids_( int* ids, const char* s, int _len );
 
 
 /// grid std::map management

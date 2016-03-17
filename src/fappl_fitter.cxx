@@ -32,10 +32,10 @@ extern "C" void appl_releasegrid_(int& id) { return releasegrid_( id ); }
 extern "C" void appl_releasegrids_()       { return releasegrids_(); } 
 
 /// read a grid from a file
-extern "C" void appl_readgrid_(int& id, const char* s) { return readgrid_( id,  s); } 
+extern "C" void appl_readgrid_(int& id, const char* s, int _len ) { return readgrid_( id,  s, _len ); } 
 
 /// write to a file 
-extern "C" void appl_writegrid_(int& id, const char* s) { return writegrid_( id, s ); }  
+extern "C" void appl_writegrid_(int& id, const char* s, int _len) { return writegrid_( id, s, _len ); }  
 
 
 // /// add an entry 
@@ -139,7 +139,7 @@ extern "C" void appl_printgrids_() { return printgrids_(); }
 extern "C" void appl_printgriddoc_(int& id) { return printgriddoc_(id); } 
 
 /// create grids from fastnlo
-extern "C" void appl_readfastnlogrids_(  int* ids, const char* s ) { return readfastnlogrids_( ids, s ); }
+extern "C" void appl_readfastnlogrids_(  int* ids, const char* s, int _len ) { return readfastnlogrids_( ids, s, _len ); }
 
 
 /// grid std::map management

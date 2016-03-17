@@ -1453,8 +1453,15 @@ void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {
   
   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
     
+    std::cout << "optimise() proc " << ip << "\tfilled x weights " << m_weight[ip]->xmax() << " - " << m_weight[ip]->xmin(); 
+
     // is it empty?
-    if ( m_weight[ip]->xmax()-m_weight[ip]->xmin()+1 == 0 ) continue;
+    if ( m_weight[ip]->xmax()-m_weight[ip]->xmin()+1 == 0 ) { 
+      std::cout << "\tempty" << std::endl;
+      continue;
+    }
+    
+    std::cout << std::endl;
 
     //    m_weight[ip]->print();
 

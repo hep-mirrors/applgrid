@@ -247,8 +247,16 @@ std::vector<std::vector<int> > lumi_pdf::vectorise() const  {
   std::vector<std::vector<int> > v;
 
   for ( int i=0 ; i<Nproc() ; i++ ) { 
+
+    std::vector<int> v0;
+    v0.push_back( i );
+
     const combination& c = m_combinations[i];
-    v.push_back( c.serialise() );
+    for ( unsigned j=0 ; j<c.size() ; j++ ) { 
+      v0.push_back( c[j].first );
+      v0.push_back( c[j].second );
+    }
+    v.push_back( v0 );
   }  
   
   return v;

@@ -861,6 +861,9 @@ void appl::grid::fill(const double x1, const double x2, const double Q2,
 		      const double obs, 
 		      const double* weight, const int iorder)  {  
   int iobs = m_obs_bins->FindBin(obs)-1;
+
+  std::cout << "grid::fill() iobs " << iobs << "\tobs=" << obs << std::endl;
+
   if ( iobs<0 || iobs>=Nobs_internal() ) {
     //    cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
     //    cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
@@ -883,7 +886,7 @@ void appl::grid::fill_phasespace(const double x1, const double x2, const double 
 				 const double* weight, const int iorder) {
   int iobs = m_obs_bins->FindBin(obs)-1;
 
-  std::cout << "grid::fill() iobs " << iobs << "\tobs=" << obs << std::endl;
+  std::cout << "grid::fill_phasespace() iobs " << iobs << "\tobs=" << obs << std::endl;
 
   if ( iobs<0 || iobs>=Nobs_internal() ) {
     std::cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
@@ -1162,7 +1165,7 @@ void appl::grid::Write(const std::string& filename,
 
       //      dynamic_cast<lumi_pdf*>(m_genpdf[i])->restoreDuplicates();
 
-      std::cout << "'nduff\n" <<  *dynamic_cast<lumi_pdf*>(m_genpdf[i]) << std::endl;
+      std::cout << "\npdf name " <<  *dynamic_cast<lumi_pdf*>(m_genpdf[i]) << std::endl;
 
       lumi_pdf* lpdf = dynamic_cast<lumi_pdf*>(m_genpdf[i]);
 
@@ -1244,6 +1247,25 @@ void appl::grid::Write(const std::string& filename,
   }
 
   // if ( run() ) reference->Scale(1/double(run()));
+
+#if 0
+
+  double hmin = reference->GetBinContent(1); 
+  double hmax = reference->GetBinContent(1); 
+  for ( int i=1 ; i<=reference->GetNbinsX() ; i++ ) { 
+    std::cout << "reference " << i << " " << reference->GetBinContent(i) << std::endl;
+    if ( hmin<reference->GetBinContent(i) ) hmin = reference->GetBinContent(i); 
+    if ( hmax>reference->GetBinContent(i) ) hmax = reference->GetBinContent(i); 
+  }
+
+  reference->SetMinimum(hmin);
+  reference->SetMaximum(hmax);
+
+#endif
+
+
+
+
   reference->Write();
   delete reference;
   if ( reference_internal ) { 

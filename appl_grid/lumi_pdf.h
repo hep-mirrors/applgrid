@@ -68,7 +68,11 @@ public:
   int  decideSubProcess(const int iproc ) const;
 
 
-  std::vector<int> serialise() const;
+  /// serialise into a single vector
+  std::vector<int>               serialise() const;
+
+  /// ... or a vector aof vectors ...
+  std::vector<std::vector<int> > vectorise() const;
 
   void write(const std::string& filename) const;
  

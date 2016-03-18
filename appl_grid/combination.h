@@ -72,6 +72,8 @@ public:
   bool operator>(  const combination& c ) const { return m_index[0]>c.m_index[0]; }
   bool operator<=(  const combination& c ) const { return m_index[0]<=c.m_index[0]; }
 
+  std::vector<int> serialise() const;
+
 private:
 
   /// actually construct combination from the pair list
@@ -111,6 +113,9 @@ inline std::ostream& operator<<( std::ostream& s, const combination& c ) {
 }
 
 
+inline std::ostream& operator<<( std::ostream& s, const std::pair<int,int>& p ) {
+  return s << "( " << p.first << " " << p.second << ")"; 
+} 
 
 #endif  // COMBINATION_H 
 

@@ -241,6 +241,23 @@ std::vector<int> lumi_pdf::serialise() const  {
 }
 
 
+
+std::vector<std::vector<int> > lumi_pdf::vectorise() const  { 
+
+  std::vector<std::vector<int> > v;
+
+  for ( int i=0 ; i<Nproc() ; i++ ) { 
+    const combination& c = m_combinations[i];
+    v.push_back( c.serialise() );
+  }  
+  
+  return v;
+}
+
+
+
+
+
 void lumi_pdf::write(std::ostream& s) const { 
   
   s << m_ckmcharge << "\n";

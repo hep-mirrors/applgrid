@@ -61,10 +61,27 @@ void combination::construct(const std::vector<int>& v) { // : m_index(v.at(0)), 
     m_pairs.push_back( cpair( remap(v[i]), remap(v[i+1]) ) ); 
   }
 
-  //  if ( m_size!=m_pairs.size() ) throw appl::appl_pdf::exception("mismatch in entries for this for combination");
 
+  /// check there are no duplicated pairs in this combination ...
+
+  bool duplicates = false;
+
+  if ( m_pairs.size()>0 ) {  
+    for ( unsigned i=0 ; i<m_pairs.size()-1 ; i++ ) { 
+      //  std::cout << i << "\tindex " << m_index << " " << m_pairs[i] << std::endl; 
+      for ( unsigned j=i+1 ; j<m_pairs.size() ; j++ ) { 
+	if ( m_pairs[i]==m_pairs[j] ) { 
+	  duplicates = true;
+	  std::cout << "index " << m_index << "\t duplicated entry" << m_pairs[i] << " in " << *this << std::endl;
+	}
+      }  
+    }
+
+    if ( duplicates ) throw appl::appl_pdf::exception("mismatch in entries for this for combination");
+    
+  }
+  
 }
-
 
 
 /// evaluate the sum over all the (paired) subprocesses
@@ -110,3 +127,15 @@ bool combination::operator==( const combination& c ) const {
   }
   return true;
 } 
+
+
+
+std::vector<int> combination::serialise() const { 
+  std::vector<int> v;
+  v.push_back(size());
+  for ( unsigned i=0 ; i<size() ; i++ ) { 
+    v.push_back( pair(i).first );
+    v.push_back( pair(i).second );
+  }
+  return v;
+}

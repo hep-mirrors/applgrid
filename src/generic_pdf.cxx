@@ -149,7 +149,7 @@ void generic_pdf::initialise(const std::string& filename) {
 } 
 
 
-void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {  
+void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) const {  
   //  fill this in with tancredi's code ...
   if ( !m_initialised ) {
     std::cout << "  generic_pdf::evaluate not initialized " << std::endl;
@@ -177,10 +177,14 @@ void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {
     }  
   */
 
+  std::vector<double> pdfA(14,0); //hadron A
+  std::vector<double> pdfB(14,0); //hadron B
+
+
   // reset pdf sums per flavour -2,-1,0,1,2 downbar, upbar, gluon, up, down
   // these are the pdf weights x by the ckm matrix 
-  pdfA.clear();
-  pdfB.clear();
+  //  pdfA.clear();
+  //  pdfB.clear();
   
   for ( int i=-2; i<=2 ; i++ ) { 
     pdfA[i]=0.; 
@@ -198,12 +202,12 @@ void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {
   */
   
   /// offset so can be adressed from -n .. n as with the quark ids
-  double* _ckmsum = (&m_ckmsum[0])+m_nQuark;
+  const double* _ckmsum = (&m_ckmsum[0])+m_nQuark;
   
   if ( m_ckmflag ) {
     /// do we need the ckm matrix ??
     for(int i=-6; i <=6; i++) {
-      int j=flavourtype[i];
+      int j=flavourtype.find(i)->second;
       if (j==0) continue;
       pdfA[j] += fA[i]*_ckmsum[j];
       pdfB[j] += fB[i]*_ckmsum[j];
@@ -219,7 +223,7 @@ void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {
   }
   else { 
     for(int i=-6; i <=6; i++) {
-      int j=flavourtype[i];
+      int j=flavourtype.find(i)->second;
       if (j==0) continue;
       pdfA[j] += fA[i];
       pdfB[j] += fB[i];
@@ -234,8 +238,8 @@ void  generic_pdf::evaluate(const double* fA, const double* fB, double* H) {
   
   
   for ( unsigned iproc=0 ; iproc<procname.size() ; iproc++ ) {
-    int ifl1=Flav1[iproc];  
-    int ifl2=Flav2[iproc];
+    int ifl1=Flav1.find(iproc)->second;  
+    int ifl2=Flav2.find(iproc)->second;
     
     H[iproc]=pdfA[ifl1]*pdfB[ifl2];
     if (ifl1==ifl2)   H[iproc]*=2.; // symetric contributions are counted twice

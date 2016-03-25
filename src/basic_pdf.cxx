@@ -22,7 +22,7 @@ extern "C" void fbasic_pdf__(const double* fA, const double* fB, double* H) {
 
 
 
-void basic_pdf::evaluate(const double* _fA, const double* _fB, double* H) {  
+void basic_pdf::evaluate(const double* _fA, const double* _fB, double* H) const {  
 
   // remapping from pdg -6..6 convention to u..t ubar..tbar g internal
   // basic convention

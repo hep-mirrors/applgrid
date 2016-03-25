@@ -23,12 +23,12 @@ public:
 
   nlojet_pdf() : appl_pdf("nlojet") { m_Nproc=7; } 
 
-  void evaluate(const double* fA, const double* fB, double* H);
+  void evaluate(const double* fA, const double* fB, double* H) const;
 
 };  
 
 
-inline void  nlojet_pdf::evaluate(const double* fA, const double* fB, double* H) {  
+inline void  nlojet_pdf::evaluate(const double* fA, const double* fB, double* H) const {  
   
   fA += 6;  // offset internal pointers so can use fA[-6]..fA[6] for simplicity
   fB += 6; 

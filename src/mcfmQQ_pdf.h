@@ -19,7 +19,7 @@ public:
   mcfmQQ_pdf(std::string name) : appl_pdf(name) { m_nFlavours = 5;  m_Nproc = 7 ;}
   ~mcfmQQ_pdf() { } 
 
-  virtual void evaluate(const double* fA, const double* fB, double* H);
+  virtual void evaluate(const double* fA, const double* fB, double* H) const;
 
   int m_nFlavours;
 
@@ -28,7 +28,7 @@ public:
 
 // actual funtion to evaluate the pdf combinations 
 
-inline  void mcfmQQ_pdf::evaluate(const double* fA, const double* fB, double* H) 
+inline  void mcfmQQ_pdf::evaluate(const double* fA, const double* fB, double* H) const 
 {
 
   //  const int nQuark = 6;

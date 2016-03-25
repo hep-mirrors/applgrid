@@ -23,12 +23,12 @@ public:
 
   dis_pdf() : appl_pdf("dis") { m_Nproc=3; } 
 
-  void evaluate(const double* fA, const double* fB, double* H);
+  void evaluate(const double* fA, const double* fB, double* H) const;
 
 };  
 
 
-inline void  dis_pdf::evaluate(const double* fA, const double* , double* H) {  
+inline void  dis_pdf::evaluate(const double* fA, const double* , double* H) const {  
 
   fA += 6;  // offset internal pointers so can use fA[-6]..fA[6] for simplicity
 

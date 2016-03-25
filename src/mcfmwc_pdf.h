@@ -23,7 +23,7 @@ public:
   
   ~mcfmwpc_pdf() { } 
   
-  virtual void evaluate(const double* fA, const double* fB, double* H);
+  virtual void evaluate(const double* fA, const double* fB, double* H) const;
 
 
 };
@@ -42,14 +42,14 @@ public:
 
   ~mcfmwmc_pdf() {   } 
 
-  virtual void evaluate(const double* fA, const double* fB, double* H);
+  virtual void evaluate(const double* fA, const double* fB, double* H) const;
 
 };
 
 // actual funtion to evaluate the pdf combinations 
 // for the W+ Cbar
 
-inline  void mcfmwpc_pdf::evaluate(const double* fA, const double* fB, double* H) { 
+inline  void mcfmwpc_pdf::evaluate(const double* fA, const double* fB, double* H) const { 
   
   const int nQuark = 6;
 //  const int iQuark = 5; 
@@ -109,7 +109,7 @@ inline  void mcfmwpc_pdf::evaluate(const double* fA, const double* fB, double* H
 // actual funtion to evaluate the pdf combinations 
 //   for the W- + C 
 //
-inline  void mcfmwmc_pdf::evaluate(const double* fA, const double* fB, double* H) { 
+inline  void mcfmwmc_pdf::evaluate(const double* fA, const double* fB, double* H) const { 
   
   const int nQuark = 6;
 //  const int iQuark = 5; 

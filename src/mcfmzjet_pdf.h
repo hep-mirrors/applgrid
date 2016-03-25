@@ -30,14 +30,14 @@ public:
 	
 	~mcfmzjet_pdf() { } 
 	
-	virtual void evaluate(const double* fA, const double* fB, double* H);
+	virtual void evaluate(const double* fA, const double* fB, double* H) const;
 	
 };
 
 
 // actual funtion to evaluate the pdf combinations 
 
-inline  void mcfmzjet_pdf::evaluate(const double* fA, const double* fB, double* H) {
+inline  void mcfmzjet_pdf::evaluate(const double* fA, const double* fB, double* H) const {
 	//  const int nQuark = 6;
 	const int iQuark = 5; 
 	

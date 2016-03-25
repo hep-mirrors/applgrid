@@ -37,7 +37,7 @@ public:
 
   basic_pdf() : appl::appl_pdf("basic") { m_Nproc=121; } 
 
-  void evaluate(const double* _fA, const double* _fB, double* H);
+  void evaluate(const double* _fA, const double* _fB, double* H) const;
 
   int  decideSubProcess(const int iflav1, const int iflav2) const;
 
@@ -47,7 +47,7 @@ public:
 
 #if 0
 
-inline void basic_pdf::evaluate(const double* _fA, const double* _fB, double* H) {  
+inline void basic_pdf::evaluate(const double* _fA, const double* _fB, double* H) const {  
 
   // remapping from pdg -6..6 convention to u..t ubar..tbar g internal
   // basic convention

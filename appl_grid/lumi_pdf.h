@@ -41,7 +41,7 @@ public:
 
   virtual ~lumi_pdf() {   } 
 
-  void evaluate(const double* _fA, const double* _fB, double* H);
+  void evaluate(const double* _fA, const double* _fB, double* H) const;
 
   /// additional user defined functions to actually initialise 
   /// based on the input file
@@ -55,6 +55,7 @@ public:
 
   const combination& operator[](int i) const { return m_combinations.at(i); }  
   combination&       operator[](int i)       { return m_combinations.at(i); }  
+
   const combination& at(int i)         const { return m_combinations.at(i); }  
   combination&       at(int i)               { return m_combinations.at(i); }  
 

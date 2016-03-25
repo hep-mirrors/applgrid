@@ -27,12 +27,12 @@ public:
     m_Nproc=2; 
   } 
 
-  void evaluate(const double* fA, const double* fB, double* H);
+  void evaluate(const double* fA, const double* fB, double* H) const ;
 
 };  
 
 
-inline void  vrapzLO_pdf::evaluate(const double* fA, const double* fB, double* H) {  
+inline void  vrapzLO_pdf::evaluate(const double* fA, const double* fB, double* H) const {  
 
   fA += 6;  // offset internal pointers so can use fA[-6]..fA[6] for simplicity
   fB += 6;  // offset internal pointers so can use fB[-6]..fB[6] for simplicity
@@ -65,14 +65,14 @@ public:
     m_Nproc=6; 
   } 
 
-  void evaluate(const double* fA, const double* fB, double* H);
+  void evaluate(const double* fA, const double* fB, double* H) const;
 
 };  
 
 
 
 
-inline void  vrapzNLO_pdf::evaluate(const double* fA, const double* fB, double* H) {  
+inline void  vrapzNLO_pdf::evaluate(const double* fA, const double* fB, double* H) const {  
 
   fA += 6;  // offset internal pointers so can use fA[-6]..fA[6] for simplicity
   fB += 6;  // offset internal pointers so can use fB[-6]..fB[6] for simplicity
@@ -132,12 +132,12 @@ public:
     m_Nproc=19; 
   } 
 
-  void evaluate(const double* fA, const double* fB, double* H);
+  void evaluate(const double* fA, const double* fB, double* H) const;
 
 };  
 
 
-inline void  vrapzNNLO_pdf::evaluate(const double* fA, const double* fB, double* H) {  
+inline void  vrapzNNLO_pdf::evaluate(const double* fA, const double* fB, double* H) const {  
 
   fA += 6;  // offset internal pointers so can use fA[-6]..fA[6] for simplicity
   fB += 6;  // offset internal pointers so can use fB[-6]..fB[6] for simplicity

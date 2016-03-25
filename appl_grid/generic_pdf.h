@@ -32,7 +32,7 @@ public:
   virtual ~generic_pdf() {   } 
 
   /// actually evaluate the 
-  void evaluate(const double* _fA, const double* _fB, double* H);
+  void evaluate(const double* _fA, const double* _fB, double* H) const;
 
   /// additional user defined functions to actually initialise 
   /// based on the input file

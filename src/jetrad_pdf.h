@@ -25,13 +25,13 @@ public:
 
   jetrad_pdf() : appl_pdf("jetrad") { m_Nproc=7; } 
 
-  void evaluate(const double* _fA, const double* _fB, double* H);
+  void evaluate(const double* _fA, const double* _fB, double* H) const;
 
 };  
   
 
 
-inline void jetrad_pdf::evaluate(const double* _fA, const double* _fB, double* H) {  
+inline void jetrad_pdf::evaluate(const double* _fA, const double* _fB, double* H) const {  
 
   // remapping from pdg -6..6 convention to u..t ubar..tbar g internal
   // jetrad convention

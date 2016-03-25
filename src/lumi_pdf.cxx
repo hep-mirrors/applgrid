@@ -180,7 +180,7 @@ int lumi_pdf::decideSubProcess(const int iproc ) const {
 }
 
 
-void lumi_pdf::evaluate(const double* xfA, const double* xfB, double* H) { 
+void lumi_pdf::evaluate(const double* xfA, const double* xfB, double* H) const { 
   /// if need to include the ckm matrix ...
   if ( m_ckmcharge==0 )  {
     for ( unsigned i=size() ; i-- ; ) { 

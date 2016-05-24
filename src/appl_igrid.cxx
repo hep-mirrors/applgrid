@@ -603,16 +603,17 @@ void appl::igrid::fill_phasespace(const double x1, const double x2, const double
   int k2=fk2(x2);
   int k3=fkappa(Q2);
 
-  std::cout << "appl::igrid::fill_phasespace() k: " << k1 << " " << k2 << " " << k3 << std::endl;
-  std::cout << "\tweights: ";
-  for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << " " << weight[ip];
-  std::cout << std::endl;
+  //  std::cout << "appl::igrid::fill_phasespace() k: " << k1 << " " << k2 << " " << k3 << std::endl;
+  //  std::cout << "\tweights: ";
+
+  //  for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << " " << weight[ip];
+  //  std::cout << std::endl;
 
   for ( int ip=0 ; ip<m_Nproc ; ip++ ) (*m_weight[ip])(k3, k1, k2) += weight[ip];
 
-  for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << ip << "\tsparse size " << m_weight[ip]->size() << std::endl; 
+  //  for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << ip << "\tsparse size " << m_weight[ip]->size() << std::endl; 
 
-  for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << ip << "\tweight " << (*m_weight[ip])(k3, k1, k2) << std::endl; 
+  //  for ( int ip=0 ; ip<m_Nproc ; ip++ ) std::cout << "\t" << ip << "\tweight " << (*m_weight[ip])(k3, k1, k2) << std::endl; 
 
 } 
 

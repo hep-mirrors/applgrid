@@ -302,6 +302,8 @@ std::string lumi_pdf::summary() const {
 
 void lumi_pdf::removeDuplicates() { 
 
+  std::cout << "lumi_pdf::removeDuplicates() " << name() << "\t size " << size() << " -> ";
+
   std::vector<combination> combinations;
 
   for ( unsigned i=0 ; i<size() ; i++ ) {
@@ -321,7 +323,8 @@ void lumi_pdf::removeDuplicates() {
   m_Nproc = m_combinations.size();
 
   create_lookup();
-  
+
+  std::cout << size() << std::endl; 
 }
    
 

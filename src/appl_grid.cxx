@@ -862,7 +862,7 @@ void appl::grid::fill(const double x1, const double x2, const double Q2,
 		      const double* weight, const int iorder)  {  
   int iobs = m_obs_bins->FindBin(obs)-1;
 
-  std::cout << "grid::fill() iobs " << iobs << "\tobs=" << obs << std::endl;
+  //  std::cout << "grid::fill() iobs " << iobs << "\tobs=" << obs << std::endl;
 
   if ( iobs<0 || iobs>=Nobs_internal() ) {
     //    cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
@@ -886,7 +886,7 @@ void appl::grid::fill_phasespace(const double x1, const double x2, const double 
 				 const double* weight, const int iorder) {
   int iobs = m_obs_bins->FindBin(obs)-1;
 
-  std::cout << "grid::fill_phasespace() iobs " << iobs << "\tobs=" << obs << std::endl;
+  //  std::cout << "grid::fill_phasespace() iobs " << iobs << "\tobs=" << obs << std::endl;
 
   if ( iobs<0 || iobs>=Nobs_internal() ) {
     std::cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
@@ -1002,7 +1002,8 @@ void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinati
 
 	if ( appl_pdf::getpdf(names[i])==0 ) { 
 	  std::cout << "appl::grid::addpdf() creating new lumi_pdf " << names[i] << std::endl;
-	  new lumi_pdf(names[i], combinations);
+	  lumi_pdf* lp = new lumi_pdf(names[i], combinations);
+	  lp->removeDuplicates();
 	}
 
 	// 	try {
@@ -1171,11 +1172,15 @@ void appl::grid::Write(const std::string& filename,
 
       std::cout << "lumi pdf: " << *lpdf << std::endl;
 
-      //      lpdf->restoreDuplicates();
+      lumi_pdf lpdf_tmp(*lpdf);
 
-      std::cout << "lumi pdf: " << *lpdf << std::endl;
+      lpdf_tmp.restoreDuplicates();
 
-      std::vector<int>   combinations = dynamic_cast<lumi_pdf*>(m_genpdf[i])->serialise();
+      std::cout << "lumi pdf: " << *lpdf     << std::endl;
+      std::cout << "lumi pdf: " <<  lpdf_tmp << std::endl;
+
+      //      std::vector<int>   combinations = dynamic_cast<lumi_pdf*>(m_genpdf[i])->serialise();
+      std::vector<int>   combinations = lpdf_tmp.serialise();
       TVectorT<double>* _combinations = new TVectorT<double>(combinations.size());
       for ( unsigned ic=0 ; ic<combinations.size() ; ic++ ) { 
 	if ( combinations[ic]<0 ) (*_combinations)(ic) = double(combinations[ic]-0.5);
@@ -1186,7 +1191,7 @@ void appl::grid::Write(const std::string& filename,
       
       std::cout << "writing " << m_genpdf[i]->name() << std::endl;
       
-      label += "N";  /// add an N for each order, N-LO, NN-LO etc
+      label += "N";  /// add an N for each order, N-LO, NN-LO etc !!!! ARGH!!! Need to be more general !!!
     }
   } 
   
@@ -1498,8 +1503,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
       /// now do the convolution proper
 
-     
-      std::cout << "nloops " << nloops << std::endl;
+      //      std::cout << "nloops " << nloops << std::endl;
 
       if ( nloops==0 ) {
 	/// leading order cross section

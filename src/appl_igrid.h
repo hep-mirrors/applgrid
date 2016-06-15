@@ -25,6 +25,7 @@
 #define __APPL_IGRID_H
 
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <map>
 #include <string>
@@ -57,7 +58,7 @@ private:
   class exception { 
   public:
     exception(const std::string& s) { std::cerr << s << std::endl; }; 
-    exception(std::ostream& s)      { std::cerr << s << std::endl; }; 
+    exception(std::stringstream& s) { std::cerr << s.str() << std::endl; }; 
   };
 
   typedef double (igrid::*transform_t)(double) const;

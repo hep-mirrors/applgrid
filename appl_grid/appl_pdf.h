@@ -51,7 +51,7 @@ public:
   class exception : public std::exception { 
   public: 
     exception(const std::string& s="") { std::cerr << what() << " " << s << std::endl; }; 
-    exception(std::ostream& s)         { std::cerr << what() << " " << s << std::endl; }; 
+    //   exception(std::ostream& s)         { std::cerr << what() << " " << s << std::endl; }; 
     const char* what() const throw() { return "appl::appl_pdf::exception "; }
   };
   
@@ -153,7 +153,11 @@ private:
       //      std::cout << "appl_pdf::addtomap() registering " << s << " in std::map addr \t" << f << std::endl;
     }
     else { 
-      throw exception( std::cerr << "appl_pdf::addtopdfmap() " << s << " already in std::map\t0x" << __pdfmap.find(s)->second  );
+
+      std::stringstream s_; 
+      s_ << "appl_pdf::addtopdfmap() " << s << " already in std::map\t0x" << __pdfmap.find(s)->second;
+      //         throw exception( std::cerr << "appl_pdf::addtopdfmap() " << s << " already in std::map\t0x" << __pdfmap.find(s)->second  );
+      throw exception( s_.str() ); 
     }
   }
   

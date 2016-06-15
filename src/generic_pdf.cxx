@@ -40,7 +40,7 @@ generic_pdf::generic_pdf(const std::string& s)
 
    /// need to check has the appropriate form, 
    if ( s!="" ) { 
-     if ( s.find(".dat")==std::string::npos ) throw exception( std::cerr << "generic_pdf() file " << s << " does not have .dat extension - will not be able to save this grid to file" << std::endl );  
+     if ( s.find(".dat")==std::string::npos ) throw exception( std::string("generic_pdf() file ") + s + " does not have .dat extension - will not be able to save this grid to file" );
      else initialise( s );
    }
 

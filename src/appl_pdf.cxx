@@ -91,7 +91,7 @@ std::ifstream& appl_pdf::openpdf( const std::string& filename ) {
   }
 
   /// haven't found the config file, so throw an exception ...
-  throw exception( std::cerr << "appl_pdf::appl_pdf() cannot open file " << filename << std::endl ); 
+  throw exception( std::string("appl_pdf::appl_pdf() cannot open file ") + filename );
 	
   /// this should never be executed - just here so the function doesn't fall off the end
   return infile;

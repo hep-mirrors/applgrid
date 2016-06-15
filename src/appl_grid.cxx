@@ -85,7 +85,7 @@ void Splitting(const double& x, const double& Q, double* xf, int nLoops) {
 #else
 
 void Splitting(const double& x, const double& Q, double* xf) {
-  throw appl::grid::exception( std::cerr << "hoppet library not included - cannot call splitting function"  ); 
+  throw appl::grid::exception( "hoppet library not included - cannot call splitting function"  ); 
   return; // technically, don't need this - should throw an exception
 }
 
@@ -291,7 +291,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   
   struct stat _fileinfo;
   if ( stat(filename.c_str(),&_fileinfo) )   {    
-    throw exception(std::cerr << "grid::grid() cannot open file " << filename << std::endl ); 
+    throw exception( std::string("grid::grid() cannot open file ") + filename  ); 
   }
 
   std::cout << "appl::grid() reading grid from file " << filename;
@@ -300,13 +300,13 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   if (gridfilep==0 ) {
     std::cout << std::endl;
-    throw exception(std::cerr << "grid::grid() cannot open file: " << filename << std::endl ); 
+    throw exception( std::string("grid::grid() cannot open file: ") + filename );
   }
 
   if (gridfilep->IsZombie()) {
     std::cout << std::endl;
     delete gridfilep;
-    throw exception(std::cerr << "grid::grid() cannot open file: zombie " << filename << std::endl ); 
+    throw exception( std::string("grid::grid() cannot open file: zombie ") + filename );
   }
 
   // TFile gridfile(filename.c_str());
@@ -326,7 +326,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   if ( _tagsp==0 ) { 
     std::cout << std::endl;
-    throw exception(std::cerr << "grid::grid() cannot get tags: " << filename << std::endl ); 
+    throw exception( std::string("grid::grid() cannot get tags: ") + filename );
   }
 
   TFileString _tags = *_tagsp;
@@ -463,7 +463,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
       label += "N"; /// add an N for each order, N-LO, NN-LO etc
 
-      if ( _combinations==0 ) throw exception(std::cerr << "grid::grid() cannot read pdf combination " << namevec[i] << std::endl );
+      if ( _combinations==0 ) throw exception( std::string( "grid::grid() cannot read pdf combination " ) + namevec[i] );
 
       std::vector<int> combinations(_combinations->GetNoElements());
 
@@ -694,7 +694,11 @@ void appl::grid::construct(int Nobs,
 
   // number of subprocesses 
 int appl::grid::subProcesses(int i) const { 
-  if ( i<0 || i>=m_order ) throw exception( std::cerr << "grid::subProcess(int i) " << i << " out of range [0-" << m_order-1 << "]" << std::endl );
+  if ( i<0 || i>=m_order ) { 
+    std::stringstream s;
+    s << "grid::subProcess(int i) " << i << " out of range [0-" << m_order-1 << "]";
+    throw exception( s.str() );
+  }
   return m_grids[i][0]->SubProcesses();     
 }  
 
@@ -950,7 +954,9 @@ void appl::grid::findgenpdf( std::string s ) {
     if ( names.size()==unsigned(m_order) ) for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[i] );
     else  if ( names.size()==1 )           for ( int i=0 ; i<m_order ; i++ ) m_genpdf[i] = appl_pdf::getpdf( names[0] );
     else  { 
-      throw exception( std::cerr << "requested " << m_order << " pdf combination but given " << names.size() << std::endl );
+      std::stringstream s_;
+      s_ << "requested " << m_order << " pdf combination but given " << names.size();
+      throw exception( s_.str() );
     }
 }
 
@@ -969,7 +975,9 @@ void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinati
     if ( names.size()!=imax ) { 
       if ( names.size()==1 ) imax = 1;
       else { 
-	throw exception( std::cerr << "requested " << m_order << " pdf combination but given " << names.size() << std::endl );
+	std::stringstream s_;
+	s_ << "requested " << m_order << " pdf combination but given " << names.size();
+	throw exception( s_.str() );
       }
     }
 
@@ -1576,7 +1584,9 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	m_grids[2][iobs]->convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+2, 0);
       }
       else { 
-	throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 
+	std::stringstream s_;
+	s_ << "invalid value for nloops " << nloops; 
+	throw grid::exception( s_.str() );
       }
 
       //      double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
@@ -1707,7 +1717,9 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	m_grids[2][iobs]->amc_convolute( _pdf1, _pdf2, m_genpdf[2], alphas, m_leading_order+1, 0,  rscale_factor, fscale_factor,  Escale );
       }
       else { 
-	throw grid::exception( std::cerr << "invalid value for nloops " << nloops ); 
+	std::stringstream s_;
+	s_ << "invalid value for nloops " << nloops; 
+	throw grid::exception( s_.str() );
       }
 
       //  double deltaobs = m_obs_bins->GetBinLowEdge(iobs+2)-m_obs_bins->GetBinLowEdge(iobs+1);      
@@ -1897,7 +1909,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
   if ( getApplyCorrections() ) { 
     unsigned appliedcorrections = 0;
     for ( unsigned i=applied.size() ; i-- ; ) if ( applied[i] ) appliedcorrections++;
-    if ( appliedcorrections!=applied.size() ) throw grid::exception( std::cerr << "correction vector size does not match data "  ); 
+    if ( appliedcorrections!=applied.size() ) throw grid::exception( "correction vector size does not match data "  ); 
   }
   else { 
     unsigned Ncorrections = 0;
@@ -1908,7 +1920,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	if ( applied[i] ) appliedcorrections++;
       }
     }
-    if ( appliedcorrections!=Ncorrections ) throw grid::exception( std::cerr << "correction vector size does not match data "  ); 
+    if ( appliedcorrections!=Ncorrections ) throw grid::exception( "correction vector size does not match data "  ); 
   }
 
   //  double _ctime = appl_timer_stop(_ctimer);
@@ -2188,7 +2200,7 @@ void appl::grid::setRange(double lower, double upper, double xScaleFactor) {
   /// copy the range of the reference histogram
   if ( limits.size()>0 ) limits.push_back( last );
   else { 
-    throw grid::exception( std::cerr << "new range does not include any bins"  ); 
+    throw grid::exception( "new range does not include any bins"  ); 
   }
 
   if ( xScaleFactor!=1 ) { 
@@ -2307,7 +2319,7 @@ int appl::grid::size() const {
 /// apply corrections to a std::vector
 void appl::grid::applyCorrections(std::vector<double>& v, std::vector<bool>& applied) {
  
-  if ( applied.size()!=m_corrections.size() ) throw grid::exception( std::cerr << "wrong number of corrections expected" ); 
+  if ( applied.size()!=m_corrections.size() ) throw grid::exception( "wrong number of corrections expected" ); 
  
   for ( unsigned i=m_corrections.size() ; i-- ; ) { 
  
@@ -2327,7 +2339,7 @@ void appl::grid::applyCorrections(std::vector<double>& v, std::vector<bool>& app
 /// apply correction to a std::vector
 bool appl::grid::applyCorrection(unsigned i, std::vector<double>& v) {
 
-  if ( i>=m_corrections.size() ) throw grid::exception( std::cerr << "correction index out of range"  ); 
+  if ( i>=m_corrections.size() ) throw grid::exception( "correction index out of range"  ); 
  
   std::vector<double>& correction = m_corrections[i];
 
@@ -2637,7 +2649,7 @@ void appl::grid::combineBins(std::vector<double>& hvec, int power ) const {
 
       nbins += m_combine[ic];
 
-      if ( nbins>hvec.size() ) throw grid::exception( std::cerr << "too many bins specified for rebinning"  ); 
+      if ( nbins>hvec.size() ) throw grid::exception( "too many bins specified for rebinning"  ); 
 
       double sigma = 0;
       double width = 0;

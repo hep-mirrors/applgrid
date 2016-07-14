@@ -72,7 +72,7 @@ void combination::construct(const std::vector<int>& v) { // : m_index(v.at(0)), 
       for ( unsigned j=i+1 ; j<m_pairs.size() ; j++ ) { 
 	if ( m_pairs[i]==m_pairs[j] ) { 
 	  duplicates = true;
-	  std::cout << "index " << m_index << "\t duplicated entry" << m_pairs[i] << " in " << *this << std::endl;
+	  std::cerr << "index " << m_index << "\t duplicated entry" << m_pairs[i] << " in " << *this << std::endl;
 	}
       }  
     }

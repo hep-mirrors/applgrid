@@ -811,6 +811,29 @@ appl::grid& appl::grid::operator*=(const double& d) {
 }
 
 
+
+
+appl::grid& appl::grid::operator*=(const std::vector<double>& v) {
+
+  /// don't do anything if the scale vector is not the correct size
+  if ( v.size() != size_t(Nobs_internal()) ) return *this;
+
+  for( int iorder=0 ; iorder<m_order ; iorder++ ) {
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs])*=v[iobs]; 
+  }
+ 
+  for ( int i=0 ; i<getReference()->GetNbinsX() ; i++ ) {
+    int ih=i+1;
+    getReference()->SetBinContent( ih,  getReference()->GetBinContent(ih)*v[i] );
+    getReference()->SetBinError(   ih,  getReference()->GetBinError(ih)*v[i] );
+  }
+
+  combineReference(true);
+  return *this;
+}
+
+
+
 double appl::grid::fx(double x) const { 
   if ( m_order>0 && Nobs_internal()>0 ) return m_grids[0][0]->fx(x);
   else return 0;
@@ -919,17 +942,27 @@ void appl::grid::fill_index(const int ix1, const int ix2, const int iQ2,
 }
 
 
-void appl::grid::trim() {
-  m_trimmed = true;
-  for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iorder][iobs]->trim(); 
+void appl::grid::trim(int iorder) {
+  if ( iorder>=0 ) { 
+    if ( iorder<m_order ) for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iorder][iobs]->trim(); 
+  }
+  else { 
+    m_trimmed = true;
+    for( int iord=0 ; iord<m_order ; iord++ ) {
+      for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iord][iobs]->trim(); 
+    }
   }
 }
 
-void appl::grid::untrim() {
-  m_trimmed = false;
-  for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iorder][iobs]->untrim(); 
+void appl::grid::untrim(int iorder) {
+  if ( iorder>=0 ) { 
+    if ( iorder<m_order ) for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iorder][iobs]->untrim(); 
+  }
+  else { 
+    m_trimmed = false;
+    for( int iord=0 ; iord<m_order ; iord++ ) {
+      for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) m_grids[iord][iobs]->untrim(); 
+    }
   }
 }
 
@@ -1174,11 +1207,11 @@ void appl::grid::Write(const std::string& filename,
 
       //      dynamic_cast<lumi_pdf*>(m_genpdf[i])->restoreDuplicates();
 
-      std::cout << "\npdf name " <<  *dynamic_cast<lumi_pdf*>(m_genpdf[i]) << std::endl;
-
       lumi_pdf* lpdf = dynamic_cast<lumi_pdf*>(m_genpdf[i]);
 
-      std::cout << "lumi pdf: " << *lpdf << std::endl;
+      std::cout << "lumi_pdf:   " << lpdf->name() << "\t processes " << lpdf->Nproc() << "\n";
+
+      //      std::cout << "lumi pdf: " << *lpdf << std::endl;
 
       lumi_pdf lpdf_tmp(*lpdf);
 

@@ -47,10 +47,9 @@
 #define HAVE_UTIME_NULL 1
 
 /* LHAPDF version */
-#define LHAPDF_VERSION "6.1.5"
+#define LHAPDF_VERSION "6.1.6"
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* Name of package */
@@ -63,7 +62,7 @@
 #define PACKAGE_NAME "APPLgrid"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "APPLgrid 1.4.87"
+#define PACKAGE_STRING "APPLgrid 1.4.88"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "applgrid"
@@ -72,10 +71,10 @@
 #define PACKAGE_URL "http://applgrid.hepforge.org"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.4.87"
+#define PACKAGE_VERSION "1.4.88"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.4.87"
+#define VERSION "1.4.88"

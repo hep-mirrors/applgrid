@@ -127,8 +127,8 @@ public:
 
 
   // trim/untrim the grid to reduce memory footprint
-  void trim();
-  void untrim();
+  void trim(int iorder=-1);
+  void untrim(int iorder=-1);
  
   // formatted output 
   std::ostream& print(std::ostream& s=std::cout) const;
@@ -428,6 +428,7 @@ public:
   // very lovely algebraic operators
   grid& operator=(const grid& g); 
   grid& operator*=(const double& d); 
+  grid& operator*=(const std::vector<double>& v); 
   grid& operator+=(const grid& g);
 
   /// test if grids have the same limits etc

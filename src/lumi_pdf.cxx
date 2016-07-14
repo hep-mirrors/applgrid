@@ -98,7 +98,8 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
 
   m_Nproc = m_combinations.size();
 
-  std::cout << "lumi_pdf::lumi_pdf() " << s << "\tcombinations " << size() << std::endl;  // << " lookup size " << m_lookup.size() << " " << this << std::endl; 
+  std::cout << "lumi_pdf::lumi_pdf()         " << s << "\tcombinations " << size() << std::endl;  
+
 
   // create the reverse lookup 
 
@@ -294,7 +295,7 @@ void lumi_pdf::write(const std::string& filename) const {
 // std::string lumi_pdf::summary(std::ostream& s=std::cout) const { 
 std::string lumi_pdf::summary() const { 
   std::stringstream s_;
-  s_ << "lumi_pdf::lumi_pdf() " << name() << "\tsize " << m_combinations.size() << " lookup size " << m_lookup.size() << " " << this; 
+  s_ << "lumi_pdf::lumi_pdf()         " << name() << "\tcombinations " << m_combinations.size() << " lookup size " << m_lookup.size() << " " << this; 
   return s_.str();
 }
 

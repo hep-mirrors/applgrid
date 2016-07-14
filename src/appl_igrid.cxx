@@ -1467,17 +1467,25 @@ void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {
   int tausetmin = _tausetmin; 
   int tausetmax = _tausetmax; 
   
+  bool firstdebug = true;
+  bool firstempty = true;
+
   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
     
-    std::cout << "optimise() proc " << ip << "\tfilled x weights " << m_weight[ip]->xmax() << " - " << m_weight[ip]->xmin(); 
+    if ( firstdebug ) std::cout << "optimise() proc " << ip 
+				<< "\tfilled x weights " << m_weight[ip]->xmax() << " - " << m_weight[ip]->xmin();
 
     // is it empty?
     if ( m_weight[ip]->xmax()-m_weight[ip]->xmin()+1 == 0 ) { 
-      std::cout << "\tempty" << std::endl;
+      if ( firstdebug && firstempty ) std::cout << "\tempty" << std::endl;
+      firstempty = false;
+      firstdebug = false;
       continue;
     }
     
-    std::cout << std::endl;
+    if ( firstdebug ) std::cout << std::endl;
+
+    firstdebug = false;
 
     //    m_weight[ip]->print();
 

@@ -79,7 +79,7 @@ library_include_HEADERS=../appl_grid/*.h
 # WDIR = $(shell pwd)
 
 ROOTCINT=rootcint
-AM_CXXFLAGS = $(ROOTARCH) -O3 -DDATADIR=\"@datadir@/$(PACKAGE)\" -Wall -Wextra -fPIC  -I. -I.. -I$(srcdir) $(LHAPDFCXXFLAGS) $(ROOTCFLAGS)  $(HOPPETCFLAGS) 
+AM_CXXFLAGS = $(ROOTARCH) -O3 -DDATADIR=\"@datadir@/$(PACKAGE)\" -Wall -Wextra -fPIC  -I. -I.. -I$(srcdir) $(LHAPDFCXXFLAGS) $(ROOTCFLAGS)  $(HOPPETCFLAGS) -fPIC
 
 AM_LDFLAGS = $(ROOTARCH) -O3  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FRTLLIB)
 

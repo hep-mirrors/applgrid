@@ -9,6 +9,7 @@
 //   $Id: appl_pdf.cxx, v1.0   Mon Dec 10 01:36:04 GMT 2007 sutt $
 
 #include <fstream>
+#include <cstdlib>
 
 #include "appl_grid/appl_pdf.h" 
 
@@ -43,7 +44,7 @@ std::vector<std::string> appl_pdf::__pdfpath;
 /// constructor and destructor
 appl_pdf::appl_pdf(const std::string& name) : 
   m_Nproc(0), m_name(name), m_ckmcharge(0) { 
-   if ( m_name!="" ) addtopdfmap(m_name, this);
+  if ( m_name!="" ) addtopdfmap(m_name, this);
 }
   
 appl_pdf::~appl_pdf() { 
@@ -76,6 +77,10 @@ std::ifstream& appl_pdf::openpdf( const std::string& filename ) {
   if ( __pdfpath.size()==0 ) { 
     __pdfpath.push_back("");
     __pdfpath.push_back(std::string(DATADIR)+"/");
+    char* pdfpath = std::getenv( "PDFPATH" );
+    if ( pdfpath!=0 ) { 
+      __pdfpath.push_back(std::string(pdfpath)+"/");
+    } 
   }
 
   static std::ifstream infile;

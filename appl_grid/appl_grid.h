@@ -47,6 +47,10 @@ class appl_pdf;
 const int MAXGRIDS = 5;
 
 
+std::string compiled();
+std::string version();
+
+
 /// externally visible grid class
 class grid {
 
@@ -399,6 +403,7 @@ public:
   std::string getGenpdf()    const { return m_genpdfname; }
 
   std::string version()      const { return m_version; } 
+
   std::string appl_version() const;
 
   double getCMSScale()          const { return m_cmsScale; }

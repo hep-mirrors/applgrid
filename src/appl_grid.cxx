@@ -103,6 +103,11 @@ static bool contains(const std::string& s, const std::string& reg ) {
 /// make sure pdf std::map is initialised
 // bool pdf_ready = appl::appl_pdf::create_map(); 
 
+std::string appl::compiled() {  return __DATE__; }
+std::string appl::version()  { return VERSION; }
+
+
+
 
 appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order, 
 		 int Nx,  double xmin,  double xmax,  int xorder,
@@ -747,9 +752,12 @@ appl::grid::~grid() {
       m_grids[iorder] = 0;
     }
   }
+
+
   if (m_obs_bins_combined) {
     if ( m_obs_bins_combined!=m_obs_bins) delete m_obs_bins_combined;
   }
+
   if (m_obs_bins) delete m_obs_bins;
   m_obs_bins=0;
   m_obs_bins_combined = 0;
@@ -1313,6 +1321,7 @@ void appl::grid::Write(const std::string& filename,
 
 
   reference->Write();
+
   delete reference;
   if ( reference_internal ) { 
     reference_internal->Write();
@@ -1354,13 +1363,9 @@ void appl::grid::Write(const std::string& filename,
     userdata->Write("UserData");
   }
 
-
-  //  std::cout << "close file" << std::endl;
-
   d.pop();
   rootfile.Close();
 
-  //  std::cout << "written" << std::endl;
 }
 
 

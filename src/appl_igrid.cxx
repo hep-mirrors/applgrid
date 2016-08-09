@@ -1420,7 +1420,7 @@ bool appl::igrid::shrink( const std::vector<int>& keep ) {
 // the point of the algorithm here is to find the extent of the filled
 // bines + 1 on either side and create a new grid with these limits
    
-void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {     
+void appl::igrid::optimise(int NQ2, int Nx1, int Nx2, int extrabins) {     
 
   //  std::cout << "\tsize(untrimmed)=" << m_weight[0]->size();
 
@@ -1473,7 +1473,9 @@ void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {
   for ( int ip=0 ; ip<m_Nproc ; ip++ ) { 
     
     if ( firstdebug ) std::cout << "optimise() proc " << ip 
-				<< "\tfilled x weights " << m_weight[ip]->xmax() << " - " << m_weight[ip]->xmin();
+				<< "\tfilled Q2 weights " << m_weight[ip]->xmax() << " - " << m_weight[ip]->xmin()
+				<< "\tx1 " << m_weight[ip]->ymax() << " - " << m_weight[ip]->ymin()
+				<< "\tx2 " << m_weight[ip]->zmax() << " - " << m_weight[ip]->zmin();
 
     // is it empty?
     if ( m_weight[ip]->xmax()-m_weight[ip]->xmin()+1 == 0 ) { 
@@ -1483,7 +1485,6 @@ void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {
       continue;
     }
     
-    if ( firstdebug ) std::cout << std::endl;
 
     firstdebug = false;
 
@@ -1546,16 +1547,19 @@ void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {
 
     if ( isOptimised() ) { 
       // add a bit on each side
-      if ( y1setmin>0 )        y1setmin--;
-      if ( y1setmax<m_Ny1-1 )  y1setmax++;
+      y1setmin -= extrabins;
+      y1setmax += extrabins;
     }
     else { 
       // not optimised yet so filled with phase space only so add 
       // the order to the max filled grid element position also 
-      y1setmax += m_yorder+1;
-      if ( y1setmin>0 )           y1setmin--;
-      if ( y1setmax>=m_Ny1 )      y1setmax=m_Ny1-1; 
+      y1setmin -= extrabins;
+      y1setmax += m_yorder+extrabins;
     }
+    
+    if ( y1setmin<0 )       y1setmin = 0;
+    if ( y1setmax>m_Ny1-1 ) y1setmax = m_Ny1-1;
+    
     
     double _min = gety1(y1setmin); 
     double _max = gety1(y1setmax); 
@@ -1573,17 +1577,20 @@ void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {
     
     if ( isOptimised() ) { 
       // add a bit on each side
-      if ( y2setmin>0 )        y2setmin--;
-      if ( y2setmax<m_Ny2-1 )  y2setmax++;
+      y2setmin -= extrabins;
+      y2setmax += extrabins;
     }
     else { 
       // not optimised yet so add the order to the  
       // max filled grid element position also 
-      y2setmax+=m_yorder+1;
-      if ( y2setmin>0 )           y2setmin--;
-      if ( y2setmax>=m_Ny2 )      y2setmax=m_Ny2-1; 
+      y2setmin -= extrabins;
+      y2setmax += m_yorder+extrabins;
     }
     
+    if ( y2setmin<0 )      y2setmin = 0;
+    if ( y2setmax>=m_Ny2 ) y2setmax = m_Ny2-1; 
+
+
     //  m_Ny2 =  y2setmax-y2setmin+1;
     _min = gety2(y2setmin); 
     _max = gety2(y2setmax); 
@@ -1593,7 +1600,10 @@ void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {
     m_y2max   = _max;
     m_deltay2 = (m_y2max-m_y2min)/(m_Ny2-1);
     
-    
+    std::cout << "\t-> " 
+	      << y1setmin  << " - " << y1setmax << " : " 
+	      << y2setmin  << " - " << y2setmax 
+	      << std::endl;
     
     // tau optimisation
     //   double oldtaumin = m_taumin;
@@ -1602,16 +1612,19 @@ void appl::igrid::optimise(int NQ2, int Nx1, int Nx2) {
     // add a bit on each side
     if ( isOptimised() ) { 
       // add a bit on each side
-      if ( tausetmin>0 )         tausetmin--;
-      if ( tausetmax<m_Ntau-1 )  tausetmax++;
+      tausetmin--;
+      tausetmax++;
     }
     else { 
       // not optimised yet so add the order to the  
       // max filled grid element position also 
-      tausetmax+=m_tauorder+1;
-      if ( tausetmin>0 )            tausetmin--;
-      if ( tausetmax>=m_Ntau )      tausetmax=m_Ntau-1; 
+      tausetmax += m_tauorder+1;
+      tausetmin -= 1;
     }  
+
+    if ( tausetmin<0 )         tausetmin = 0;
+    if ( tausetmax>=m_Ntau-1 ) tausetmax = m_Ntau-1;
+
     
     _min   = gettau(tausetmin); 
     _max   = gettau(tausetmax);

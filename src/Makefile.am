@@ -84,6 +84,16 @@ AM_CXXFLAGS = $(ROOTARCH) -O3 -DDATADIR=\"@datadir@/$(PACKAGE)\" -Wall -Wextra -
 AM_LDFLAGS = $(ROOTARCH) -O3  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FRTLLIB)
 
 
+
+# if WITHCLING
+### ROOT-6: ###
+
+# rootmapdir = $(libdir)
+# rootmap_DATA = .libs/*.pcm
+
+# endif
+
+
 AM_FCFLAGS = -c
 AM_FCLIBS  = -lg2c
 AM_SOFLAGS = -shared

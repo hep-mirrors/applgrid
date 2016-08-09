@@ -1225,8 +1225,8 @@ void appl::grid::Write(const std::string& filename,
 
       lpdf_tmp.restoreDuplicates();
 
-      std::cout << "lumi pdf: " << *lpdf     << std::endl;
-      std::cout << "lumi pdf: " <<  lpdf_tmp << std::endl;
+      //      std::cout << "lumi pdf: " << *lpdf     << std::endl;
+      //      std::cout << "lumi pdf: " <<  lpdf_tmp << std::endl;
 
       //      std::vector<int>   combinations = dynamic_cast<lumi_pdf*>(m_genpdf[i])->serialise();
       std::vector<int>   combinations = lpdf_tmp.serialise();
@@ -2096,14 +2096,14 @@ TH1D* appl::grid::convolute_subproc(int subproc,
 
 
 
-void appl::grid::optimise(bool force) {
+void appl::grid::optimise(bool force, int extrabins ) {
   if ( !force && m_optimised ) return;
   m_optimised = true;
   m_read = false;
   std::cout << "grid::optimise() " << std::endl;
   for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
     for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ )  { 
-      m_grids[iorder][iobs]->optimise();
+      m_grids[iorder][iobs]->optimise(extrabins);
     }
   }
   m_obs_bins->Reset();
@@ -2722,28 +2722,37 @@ std::ostream& operator<<(std::ostream& s, const appl::grid& g) {
   }
 
   s << "appl::grid version " << g.version() << "\t( "; 
+
   for ( int i=0 ; i<g.nloops()+1 ; i++ ) s << g.subProcesses(i) << order[i];
+  
   s << "initial states, " << g.Nobs_internal() << " observable bins )" << std::endl;
+  
   if ( g.isOptimised() ) s << "Optimised grid" << std::endl;
+  
   if ( g.isSymmetric() ) s << "Symmetrised in x1, x2" << std::endl;
   else                   s << "Unsymmetrised in x1, x2" << std::endl;
+  
   if ( g.getNormalised() ) s << "Normalised " << std::endl;
+  
   s << "leading order of processes  "  << g.leadingOrder() << std::endl;
-  s << "number of loops for grid    " << g.nloops() << std::endl;   
+  s << "number of loops for grid    "  << g.nloops() << std::endl;   
   s << "x->y coordinate transform:  "  << g.getTransform() << std::endl;
+
   s << "genpdf in use: " << g.getGenpdf() << std::endl;
   s << "--------------------------------------------------" << std::endl;
   s << "Observable binning: [ " << g.Nobs_internal() 
     << " bins : " << g.obsmin() << ",  " << g.obsmax() << " ]" << std::endl;
 
-  //  for( int iorder=0 ; iorder<1 ; iorder++ ) {
-  for( int iobs=0 ; iobs<g.Nobs_internal() ; iobs++ ) {
-    s << iobs << "\t" 
-      << std::setprecision(5) << std::setw(5) << g.getReference()->GetBinLowEdge(iobs+1) << "\t- " 
-      << std::setprecision(5) << std::setw(5) << g.getReference()->GetBinLowEdge(iobs+2) << "\t"; 
-    s << "   " << *(g.weightgrid(0,iobs)) << std::endl;
+  for( int iorder=0 ; iorder<g.nloops()+1 ; iorder++ ) {
+    s << "order: " << iorder << "\n";
+    for( int iobs=0 ; iobs<g.Nobs_internal() ; iobs++ ) {
+      s << "  " 
+	<< iobs << "\t" 
+	<< std::setprecision(5) << std::setw(5) << g.getReference()->GetBinLowEdge(iobs+1) << "\t- " 
+	<< std::setprecision(5) << std::setw(5) << g.getReference()->GetBinLowEdge(iobs+2) << "\t"; 
+      s << "   " << *(g.weightgrid(iorder,iobs)) << std::endl;
+    }
   }
-  //  }
 
   s << std::endl;
   

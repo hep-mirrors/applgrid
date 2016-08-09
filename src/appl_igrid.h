@@ -124,8 +124,8 @@ public:
   ~igrid();
 
   // optimise the grid dinemsions  
-  void optimise() { optimise(m_Ntau, m_Ny1, m_Ny2); }
-  void optimise(int NQ2, int Nx1, int Nx2);  
+  void optimise(int extrabins=1) { optimise(m_Ntau, m_Ny1, m_Ny2, extrabins ); }
+  void optimise(int NQ2, int Nx1, int Nx2, int extrabins=1);  
  
   // formatted print
   std::ostream&  print(std::ostream& s=std::cout) const {
@@ -503,10 +503,26 @@ private:
     double y = fy(x);
     // make sure we are in the range covered by our binning
     if( y<y1min() || y>y1max() ) {
+
+#if 0
       if ( y<y1min() ) std::cerr <<"\tWarning: x1 out of range: x=" << x << "\t(y=" << y << ")\tBelow Delx=" << x-fx(y1min());
       else             std::cerr <<"\tWarning: x1 out of range: x=" << x << "\t(y=" << y << ")\tAbove Delx=" << x-fx(y1min());
+
       std::cerr << " ( " <<  fx(y1max())  << " - " <<  fx(y1min())  << " )"  
 		<< "\ty=" << y << "\tDely=" << y-y1min() << " ( " << y1min() << " - " <<  y1max()  << " )" << std::endl;
+#endif
+
+
+      std::cerr <<"\tWarning: x1 out of range: x=" << x 
+		<< "\t[ " <<  fx(y1max())  << " - " <<  fx(y1min())  << " ]";
+
+      if ( y<y1min() ) std::cerr << "\tDelta x=" << x-fx(y1min()) << " above";
+      else             std::cerr << "\tDelta x=" << fx(y1max())-x << " below";
+
+      std::cerr	 << "\ty=" << y << "\t[ " << y1min() << " - " <<  y1max()  << " ]" 
+		 << "\tDelta y=" << ( y<y1min() ? y1min()-y : y-y1max() ) << std::endl;
+
+
       //     cerr << "\t" << m_weight[0]->yaxis() << "\n\t" 
       //          << m_weight[0]->yaxis().transform(fx) << std::endl; 
     }
@@ -521,11 +537,24 @@ private:
     double y = fy(x);
     // make sure we are in the range covered by our binning
     if( y<y2min() || y>y2max() ) {
+      
+#if 0
       if ( y<y2min() ) std::cerr <<"\tWarning: x2 out of range: x=" << x << "\t(y=" << y << ")\tBelow Delx=" << x-fx(y2min());
       else             std::cerr <<"\tWarning: x2 out of range: x=" << x << "\t(y=" << y << ")\tAbove Delx=" << x-fx(y2min());
       std::cerr << " ( " <<  fx(y2max())  << " - " <<  fx(y2min())  << " )"  
-	   << "\ty=" << y << "\tdely=" << y-y2min() << " ( " << y2min() << " - " <<  y2max()  << " )" << std::endl;
+		<< "\ty=" << y << "\tdely=" << y-y2min() << " ( " << y2min() << " - " <<  y2max()  << " )" << std::endl;
       //     cerr << "\t" << m_weight[0]->yaxis() << "\n\t" << m_weight[0]->yaxis().transform(fx) << std::endl; 
+#endif
+      
+      std::cerr <<"\tWarning: x2 out of range: x=" << x 
+		<< "\t[ " <<  fx(y2max())  << " - " <<  fx(y2min())  << " ]";
+      
+      if ( y<y2min() ) std::cerr << "\tDelta x=" << x-fx(y2min()) << " above";
+      else             std::cerr << "\tDelta x=" << fx(y2max())-x << " below";
+      
+      std::cerr	 << "\ty=" << y << "\t[ " << y2min() << " - " <<  y2max()  << " ]" 
+		 << "\tDelta y=" << ( y<y2min() ? y2min()-y : y-y2max() ) << std::endl;
+	
     }
     int k = (int)((y-y2min())/deltay2() - (m_yorder>>1)); // fast integer divide by 2
     if ( k<0 ) k=0;  

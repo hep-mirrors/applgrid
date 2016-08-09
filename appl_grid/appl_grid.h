@@ -311,7 +311,7 @@ public:
 
 
   // optimise the bin limits
-  void optimise(bool force=false);
+  void optimise(bool force=false, int extrabins=1 );
   void optimise(int NQ2, int Nx);
   void optimise(int NQ2, int Nx1, int Nx2);
 

@@ -37,6 +37,7 @@ double _fun(double y);
 
 namespace appl { 
 
+std::string date();
 
 /// forward declarations - full definitions included 
 /// from appl_grid.cxx 

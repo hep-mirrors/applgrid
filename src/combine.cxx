@@ -239,6 +239,7 @@ int main(int argc, char** argv) {
   /// check correct number ofg parameters
   if ( argc<2 ) return usage( std::cerr, argc, argv );
 
+  appl::grid::disable_threads(true);
 
   std::string output_grid = "";
 
@@ -575,5 +576,7 @@ int main(int argc, char** argv) {
   std::cout << argv[0] << ": added " << grids.size() << " grids in " << t << " s" << std::endl; 
   std::cout << argv[0] << ": output to  " << output_grid << std::endl; 
 
+  /// stupid threads done finish properly ....
+  std::exit(0);
   return 0;
 }

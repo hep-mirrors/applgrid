@@ -19,7 +19,7 @@
 namespace appl { 
 
 double integral( const std::vector<double>& d, const appl::grid& g );
-double integral( const TH1D* h, const appl::grid& g );
+double integral( const TH1D* h ); //, const appl::grid& g );
 
 }
 

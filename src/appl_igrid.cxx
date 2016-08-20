@@ -165,7 +165,7 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_weight = new SparseMatrix3d*[m_Nproc];
   construct();
 
-  this->start_thread();
+  if ( !threads_disabled ) this->start_thread();
 }
 
 
@@ -210,7 +210,7 @@ appl::igrid::igrid(const appl::igrid& g) :
   for( int ip=0 ; ip<m_Nproc ; ip++ )   m_weight[ip] = new SparseMatrix3d(*g.m_weight[ip]);
   //  construct();
 
-  this->start_thread();
+  if ( !threads_disabled ) this->start_thread();
 }
 
 
@@ -340,7 +340,7 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
 
   setlimits();
 
-  this->start_thread();
+  if ( !threads_disabled ) this->start_thread();
 
 }
 

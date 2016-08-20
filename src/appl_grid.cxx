@@ -107,6 +107,16 @@ std::string appl::compiled() {  return __DATE__; }
 std::string appl::version()  { return VERSION; }
 
 
+/// current time
+std::string appl::date() { 
+  time_t _t;
+  time(&_t);
+  std::string a = ctime(&_t);
+  std::string b = "";
+  for ( unsigned i=0 ; i<a.size()-1 ; i++ ) b+=a[i];
+  return b;
+}
+
 
 
 appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order, 
@@ -743,6 +753,7 @@ void appl::grid::add_igrid(int bin, int order, igrid* g) {
 
 
 appl::grid::~grid() {
+
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {  
     if( m_grids[iorder] ) { 
       for ( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
@@ -1052,7 +1063,9 @@ void appl::grid::addpdf( const std::string& s, const std::vector<int>& combinati
 	if ( appl_pdf::getpdf(names[i])==0 ) { 
 	  std::cout << "appl::grid::addpdf() creating new lumi_pdf " << names[i] << std::endl;
 	  lumi_pdf* lp = new lumi_pdf(names[i], combinations);
+	  //  latex( *lp );
 	  lp->removeDuplicates();
+	  //	  latex( *lp, "duff" );
 	}
 
 	// 	try {

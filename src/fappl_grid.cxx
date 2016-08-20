@@ -167,24 +167,28 @@ int getnbins_(const int& id) {
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) return gitr->second->Nobs();
   else  throw_exception( "No grid with id ", id );  
+  return 0; // just to shut up the compiler
 }
 
 int getbinnumber_(const int& id, double& x) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) return gitr->second->obsbin(x);
   else  throw_exception( "No grid with id ", id );  
+  return 0; // just to shut up the compiler
 }
 
 double getbinlowedge_(const int& id, int& bin) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) return gitr->second->obslow(bin);
   else  throw_exception( "No grid with id ", id );  
+  return 0; // just to shut up the compiler
 }
 
 double getbinwidth_(const int& id, const int& bin) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
   if ( gitr!=_grid.end() ) return gitr->second->deltaobs(bin);
-  else  throw_exception( "No grid with id ", id );  
+  else  throw_exception( "No grid with id ", id );
+  return 0; // just to shut up the compiler  
 }
 
 

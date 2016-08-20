@@ -132,6 +132,9 @@ inline std::ostream& operator<<( std::ostream& s, const lumi_pdf& _g ) {
 }
 
 
+void latex( const lumi_pdf& p, const std::string& d="" );
+
+
 
 #endif  // LUMI_PDF_H 
 

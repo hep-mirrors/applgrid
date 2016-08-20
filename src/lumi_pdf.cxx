@@ -295,7 +295,7 @@ void lumi_pdf::write(const std::string& filename) const {
 // std::string lumi_pdf::summary(std::ostream& s=std::cout) const { 
 std::string lumi_pdf::summary() const { 
   std::stringstream s_;
-  s_ << "lumi_pdf::lumi_pdf()         " << name() << "\tcombinations " << m_combinations.size() << " lookup size " << m_lookup.size() << " " << this; 
+  s_ << "lumi_pdf::lumi_pdf()\t" << name() << "\tcombinations " << m_combinations.size() << "\tlookup size " << m_lookup.size() << "\taddr: " << this; 
   return s_.str();
 }
 
@@ -303,7 +303,7 @@ std::string lumi_pdf::summary() const {
 
 void lumi_pdf::removeDuplicates() { 
 
-  std::cout << "lumi_pdf::removeDuplicates() " << name() << "\t size " << size() << " -> ";
+  std::cout << "lumi_pdf::removeDuplicates() " << name() << "\tsize " << size() << " -> ";
 
   std::vector<combination> combinations;
 
@@ -355,14 +355,133 @@ void lumi_pdf::restoreDuplicates() {
 
   m_combinations = combinations;
 
-
-
   m_Nproc = m_combinations.size();
 
   create_lookup();
   
-
 }
 
 
    
+
+
+
+#include <fstream>
+#include <cstdlib>
+
+
+
+void latex( const lumi_pdf& p, const std::string& d) {
+
+  std::ofstream zj( (d+p.name()+".tex").c_str() );
+ 
+  std::string _f[13] = { 
+    "\\bar{t}", 
+    "\\bar{b}", 
+    "\\bar{c}", 
+    "\\bar{s}", 
+    "\\bar{u}", 
+    "\\bar{d}",
+    "g",
+    "d",
+    "u", 
+    "s", 
+    "c", 
+    "b", 
+    "t" };
+
+  const std::string* f = _f+6; 
+
+
+  //  std::cout << "\\bigskip\n";
+
+  std::cout << "Contribution:   " << p.name() << "\t processes " << p.Nproc() << "\n";
+
+  zj << "\\documentclass[7pt,a4paper,landscape]{article}\n\n";
+
+  zj << "\\usepackage{makecell}\n\n";
+  zj << "\\usepackage[a4paper,landscape]{geometry}\n\n";
+
+  zj << "\\topmargin=-3cm\n";
+  zj << "\\textheight=18cm\n";
+  zj << "\\textwidth=28cm\n";
+  zj << "\\oddsidemargin=-2.2cm\n";
+  
+
+  zj << "\\begin{document}\n";
+
+  zj << "\\ \\\\ \\ \\\\ \\ \\\\\n";
+
+  zj << "{\\footnotesize\n";
+
+  zj << "\\hspace{-12cm}";
+  zj << "\\begin{minipage}[t]{18cm}\n";
+  zj << "\\begin{tabular}{cll}\\hline\\\\\n";
+
+
+  for ( int i=0 ; i<p.Nproc() ; i++ ) { 
+    //    std::cout << p[i] << std::endl;
+  
+    const combination& c = p[i];
+
+    const std::vector<int>& ind = c.index();
+
+   
+    int nrows = (ind.size()+27)/28;
+
+    zj << "\\makecell{ " << i;
+    for ( int ig=1 ; ig<nrows ; ig++ ) zj << " \\\\ \\ ";
+    zj << "}\t&\t";
+
+
+
+    zj << "\\makecell[l]{";
+    // zj << "\\thead[l]{";
+
+    for ( unsigned j=0 ; j<ind.size() ; j++ ) {
+      zj << ind[j] << " ";
+      if ( (j+1)%28==0 ) zj << "\\\\";
+    }
+
+
+    zj << "}\t&\t";
+
+
+    zj << "\\makecell[l]{ ";
+ 
+    for ( unsigned j=0 ; j<c.size() ; j++ ) {
+
+      int p0 = c[j].first;
+      int p1 = c[j].second;
+      
+      if ( j>0 ) zj << " + ";
+
+      zj << "($" << f[p0] << "$, $" << f[p1] << "$)\t";  
+      
+    }
+    for ( int ig=1 ; ig<nrows ; ig++ ) zj << " \\\\ \\ ";
+    zj << "}";
+
+    zj << "\\\\\n";
+    
+  }
+
+  zj << "\\hline\n";
+  zj << "\\end{tabular}\n";
+  zj << "\\end{minipage}\n";
+
+
+  zj << "}\n";
+  zj << "\\end{document}\n";
+
+
+  zj.close();
+
+
+  std::system( (std::string("pdflatex ")+ d+p.name()+".tex").c_str() );
+
+}
+
+
+
+

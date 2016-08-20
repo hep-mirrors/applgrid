@@ -13,6 +13,7 @@
 
 #include "appl_grid/integral.h"
 
+
 namespace appl { 
 
 
@@ -32,7 +33,7 @@ double integral( const std::vector<double>& d, const grid& g ) {
   return sum;
 } 
 
-double integral( const TH1D* h, const appl::grid& g ) { 
+double integral( const TH1D* h ) {  //, const appl::grid& g ) { 
   return h->Integral( 1, h->GetNbinsX(), "width" ); 
 }
 

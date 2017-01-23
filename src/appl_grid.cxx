@@ -84,7 +84,7 @@ void Splitting(const double& x, const double& Q, double* xf, int nLoops) {
 
 #else
 
-void Splitting(const double& x, const double& Q, double* xf) {
+void Splitting(const double& , const double& , double* , int ) {
   throw appl::grid::exception( "hoppet library not included - cannot call splitting function"  ); 
   return; // technically, don't need this - should throw an exception
 }
@@ -116,6 +116,15 @@ std::string appl::date() {
   for ( unsigned i=0 ; i<a.size()-1 ; i++ ) b+=a[i];
   return b;
 }
+
+
+/// simple test if a file exists
+bool appl::file_exists(const std::string& s) {
+  struct stat sb;
+  if ( stat( s.c_str(), &sb)==0 ) return true; // && S_ISREG(sb.st_mode ))
+  else return false;
+}
+
 
 
 
@@ -362,7 +371,7 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   //  m_version = _version;
   
   std::cout << "\tversion " << _version;
-  if ( _version != m_version ) std::cout  << "(transformed to " << m_version << ")";
+  if ( _version != m_version ) std::cout  << " (transformed to " << m_version << ")";
   std::cout << std::endl;
 
   if ( getDocumentation()!="" ) std::cout << getDocumentation() << std::endl; 
@@ -734,7 +743,7 @@ void appl::grid::add_igrid(int bin, int order, igrid* g) {
   } 
 
   if ( !(bin>=0 && bin<Nobs_internal() ) ) {
-    std::cerr << "grid::add_igrid() observable bin out of range " << bin << std::endl; 
+    //    std::cerr << "grid::add_igrid() observable bin out of range " << bin << std::endl; 
     return;
   }
 
@@ -820,17 +829,39 @@ appl::grid& appl::grid::operator=(const appl::grid& g) {
 } 
   
 
+
+
+double integral( TH1D* h ) { 
+  double d = 0;
+  for ( int i=0 ; i<h->GetNbinsX() ; i++ ) d += h->GetBinContent(i+1);
+  return d;
+}
+
+
 appl::grid& appl::grid::operator*=(const double& d) { 
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs])*=d; 
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs]) *= d; 
   }
   getReference()->Scale( d );
+  getReference_internal()->Scale( d );
   combineReference(true);
+
   return *this;
 }
 
 
+void hprint( TH1D* h ) { 
+  for ( int i=1 ; i<=h->GetNbinsX() ; i++ ) std::cout << h->GetBinContent(i) << " ";
+  std::cout << std::endl;
+}
 
+
+
+/// this is messed up - how can we apply "per bin" normalisations
+/// it we have specified more actual bins and are combining them 
+/// a-posteriori ? 
+/// Fixme: at some point *remove* the bin combining functionality
+///        it is far too much of a pain to maintain
 
 appl::grid& appl::grid::operator*=(const std::vector<double>& v) {
 
@@ -840,14 +871,24 @@ appl::grid& appl::grid::operator*=(const std::vector<double>& v) {
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs])*=v[iobs]; 
   }
- 
+
+#if 0   
   for ( int i=0 ; i<getReference()->GetNbinsX() ; i++ ) {
     int ih=i+1;
     getReference()->SetBinContent( ih,  getReference()->GetBinContent(ih)*v[i] );
     getReference()->SetBinError(   ih,  getReference()->GetBinError(ih)*v[i] );
   }
+#endif
+
+  for ( int i=0 ; i<getReference_internal()->GetNbinsX() ; i++ ) {
+    int ih=i+1;
+    //   std::cout << "v[" << i << "] = " << v[i] << std::endl;
+    getReference_internal()->SetBinContent( ih,  getReference_internal()->GetBinContent(ih)*v[i] );
+    getReference_internal()->SetBinError(   ih,  getReference_internal()->GetBinError(ih)*v[i] );
+  }
 
   combineReference(true);
+
   return *this;
 }
 
@@ -868,15 +909,17 @@ appl::grid& appl::grid::operator+=(const appl::grid& g) {
   m_run      += g.m_run;
   m_optimised = g.m_optimised;
   m_trimmed   = g.m_trimmed;
-  if ( Nobs_internal()!=g.Nobs_internal() )   throw exception("grid::operator+ Nobs bin mismatch");
-  if ( m_order!=g.m_order ) throw exception("grid::operator+ different order grids");
+  if ( Nobs_internal()!=g.Nobs_internal() ) throw exception("grid::operator+ Nobs bin mismatch");
+  if ( m_order!=g.m_order )                 throw exception("grid::operator+ different order grids");
   if ( m_leading_order!=g.m_leading_order ) throw exception("grid::operator+ different order processes in grids");
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
     for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs]) += (*g.m_grids[iorder][iobs]); 
   }
 
   /// grrr use root TH1::Add() even though I don't like it. 
-  getReference()->Add( g.getReference() );
+  //  getReference()->Add( g.getReference() );
+  getReference_internal()->Add( g.getReference_internal() );
+
   combineReference(true);
 
   return *this;
@@ -935,8 +978,8 @@ void appl::grid::fill_phasespace(const double x1, const double x2, const double 
   //  std::cout << "grid::fill_phasespace() iobs " << iobs << "\tobs=" << obs << std::endl;
 
   if ( iobs<0 || iobs>=Nobs_internal() ) {
-    std::cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
-    std::cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
+    // std::cerr << "grid::fill() iobs out of range " << iobs << "\tobs=" << obs << std::endl;
+    // std::cerr << "obs=" << obs << "\tobsmin=" << obsmin() << "\tobsmax=" << obsmax() << std::endl;
     return;
   }
   if ( m_symmetrise && x2<x1 )  m_grids[iorder][iobs]->fill_phasespace(x2, x1, Q2, weight);
@@ -1567,7 +1610,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
       if ( nloops==0 ) {
 	/// leading order cross section
 	if ( subproc()==-1 ) {  
-	  m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
+	  m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 0, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
 	}
 	else { 
 	  /// fixme: for the subproceses, this is technically incorrect - the "LO" contribution 
@@ -1579,7 +1622,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 	  ///        can have different subprocesses from the actual NLO part, so the correct 
 	  ///        LO/NLO separation is only guaranteed for the full convolution, and not by 
 	  ///        subprocess
-	  m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 1, dynamic_factor*rscale_factor, dynamic_factor*rscale_factor, Escale);
+	  m_grids[0][iobs]->convolute( _pdf1, _pdf2, m_genpdf[0], alphas, m_leading_order, 1, dynamic_factor*rscale_factor, dynamic_factor*fscale_factor, Escale);
 	}
 
       }
@@ -2654,7 +2697,7 @@ void appl::grid::combineReference(bool force) {
 
   combineBins( hvec );
   combineBins( hvece, 2 );
-  
+
   std::vector<double> limits(m_combine.size()+1);
   
   int i=0;
@@ -2770,4 +2813,39 @@ std::ostream& operator<<(std::ostream& s, const appl::grid& g) {
   s << std::endl;
   
   return s;
+}
+
+
+void appl::grid::replaceBin( int iobs, grid& g ) { 
+
+  std::cout << "replace bin " << iobs << std::endl;
+ 
+  for ( int iorder=0 ; iorder<m_order ; iorder++ ) { 
+    add_igrid( iobs, iorder, g.m_grids[iorder][iobs] );
+  }
+
+#if 0
+  int iorder = 2;
+  //  for ( int iorder=0 ; iorder<m_order ; iorder++ ) 
+  { 
+    std::cout << "order: " << iorder << std::endl;
+    
+    std::cout <<  m_grids[iorder][iobs] << " " << g.m_grids[iorder][iobs] << std::endl;
+
+    igrid* ig = m_grids[iorder][iobs];
+
+    igrid* hig = new igrid( *ig );
+
+    //    m_grids[iorder][iobs] = 
+    //    m_grids[iorder][iobs]->setparent( this ); 
+  }
+#endif
+
+  std::cout << "fixing reference: " << iobs << std::endl;
+  getReference_internal()->SetBinContent(iobs+1, g.getReference_internal()->GetBinContent(iobs+1) );
+  getReference_internal()->SetBinError(iobs+1, g.getReference_internal()->GetBinError(iobs+1) );
+
+  /// grrr, is this correct - why, why, why, why why o why can't we 
+  /// just use the correct binning in the first place !!!
+  combineReference(true); 
 }

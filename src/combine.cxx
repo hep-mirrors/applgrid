@@ -10,10 +10,15 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <algorithm>
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <sys/stat.h>
+
+#include <algorithm>
+
 
 #include "appl_grid/appl_grid.h"
 #include "amconfig.h"
@@ -22,6 +27,30 @@
 
 
 #include "TFile.h"
+#include "TPad.h"
+
+template<typename T>
+bool bdelete( std::vector<T>& v, const T& t ) {
+  for ( typename std::vector<T>::iterator itr=v.begin() ; itr!=v.end() ; ) { 
+    if ( *itr == t ) v.erase( itr );
+    else itr++;
+  }
+  return true;
+} 
+
+
+double integral( TH1D* h ) { 
+  double d = 0;
+  for ( int i=0 ; i<h->GetNbinsX() ; i++ ) d += h->GetBinContent(i+1);
+  return d;
+}
+
+
+void print( TH1D* h ) { 
+  for ( int i=1 ; i<=h->GetNbinsX() ; i++ ) std::cout << h->GetBinContent(i) << " ";
+  std::cout << std::endl;
+}
+
 
 int usage(std::ostream& s, int argc, char** argv) { 
   if ( argc<1 ) return -1; /// should never be the case 
@@ -33,9 +62,10 @@ int usage(std::ostream& s, int argc, char** argv) {
   s << "    -g, --gscale   value\t rescale output grid by value, \n";
   s << "    -r, --rscale   value\t rescale reference histogram by value, \n";
   s << "    -s, --scale    value\t rescale both output grid and reference histogram by value\n";
-  //  s << "    -a, --all     \tadd all grids (default)\n";
   s << "    -w, --wscale   value\t rescale the weight normalisation for the output grid\n";
   s << "        --weight   value\t set the value of the weight normalisation for the output grid directly\n";
+  s << "    -n, --normfile value\t file containing bin-by-bin normalisations for adding grids\n";
+  s << "    -a, --all           \t add all grids (default)\n";
   s << "        --optimise      \t optimise the output grid\n";
   s << "        --compress value\t try to reduce the number of parton luminosity\n"
     << "                        \t combinations\n";
@@ -59,7 +89,7 @@ int usage(std::ostream& s, int argc, char** argv) {
 
 struct bin {
 
-  bin( double y=0, double ye=0 ) : _x(0), _y(y), _ye(ye), _y2(_y*_y), _n(1) { 
+  bin( double y=0, double ye=0, int n=1 ) : _x(0), _y(y), _ye(ye), _y2(_y*_y), _n(n) { 
     _ys.push_back(_y);
   } 
 
@@ -80,10 +110,22 @@ struct bin {
     return *this;
   }
 
+  bin& operator-=( const bin& b) { 
+    _y  -= b._y;
+    _y2 -= b._y2;
+    _ye  = std::sqrt( _ye*_ye - b._ye*b._ye );
+    _n  -= b._n;
+    bdelete( _ys, b._y );
+    return *this;
+  }
+
+
+
   bin& operator*=( double d ) { 
     _y  *= d;
     _ye *= d;
     _y2 *= d*d;
+    //    _n  *= d;
     for ( unsigned i=0 ; i<_ys.size() ; i++ ) _ys[i] *= d;
     return *this;
   }
@@ -119,7 +161,7 @@ struct bin {
     std::vector<double> v = _ys;
     std::sort( v.begin(), v.end() );
     if ( (v.size()&1) ) return v[v.size()/2];
-    return 0.5*(v[v.size()/2] + v[v.size()/2-1]);
+    return 0.5*(v[v.size()/2] + v[(v.size()-1)/2]);
   }
 
 
@@ -127,27 +169,59 @@ struct bin {
 
 
 
-bin operator+( const bin& b0, const bin& b1 ) { return bin( b0._y+b1._y, std::sqrt( b0._ye*b0._ye* + b1._ye*b1._ye) ); }
-bin operator*( double d, const bin& b )       { return bin( d*b._y, d*b._ye ); }
+
+bin operator+( const bin& b0, const bin& b1 ) { return bin( b0._y+b1._y, std::sqrt( b0._ye*b0._ye* + b1._ye*b1._ye), b0._n+b1._n ); }
+bin operator*( double d, const bin& b )       { return bin( d*b._y, d*b._ye, d*b._n ); }
 
 
 
 /// cross section 
 
-struct Xsection : public std::vector<bin> {
+struct Xsection { // : public std::vector<bin> {
   
+  Xsection() { }
+
   Xsection(TH1D* h) { // : _bins(*this) { 
-    for ( int i=0 ; i<h->GetNbinsX() ; i++ ) _bins.push_back( bin( h, i+1 ) );
+    add( h ); //for ( int i=0 ; i<h->GetNbinsX() ; i++ ) _bins.push_back( bin( h, i+1 ) );
   }
   
+  void add( bin& b ) {  _bins.push_back( b ); }
+
+  
+  void add( TH1D* h ) { 
+    if ( _bins.empty() ) { 
+      for ( int i=0 ; i<h->GetNbinsX() ; i++ ) _bins.push_back( bin( h, i+1 ) );
+    }
+    else { 
+      if ( _bins.size()!=unsigned(h->GetNbinsX()) ) { 
+	std::cerr << "Xsection::add() bin mismatch " << _bins.size() << " " << h->GetNbinsX() << std::endl;
+	return;
+      }
+      for ( int i=0 ; i<h->GetNbinsX() ; i++ ) _bins[i] += bin( h, i+1 );
+    }
+  }
+
+
   bin  operator[](int i) const { return _bins[i]; }
   bin& operator[](int i)       { return _bins[i]; }
 
   unsigned size()  const { return _bins.size(); };
   bool     empty() const { return _bins.empty(); };
 
-  Xsection& operator+=( Xsection& x) { 
+  Xsection& operator+=( const Xsection& x) { 
     for ( unsigned i=0 ; i<_bins.size() ; i++ ) _bins[i] += x._bins[i];
+    return *this;
+  }
+
+
+  Xsection& operator-=( const Xsection& x) { 
+    for ( unsigned i=0 ; i<_bins.size() ; i++ ) _bins[i] -= x._bins[i];
+    return *this;
+  }
+
+
+  Xsection& operator+=( TH1D* h ) { 
+    add( h );
     return *this;
   }
 
@@ -160,7 +234,7 @@ struct Xsection : public std::vector<bin> {
   std::vector<bin>  mean() const {
     std::vector<bin> _mean;
     for ( unsigned i=0 ; i<_bins.size() ; i++ ) {
-      _mean.push_back( bin( _bins[i].mean(), _bins[i].mean_error() ) ); 
+      _mean.push_back( bin( _bins[i].mean(), _bins[i].mean_error(), _bins[i]._n ) ); 
     }
     return _mean;
   }
@@ -169,7 +243,7 @@ struct Xsection : public std::vector<bin> {
   std::vector<bin>  median() const {
     std::vector<bin> _median;
     for ( unsigned i=0 ; i<_bins.size() ; i++ ) {
-      _median.push_back( bin( _bins[i].median(), _bins[i].mean_error() ) ); 
+      _median.push_back( bin( _bins[i].median(), _bins[i].mean_error(), _bins[i]._n ) ); 
     }
     return _median;
   }
@@ -188,26 +262,39 @@ Xsection operator*( const Xsection& x, double d ) {
 }
 
 
-Xsection operator*( double d, const Xsection& x )        { return x*d; }
+Xsection operator*( double d, const Xsection& x )  { return x*d; }
 
 
-/// calculate a chi2 of the Xsecstion with respect to some value 
+Xsection operator-( const Xsection& x1, const Xsection& x2 ) { 
+  Xsection xs = x1;
+  xs += (-1*x2);
+  return xs;
+}
 
-double chi2( const std::vector<bin>& xs1, const Xsection& xs2, double fsigma ) { 
+
+
+
+
+
+double chi2( const Xsection& xs1, const Xsection& xs2 ) { 
 
   if ( xs1.empty() ) return 0;
+
+  if ( xs1.size()!=xs2.size() ) return 0;
   
   double c2 = 0;
 
-  for ( unsigned i=0 ; i<xs1.size() ; i++ ) { 
-    double d = xs1[i]._y - xs2[i]._y;
+  for ( unsigned i=0 ; i<xs1.size() ; i++ ) {
+ 
+    double d = xs1[i].mean() - xs2[i]._y;
     
     /// take fractional sigma and turn it to actual sigma
-    double s = xs1[i]._y*fsigma;
+    double s2 = ( xs1[i].mean_error()*xs1[i].mean_error() + xs2[i]._ye*xs2[i]._ye );
 
     /// 5*"sigma on the mean" will be treated as our
     /// ad hoc figure of merrit
-    c2 += d*d/(s*s);
+    if ( s2>0 ) c2 += d*d/s2;
+    
   }
 
   /// return chi2 per dof
@@ -216,10 +303,71 @@ double chi2( const std::vector<bin>& xs1, const Xsection& xs2, double fsigma ) {
 }
 
 
+
+
+double chi2_diff( Xsection& v1,  Xsection& v2, double chi2_limit=5 ) { 
+
+  if ( v1.size()!=v2.size() ) return 0;
+  
+  double chi2 = 0;
+  
+  bool neg = false;
+  bool pos = false;
+
+  double max_chi2 = 0;
+
+  for ( size_t i=0 ; i<v1.size() ; i++ ) { 
+    
+    //    double d  = v1[i]._y - v2[i]._y;
+    //    double s2 = v1[i]._ye*v1[i]._ye + v2[i]._ye*v2[i]._ye;
+
+    double d = v1[i].mean() - v2[i]._y;
+    /// take fractional sigma and turn it to actual sigma
+    double s2 = ( v1[i].mean_error()*v1[i].mean_error() + v2[i]._ye*v2[i]._ye );
+
+       
+    double c2 = 0;
+
+    if ( s2!=0 ) c2 = d*d/s2;
+   
+    chi2 +=  c2;
+    
+    //    std::cout << "diff " << i << " " << d << " " << c2 << std::endl;
+
+    /// ensure inly large excursions in adjacent bins 
+    /// are counted
+    if ( c2 > chi2_limit ) { 
+      if ( d < 0 ) { 
+	neg = true;
+	if ( pos && c2>max_chi2 ) max_chi2 = c2;  
+      }
+      else if ( d > 0 ) { 
+	pos = true; 
+	if ( neg && c2>max_chi2 ) max_chi2 = c2;  
+      }
+    }
+    else { 
+      neg = false;
+      pos = false;
+    }
+
+  }
+  
+  return max_chi2;
+}
+
+
+
+
+
+
+
+
+
 /// streamers 
 
 std::ostream& operator<<( std::ostream& s, const bin& b ) { 
-  return s << "( " << b._x << ":\t" << b._y << " +- " << b._ye << " " << ( b._y!=0 ? 100*b._ye/b._y : 0 ) << "%   n: " << b._n << " )";
+  return s << "( " << b._x << " :\t" << b._y << " +- " << b._ye << " " << ( b._y!=0 ? 100*b._ye/b._y : 0 ) << "%   n: " << b._n << " )";
 }
 
 template<class T>
@@ -234,12 +382,147 @@ std::ostream& operator<<( std::ostream& s, const Xsection& x ) {  return s << x.
 
 
 
+double exclude( Xsection xsec, TH1D* ref, double chi2_limit=5 ) { 
+
+    Xsection txsec( ref );
+    Xsection diff = xsec;
+      
+    diff -= txsec;
+
+    /// chi2 of this xsec with respect to the mean *excluding* this one
+    double c2 = chi2_diff( diff, txsec, chi2_limit ); 
+
+    if ( c2 < chi2_limit ) return c2;
+
+    return 0;
+}
+
+
+
+
+
+class NormVal { 
+
+public:
+
+  NormVal( const std::string& f, int n=0 ) : mfile(f), mif(0), mbins(n) { 
+    if ( mfile!="" ) { 
+      /// first test if file actually exists ...
+      if ( !appl::file_exists( mfile)  ) {
+	std::cerr << "whoops, specified grid weight file does not exist" << std::endl;
+	return;
+      }
+      /// then open it ...
+      mif = new std::ifstream(mfile.c_str());
+      /// test it opened properly ... 
+    }
+    else std::cerr << "whoops, no grid weight file specified" << std::endl;
+  } 
+  
+  
+  
+  std::vector<double> getentries() { 
+
+    std::vector<double> v;
+    
+    if ( mbins==0 ) { 
+      std::cerr << "whoops, no bins specified" << std::endl;
+      return v;
+    }
+
+    if ( mif==0 ) return v;
+
+    //    mnormval.push_back(std::vector<double>(mnbins,0));
+  
+    //    std::vector<double>& v = mnormval.back();
+  
+    v = std::vector<double>( mbins, 0);
+
+    double in;
+    int i = 0;
+    while ( *mif >> in ) {
+      //     std::cout << "in " << in << std::endl;
+      v[i++] = in;
+      if ( i==mbins ) return  v;
+    }
+
+    if ( i<mbins ) { 
+      std::cerr << "whoops, too few bins specifed: " << i << " < " << mbins << std::endl;
+      return     std::vector<double>();
+    }
+
+    return v;
+  }
+    
+  std::ifstream* stream() { return mif; }
+
+private:
+  
+  std::string                         mfile;
+  std::ifstream*                      mif;
+
+  int                                 mbins;
+  
+  std::vector< std::vector<double> > mnormval;
+
+};
+
+
+
+///  if requested, calculate the mean, median etc of all the cross sections
+///  from the grids, and exclude any (complete) grids where the xsection in 
+///  any bin is larger than some  chi2 limit for that bin with respect to 
+///  the mean ( or median ? ) without including that grid
+///  - returns the updated ref vector, and fgrids vector with only the 
+///    accepted grids
+///
+///  NB: developing changes to exclude grids due to large, oposite sign 
+///      chi2 variations in *individual* adjacent bins only.
+
+bool thin_grids( double chi2_limit, std::vector<TH1D*>& ref, std::vector<std::string>& fgrids ) { 
+
+  /// need at least 2 grids for an rms
+
+  if ( ref.size()<2 ) return false; 
+ 
+  /// calculate mean and median ...
+
+  Xsection xsec;
+  
+  for ( size_t i=0 ; i<ref.size() ; i++ ) xsec += ref[i];
+
+  //  std::cout << "median " << xsec.median() << std::endl;
+  //  std::cout << "mean   " << xsec.mean()   << std::endl;
+  
+  /// now find grids outside the relevant ranges ...
+
+  std::vector<std::string> fgrids_;
+
+  for ( size_t i=0 ; i<ref.size() ; i++ ) { 
+
+    double c2 = exclude( xsec, ref[i], chi2_limit );
+
+    std::cout << "grid: " << i << " " << c2 << std::endl;
+
+    if ( c2<chi2_limit ) fgrids_.push_back( fgrids[i] );
+
+  }
+  
+  if ( fgrids.size()>fgrids_.size() ) fgrids = fgrids_;
+
+  return true;
+}
+
+
+
+
+
+
 int main(int argc, char** argv) { 
 
   /// check correct number ofg parameters
   if ( argc<2 ) return usage( std::cerr, argc, argv );
 
-  appl::grid::disable_threads(true);
 
   std::string output_grid = "";
 
@@ -253,7 +536,7 @@ int main(int argc, char** argv) {
   }
 
   /// scaling factors
-  double d = 1;      /// overall
+  double dscale = 1; /// overall
   double hscale = 1; /// histogram only
   double rscale = 1; /// grid only
 
@@ -272,15 +555,17 @@ int main(int argc, char** argv) {
   double chi2_limit = 0;
 
   /// the list of grids to process
-  std::vector<std::string> grids;
+  std::vector<std::string> fgrids;
 
   double weight = 0;
   double wscale   = 1;
 
   bool optimise = false;
   bool shrink   = false;
-  std::string newpdfname="";
- 
+  std::string newpdfname = "";
+  std::string normfile   = "";
+
+
   /// handle configuration parameters
   for ( int i=1 ; i<argc ; i++ ) { 
     if      ( std::string(argv[i])=="--verbose" ) verbose = true;
@@ -291,7 +576,7 @@ int main(int argc, char** argv) {
     }
     else if ( std::string(argv[i])=="-s" || std::string(argv[i])=="--scale" ) { 
       ++i;
-      if ( i<argc ) d = std::atof(argv[i]);
+      if ( i<argc ) dscale = std::atof(argv[i]);
       else  return usage( std::cerr, argc, argv );
     }
     else if ( std::string(argv[i])=="-g" || std::string(argv[i])=="--gscale" ) { 
@@ -342,37 +627,46 @@ int main(int argc, char** argv) {
       else  return usage( std::cerr, argc, argv );
     }
     else if ( std::string(argv[i])=="-a" || std::string(argv[i])=="--all" ) addall = true;
+    else if ( std::string(argv[i])=="-n" || std::string(argv[i])=="--normfile" ) { 
+      ++i;
+      if ( i<argc ) { 
+	normfile = argv[i];
+      }
+      else  return usage( std::cerr, argc, argv );
+    }
+    else if ( std::string(argv[i])[0]=='-' ) return usage( std::cerr, argc, argv ); 
     else { 
-      grids.push_back(argv[i]);
+      if ( appl::file_exists(argv[i]) ) fgrids.push_back(argv[i]);
     }
   }
 
-  if ( d!=1 ) { 
-    if ( !hset ) hscale = d;
-    if ( !rset ) rscale = d; 
+  if ( dscale!=1 ) { 
+    if ( !hset ) hscale = dscale;
+    if ( !rset ) rscale = dscale; 
   }
 
-  if ( grids.size()<1 ) return usage(std::cerr, argc, argv);
+  if ( fgrids.size()<1 ) return usage(std::cerr, argc, argv);
 
   if ( output_grid=="" ) return usage(std::cerr, argc, argv);
+
+  NormVal* nv = 0;
 
   /// before adding the grids together, need tpo go through them to reject
   /// the outliers
 
   /// start by reading all the reference histograms and calculating the means etc
 
-  std::cout << "reading grids:\n" << grids << std::endl;
+  std::cout << "reading grids:\n" << fgrids << std::endl;
   std::cout << "output to: "      << output_grid << std::endl;
 
   std::vector<TH1D*> ref;
-  ref.reserve(grids.size());
+  ref.reserve(fgrids.size());
 
 
-  std::vector<std::string>::iterator gitr=grids.begin();
-  while ( gitr!=grids.end()  ) { 
+  std::vector<std::string>::iterator gitr=fgrids.begin();
+  while ( gitr!=fgrids.end()  ) { 
     TFile f(gitr->c_str());
     TH1D* h_ = (TH1D*)f.Get("grid/reference");
-
 
     /// remove obvious non-grid files
     if ( h_ ) { 
@@ -384,174 +678,119 @@ int main(int argc, char** argv) {
       gitr++;
     }
     else {
-      grids.erase( gitr );
+      std::cout << "skipping file " << *gitr << std::endl;
+      fgrids.erase( gitr );
     }
     f.Close();
   }
 
   std::cout << "main() read reference histograms" << std::endl;
 
+
   if ( ref.empty() ) { 
     std::cerr << "grid list empty " << std::endl;
     return 0;
   }
 
-  std::vector<std::string> newgrids;
-  
-  if ( grids.size()==1 ) addall = true;
-    
 
+  if ( fgrids.empty() ) return 0;
 
-  if ( !addall ) { 
+  if ( fgrids.size()==1 ) addall = true;
 
-    /// now get cross section measures and the rms, medians etc
-
-    Xsection txsec( ref[0] );
-    
-    for ( unsigned i=1 ; i<ref.size() ; i++ ) { 
-      Xsection _txsec( ref[i] );
-      txsec += _txsec;
-    }  
-        
-    std::vector<bin> _mean   = txsec.mean();
-    std::vector<bin> _median = txsec.median();
-    
-    /// find median fractional fractional rms
-    
-    std::vector<double> rms; 
-    rms.reserve(_mean.size());
- 
-    for ( unsigned i=0 ; i<_mean.size() ; i++ ) { 
-      if ( _mean[i]._y ) rms.push_back(_mean[i]._ye/_mean[i]._y);
-      else               rms.push_back(100);
-    }
-    
-    std::sort(rms.begin(),rms.end());
-    
-    double median_error = 0;
-  
-    if ( !rms.empty() ) { 
-      if ( rms.size()&1 ) { 
-	median_error = rms[rms.size()/2];
-	//  std::cout << "median uncertainty " << median_error << std::endl;
-      }
-      else { 
-	median_error = 0.5*(rms[rms.size()/2]+rms[rms.size()/2-1]);
-	//      std::cout << "median uncertainty " << median_error << std::endl;
-      }
-    }
-    
-    
-    //  std::cout << "mean: \n" << _mean << "\nmedian: \n" << _median << std::endl;
-    
-    /// now loop through them again, find thos with large fluctuations and exclude them
-    
-    double fsigma = median_error*std::sqrt(grids.size());
-    
-    for ( unsigned i=1 ; i<ref.size() ; i++ ) { 
-      Xsection _txsec( ref[i] );
-      
-      double c2 = chi2( _median, _txsec, fsigma );
-      
-      //    std::cout << grids[i] << "\tchi2 " << c2 << std::endl;
-      
-      /// exclude any grids where the cross section is outside 4 sigma of 
-      /// the median fractional uncertainty
-      
-      if ( c2<chi2_limit ) newgrids.push_back( grids[i] );
-      else { 
-	std::cout << "excluding " << grids[i] << "\tchi2 " << c2 << std::endl;
-      }
-    }
-    
-  }
-  else {
-    newgrids = grids;
-  }
-  
-  std::cout << "newgrids.empty() " << newgrids.empty() << std::endl;
-
-  if ( newgrids.empty() ) return 0;
-
-  grids = newgrids;
+  if ( !addall ) thin_grids( chi2_limit, ref, fgrids );
 
   struct timeval tstart = appl_timer_start();
 
+
   /// now add the grids together
   
-  appl::grid  g( grids[0] );
+  appl::grid  g( fgrids[0] );
 
   g.untrim();
 
+  if ( normfile!="" ) {
+
+    if ( nv==0 ) nv = new NormVal( normfile, g.Nobs() );
+
+    std::vector<double> v = nv->getentries();
+
+    if ( v.size()!=unsigned(g.Nobs()) ) { 
+      std::cerr << argv[0] << " mismatched number of weight file bins: " <<  v.size() << " " << g.Nobs() << std::endl; 
+      return 0; //usage( std::cout, argc, argv );
+    }
+
+    g *= v;
+
+  }
 
   /// will use the rms of the different reference histograms to estimate the proper 
   /// uncertainties
 
-  std::vector<bin> bxsec;
-  TH1D* h = g.getReference();
+#if 0  
 
-  //  for ( int i=0 ; i<h->GetNbinsX() ; i++ ) bxsec.push_back( bin(h,i+1) );
+  int ig = 1;
 
-  //  std::cout << bxsec << std::endl;
+  g.getReference()->SetLineColor( ig++ );
+  g.getReference()->DrawCopy();
 
-  Xsection xsec( g.getReference() );
+  gPad->SetLogy(true);
 
-  //  std::cout << xsec << std::endl;
+#endif
 
   if ( verbose ) std::cout << g.getDocumentation() << std::endl;
 
-  for ( unsigned i=1 ; i<grids.size() ; i++ ) { 
+  for ( unsigned i=1 ; i<fgrids.size() ; i++ ) { 
 
     double t = appl_timer_stop( tstart )*0.001; 
 
-    double remaining = t*grids.size()/i - t;
+    double remaining = t*fgrids.size()/i - t;
 
-    std::cout << "applgrid-combine: adding grid " << i+1 << " of " << grids.size() 
+    std::cout << "applgrid-combine: adding grid " << i+1 << " of " << fgrids.size() 
 	      << "\ttime so far " << t << "s"  
 	      << "\testimated time remaining " << remaining << "s"  
 	      << std::endl;  
 
-    appl::grid  _g( grids[i] );
+    appl::grid  _g( fgrids[i] );
     _g.untrim();
     if ( verbose ) std::cout << _g.getDocumentation() << std::endl;
+
+    if ( nv!=0 ) { 
+
+      std::vector<double> v = nv->getentries();
+      if ( v.size()!=unsigned(_g.Nobs()) ) { 
+	std::cerr << argv[0] << " mismatched number of weight file bins: " <<  v.size() << " " << g.Nobs() << std::endl; 
+	return -1; // usage( std::cout, argc, argv );
+      }
+
+      _g *= v;
+
+    }
+
     g += _g;
 
-    Xsection _xsec( _g.getReference() );
-
-    //    std::cout << i << " " <<  xsec << std::endl;
-  
-    xsec += _xsec;
-
-    //   std::cout << i << " " << _xsec << std::endl;
-    //   std::cout << i << "\n" <<  xsec.mean() << std::endl;
-
   }
-
 
   ///  for ( int i=0 ; i<h->GetNbinsX() ; i++ ) { std::cout << "h " << i << " " << h->GetBinContent(i+1) << std::endl; }   
-  ///  std::cout << "raw " << xsec << "\n" << xsec.mean() << "\n" << (xsec*grids.size()).mean() << std::endl;
+  ///  std::cout << "raw " << xsec << "\n" << xsec.mean() << "\n" << (xsec*fgrids.size()).mean() << std::endl;
   
-  /// get the errors, and 
+  std::cout << "rintegral " << integral( g.getReference() ) << std::endl;
 
-  if ( grids.size()>1 ) { 
-    std::vector<bin> m = xsec.mean();  
-
-    for ( unsigned i=0 ; i<m.size() ; i++ ) { 
-      h->SetBinContent(i+1, m[i]._y*grids.size() );
-      h->SetBinError(i+1, m[i]._ye*grids.size() );
-    }
-  }    
 
   if ( rscale!=1 ) { 
-    g *= rscale;
-    g.getReference()->Scale( 1/rscale );
+    g *= rscale;                         /// scales the grid *and* the reference histogram
+    g.getReference()->Scale( 1/rscale ); /// scale back down the reference histogram
+    //    g.Write(output_grid);
   }
 
+
   //  if ( hscale!=rscale ) g.getReference()->Scale( hscale/rscale );
-  if ( hscale!=1 ) g.getReference()->Scale( hscale );
+  if ( hscale!=1 ) { 
+    g.getReference()->Scale( hscale );
+  }
 
   if      ( wscale!=1 ) g.run() *= wscale;
   else if ( weight!=0 ) g.run()  = weight;
+
 
   if ( shrink ) { 
     struct timeval toptstart = appl_timer_start(); 
@@ -559,6 +798,7 @@ int main(int argc, char** argv) {
     double topt = appl_timer_stop( toptstart ); 
     std::cout << argv[0] << ": compressed grid in " << topt << " ms" << std::endl;   
   }
+
 
   if ( optimise ) { 
     struct timeval toptstart = appl_timer_start(); 
@@ -568,15 +808,17 @@ int main(int argc, char** argv) {
   }
 
 
+
   //  std::cout << "writing " << output_grid << std::endl;
   g.Write(output_grid);
 
   double t = appl_timer_stop( tstart )*0.001; 
   
-  std::cout << argv[0] << ": added " << grids.size() << " grids in " << t << " s" << std::endl; 
+  std::cout << argv[0] << ": added " << fgrids.size() << " grids in " << t << " s" << std::endl; 
   std::cout << argv[0] << ": output to  " << output_grid << std::endl; 
+    
 
-  /// stupid threads done finish properly ....
+  /// stupid threads don't always die properly
   std::exit(0);
   return 0;
 }

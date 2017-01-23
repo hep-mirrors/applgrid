@@ -51,6 +51,8 @@ const int MAXGRIDS = 5;
 std::string compiled();
 std::string version();
 
+bool file_exists(const std::string& s);
+
 
 /// externally visible grid class
 class grid {
@@ -572,6 +574,8 @@ public:
 
   std::vector<double>&       userdata()       { return m_userdata; }
   const std::vector<double>& userdata() const { return m_userdata; }
+
+  void replaceBin( int iobs, grid& ig );
 
 protected:
 

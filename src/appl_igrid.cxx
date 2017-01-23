@@ -205,8 +205,12 @@ appl::igrid::igrid(const appl::igrid& g) :
   mfx = m_fmap.find(m_transform)->second.mfx;
   mfy = m_fmap.find(m_transform)->second.mfy;
 
+  std::cout << "sparse" << __LINE__ << std::endl;
 
   m_weight = new SparseMatrix3d*[m_Nproc];
+
+  std::cout << "sparse "  << __LINE__ << std::endl;
+
   for( int ip=0 ; ip<m_Nproc ; ip++ )   m_weight[ip] = new SparseMatrix3d(*g.m_weight[ip]);
   //  construct();
 

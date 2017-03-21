@@ -1,5 +1,5 @@
 #! /bin/sh
-# Generated automatically by config.status (applgrid) 1.4.93
+# Generated automatically by config.status (applgrid) 1.4.94
 # Libtool was configured on host badger:
 # NOTE: Changes made to this file will be lost: look at ltmain.sh.
 
@@ -76,7 +76,7 @@ build=x86_64-apple-darwin15.6.0
 build_os=darwin15.6.0
 
 # A sed program that does not truncate output.
-SED="/usr/bin/sed"
+SED="/usr/local/bin/sed"
 
 # Sed that helps us avoid accidentally triggering echo(1) options like -n.
 Xsed="$SED -e 1s/^X//"

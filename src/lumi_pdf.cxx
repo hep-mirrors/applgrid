@@ -17,8 +17,16 @@
 #include <algorithm>
 
 
+
+std::string str_replace( std::string s ) { 
+  std::string a = s;
+  for ( int i=a.size() ; i-- ; ) if ( a[i]=='_' ) a[i]='-';
+  return a;
+}
+
 #include "appl_grid/lumi_pdf.h"
 
+void latex( const lumi_pdf& p, const std::string& d);
 
 
 lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) : // , int Wcharge ) :  //, bool amcflag ) : 
@@ -112,7 +120,9 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   //  lumi_pdf* _pdf = dynamic_cast<lumi_pdf*>(appl::appl_pdf::getpdf(name()));
   //  std::cout << "done " << _pdf << _pdf->decideSubProcess( 0, 0 ) << std::endl;
 
-  //  std::cout << *this << std::endl;
+  std::cout << *this << std::endl;
+
+  //  latex( *this, ".pdf" );
 
 }
 
@@ -414,8 +424,27 @@ void latex( const lumi_pdf& p, const std::string& d) {
 
   zj << "{\\footnotesize\n";
 
+
+  size_t maxproc = 0;
+
+  size_t totalproc = 0;
+
+  for ( int i=0 ; i<p.Nproc() ; i++ ) { 
+    const combination& c = p[i];
+
+    const std::vector<int>& ind = c.index();
+
+    if ( ind.size()>maxproc ) maxproc = ind.size();
+
+    totalproc += ind.size();
+  }  
+
+  size_t maxpairs = 20-maxproc;
+
+
   zj << "\\hspace{-12cm}";
   zj << "\\begin{minipage}[t]{18cm}\n";
+  zj << "pdf : " << str_replace(p.name()) << "\tnprocesses: " << totalproc  << "\\\\" << std::endl; 
   zj << "\\begin{tabular}{cll}\\hline\\\\\n";
 
 
@@ -440,7 +469,7 @@ void latex( const lumi_pdf& p, const std::string& d) {
 
     for ( unsigned j=0 ; j<ind.size() ; j++ ) {
       zj << ind[j] << " ";
-      if ( (j+1)%28==0 ) zj << "\\\\";
+      if ( (j+1)%20==0 ) zj << "\\\\";
     }
 
 
@@ -456,7 +485,10 @@ void latex( const lumi_pdf& p, const std::string& d) {
       
       if ( j>0 ) zj << " + ";
 
+      if ( (j+1)%maxpairs==0 ) zj << " \\\\ \\ ";
+
       zj << "($" << f[p0] << "$, $" << f[p1] << "$)\t";  
+
       
     }
     for ( int ig=1 ; ig<nrows ; ig++ ) zj << " \\\\ \\ ";
@@ -466,6 +498,7 @@ void latex( const lumi_pdf& p, const std::string& d) {
     
   }
 
+  zj << "\\\\\n";
   zj << "\\hline\n";
   zj << "\\end{tabular}\n";
   zj << "\\end{minipage}\n";

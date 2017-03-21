@@ -41,7 +41,7 @@
 
 // variable tranformation parameters
 double appl::igrid::transvar = 5;
-bool   appl::igrid::threads_disabled = false;
+bool   appl::igrid::threads_disabled = true;
 
 static int ithread = 0;
 

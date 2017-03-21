@@ -431,11 +431,16 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
     if ( ckm2flat ) { 
       if ( ckm2flat->GetNrows()>0 ) { 
+	//	_ckm2 = std::vector<std::vector<double> >(14, std::vector<double>(14) );
 	_ckm2 = std::vector<std::vector<double> >(13, std::vector<double>(13) );
       
 	for ( int ic=0 ; ic<13 ; ic++ ) { 
 	  for ( int id=0 ; id<13 ; id++ ) _ckm2[ic][id] = (*ckm2flat)(ic*13+id); 
 	}
+
+	//	for ( int ic=0 ; ic<14 ; ic++ ) _ckm2[13][ic] = 0; 
+	//	for ( int ic=0 ; ic<14 ; ic++ ) _ckm2[ic][13] = 0; 
+
       }  
     }
 

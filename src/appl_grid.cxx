@@ -848,7 +848,7 @@ appl::grid& appl::grid::operator*=(const double& d) {
     for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs]) *= d; 
   }
   getReference()->Scale( d );
-  getReference_internal()->Scale( d );
+  if(getReference()!=getReference_internal()) getReference_internal()->Scale( d );
   combineReference(true);
 
   return *this;

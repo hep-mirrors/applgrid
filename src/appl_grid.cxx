@@ -142,7 +142,8 @@ appl::grid::grid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_type(STANDARD),
   m_read(false),
   m_subproc(-1),
-  m_bin(-1)
+  m_bin(-1),
+  m_genwithpdf("")
 {
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
   m_obs_bins=new TH1D("referenceInternal","Bin-Info for Observable", Nobs, obsmin, obsmax);
@@ -178,7 +179,8 @@ appl::grid::grid(int Nobs, const double* obsbins,
   m_type(STANDARD),
   m_read(false),
   m_subproc(-1),
-  m_bin(-1)
+  m_bin(-1),
+  m_genwithpdf("")
 {
   
   // Initialize histogram that saves the correspondence obsvalue<->obsbin
@@ -215,7 +217,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_type(STANDARD),
   m_read(false),
   m_subproc(-1),
-  m_bin(-1)
+  m_bin(-1),
+  m_genwithpdf("")
 {
   
   if ( obs.size()==0 ) { 
@@ -258,7 +261,8 @@ appl::grid::grid(const std::vector<double>& obs,
   m_type(STANDARD),
   m_read(false),
   m_subproc(-1),
-  m_bin(-1)
+  m_bin(-1),
+  m_genwithpdf("")
 { 
 
   if ( obs.size()==0 ) { 
@@ -301,7 +305,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   m_type(STANDARD),
   m_read(false),
   m_subproc(-1),
-  m_bin(-1)
+  m_bin(-1),
+  m_genwithpdf("")
 {
 
   if ( appl_first ) { 
@@ -364,14 +369,30 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   if ( _tags.size()>3 ) m_documentation = _tags[3];
 
+  std::cout << "\t:  applgrid version " << _version;
+  if ( _version != m_version ) std::cout  << " (transformed to " << m_version << ")";
+
+  /// encoded pdfset used for the generation 
+  if ( _tags.size()>4 ) { 
+    std::string tmp = _tags[4];
+    if ( tmp.find(":")!=std::string::npos ) {  
+      m_genwithpdf  = tmp.substr(0,tmp.find(":"));
+      m_genwithipdf = std::stoi(tmp.substr(tmp.find(":")+1,std::string::npos));
+    }
+    else { 
+      m_genwithpdf  = tmp;
+      m_genwithipdf = 0;
+    }
+    std::cout << "\t:  grid generated with " << m_genwithpdf << " : set " << m_genwithipdf;
+  }
+
+
   // check it has the correct version
   // if ( _version > m_version ) { 
   //      throw exception(cerr << "incorrect version " << _version << " expected " << m_version ); 
   // }
   //  m_version = _version;
   
-  std::cout << "\tversion " << _version;
-  if ( _version != m_version ) std::cout  << " (transformed to " << m_version << ")";
   std::cout << std::endl;
 
   if ( getDocumentation()!="" ) std::cout << getDocumentation() << std::endl; 
@@ -528,7 +549,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   if ( m_obs_bins ) { 
     m_obs_bins_combined = (TH1D*)gridfilep->Get((dirname+"/reference").c_str());
     m_obs_bins_combined->SetDirectory(0);
-    m_obs_bins_combined->Scale(run());
+    if ( run() ) m_obs_bins_combined->Scale(run());
+    /// for ( int i=0 ; i<m_obs_bins_combined->GetNbinsX ; i++ ) m_obs_bins_combined->SetBinContent( i+1, m_obs_bins_combined->GetBinContent( i+1, run(i) ) );
   }
   else { 
     m_obs_bins = (TH1D*)gridfilep->Get((dirname+"/reference").c_str());
@@ -536,7 +558,9 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
   }
 
   m_obs_bins->SetDirectory(0);
-  m_obs_bins->Scale(run());
+  if ( run() ) m_obs_bins->Scale(run());
+  /// for ( int i=0 ; i<m_obs_bins->GetNbinsX ; i++ ) m_obs_bins->SetBinContent( i+1, m_obs_bins->GetBinContent( i+1, run(i) ) );
+
   m_obs_bins->SetName("referenceInternal");
   if ( m_normalised && m_optimised ) m_read = true;
 
@@ -644,6 +668,8 @@ appl::grid::grid(const std::string& filename, const std::string& dirname)  :
 
   std::cout << "\ttrim in " << tstop2 << " ms" << std::endl;
 
+  std::cout << "appl::grid::weights " << run() << std::endl;
+
 }
 
 
@@ -664,7 +690,8 @@ appl::grid::grid(const grid& g) :
   m_ckm(g.m_ckm),       /// need a deep copy of the contents
   m_type(g.m_type),
   m_read(g.m_read),
-  m_bin(-1)
+  m_bin(-1),
+  m_genwithpdf("")
 {
   m_obs_bins->SetDirectory(0);
   m_obs_bins->Sumw2();
@@ -918,7 +945,9 @@ appl::grid& appl::grid::operator+=(const appl::grid& g) {
   if ( m_order!=g.m_order )                 throw exception("grid::operator+ different order grids");
   if ( m_leading_order!=g.m_leading_order ) throw exception("grid::operator+ different order processes in grids");
   for( int iorder=0 ; iorder<m_order ; iorder++ ) {
-    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) (*m_grids[iorder][iobs]) += (*g.m_grids[iorder][iobs]); 
+    for( int iobs=0 ; iobs<Nobs_internal() ; iobs++ ) { 
+      (*m_grids[iorder][iobs]) += (*g.m_grids[iorder][iobs]); 
+    }
   }
 
   /// grrr use root TH1::Add() even though I don't like it. 
@@ -1214,8 +1243,11 @@ void appl::grid::Write(const std::string& filename,
   _tags.add(m_transform);
   _tags.add(m_genpdfname);
   _tags.add(m_version);
-  if ( m_documentation!="" ) _tags.add(m_documentation);
+  if ( m_documentation!="" ) _tags.add( m_documentation );
+  if ( m_genwithpdf!="" )    _tags.add( m_genwithpdf + ":"+std::to_string(m_genwithipdf) );
   _tags.Write();
+
+  std::cout << "genwith pdf " << m_genwithpdf << " : " << m_genwithipdf << std::endl; 
 
   //  TH1D* _transform = new TH1D("Transform", m_transform.c_str(), 1, 0, 1);  
   //  _transform->Write();

@@ -426,18 +426,7 @@ public:
   } 
 
   // should really check all the limits and *everything* is the same
-  igrid& operator+=(const igrid& g) { 
-    for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
-      if ( m_weight[ip] && g.m_weight[ip] ) { 
-	//if ( (*m_weight[ip]) == (*g.m_weight[ip]) ) (*m_weight[ip]) += (*g.m_weight[ip]);
-	if ( m_weight[ip]->compare_axes( *g.m_weight[ip] ) ) (*m_weight[ip]) += (*g.m_weight[ip]); 
-	else { 
-	  throw exception("igrid::operator+=() grids do not match");
-	}
-      }
-    }
-    return *this;
-  } 
+  igrid& operator+=(const igrid& g);
 
   /// check that the grid axes match
   bool compare_axes(const igrid& g) const { 
@@ -485,6 +474,9 @@ public:
   }
 
   void setlimits();
+
+  double&       weights()       { return m_weights; }
+  const double& weights() const { return m_weights; }
 
 private:
 
@@ -613,8 +605,7 @@ private:
   }
   
 
-  
-
+ 
 public:
 
   void setparent( grid* parent ) { m_parent=parent; }
@@ -692,6 +683,11 @@ private:
   // flag to emulate a 2d (Q2, x) grid of use the 
   // full 3d (Q2, x1, x2) grid
   bool m_DISgrid;
+
+  /// actual number of weights for this igrid - needed so that
+  /// we can independently weight different bins within a grid  
+
+  double m_weights;
 
 private:
 

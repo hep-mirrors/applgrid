@@ -73,9 +73,11 @@ appl::igrid::igrid() :
   m_fsplit1(0), m_fsplit2(0),
   m_fsplit12(0), m_fsplit22(0),
   m_alphas(0),
+  m_weights(0),
   m_taufilledmin(-1),  m_taufilledmax(-1),
   m_y1filledmin(-1),   m_y1filledmax(-1),
-  m_y2filledmin(-1),   m_y2filledmax(-1) { 
+  m_y2filledmin(-1),   m_y2filledmax(-1)
+{ 
 
   //  std::cout << "igrid() (default) Ntau=" << m_Ntau << "\t" << fQ2(m_taumin) << " - " << fQ2(m_taumax) << std::endl;
 
@@ -105,9 +107,11 @@ appl::igrid::igrid(int NQ2, double Q2min, double Q2max, int Q2order,
   m_fsplit12(0), m_fsplit22(0),
   m_alphas(0),
   m_DISgrid(disflag),   
+  m_weights(0), 
   m_taufilledmin(-1),  m_taufilledmax(-1),
   m_y1filledmin(-1),   m_y1filledmax(-1),
-  m_y2filledmin(-1),   m_y2filledmax(-1) {
+  m_y2filledmin(-1),   m_y2filledmax(-1)
+{
   //  std::cout << "igrid::igrid() transform=" << m_transform << std::endl;
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
@@ -196,9 +200,10 @@ appl::igrid::igrid(const appl::igrid& g) :
   m_fsplit1(0), m_fsplit2(0),
   m_fsplit12(0), m_fsplit22(0),
   m_alphas(0),
+  m_weights(0),
   m_taufilledmin(g.m_taufilledmin),  m_taufilledmax(g.m_taufilledmax),
   m_y1filledmin(g.m_y1filledmin),    m_y1filledmax(g.m_y1filledmax),
-  m_y2filledmin(g.m_y2filledmin),    m_y2filledmax(g.m_y2filledmax)
+  m_y2filledmin(g.m_y2filledmin),    m_y2filledmax(g.m_y2filledmax) 
 {
   init_fmap();
   if ( m_fmap.find(m_transform)==m_fmap.end() ) throw exception("igrid::igrid() transform " + m_transform + " not found\n");
@@ -250,6 +255,7 @@ appl::igrid::igrid(TFile& f, const std::string& s) :
   m_fsplit1(0), m_fsplit2(0),    
   m_fsplit12(0), m_fsplit22(0),    
   m_alphas(0), 
+  m_weights(0),
   m_taufilledmin(-1),  m_taufilledmax(-1),
   m_y1filledmin(-1),   m_y1filledmax(-1),
   m_y2filledmin(-1),   m_y2filledmax(-1)
@@ -1696,6 +1702,28 @@ appl::igrid& appl::igrid::operator=(const appl::igrid& g) {
 
   return *this;
 }
+
+
+// should really check all the limits and *everything* is the same
+appl::igrid& appl::igrid::operator+=(const igrid& g) { 
+  for ( int ip=0 ; ip<m_Nproc ; ip++ ) {
+    if ( m_weight[ip] && g.m_weight[ip] ) { 
+      /// this is a complicated conditional:
+      /// do nothing if the grid to be added is empty ...
+      if ( !g.m_weight[ip]->empty() ) { 
+	if (  m_weight[ip]->empty() ) { 
+	  delete m_weight[ip];
+	  m_weight[ip] = new SparseMatrix3d( *g.m_weight[ip] );
+	}
+	else if ( m_weight[ip]->compare_axes( *g.m_weight[ip] ) ) (*m_weight[ip]) += (*g.m_weight[ip]); 
+	else { 
+	  throw exception("igrid::operator+=() grids do not match");
+	}
+      }
+    }
+  }
+  return *this;
+} 
 
 
 std::ostream& appl::igrid::header(std::ostream& s) const { 

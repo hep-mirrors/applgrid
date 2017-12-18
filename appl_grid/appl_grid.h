@@ -350,7 +350,25 @@ public:
 
   const TH1D* getReference() const { return m_obs_bins_combined; } 
   TH1D*       getReference()       { return m_obs_bins_combined; } 
+  
+  std::string getGeneratedPDF() const { return m_genwithpdf; }
+  void        setGeneratedPDF( const std::string& s ) { 
+    m_genwithpdf = s; 
+    std::cout << "COCK: " << s << std::endl;
+    std::cout << "COCK: " << m_genwithpdf << std::endl;
+  }
 
+  int         getGeneratediPDF() const { 
+    std::cout << "COCK: " << m_genwithpdf << std::endl;
+    return m_genwithipdf; 
+  }
+
+  void        setGeneratediPDF( int i ) { m_genwithipdf = i; }
+
+  void        setGeneratedPDF( const std::string& s, int i ) { 
+    setGeneratedPDF( s );
+    setGeneratediPDF( i );
+  }
 
   //  TH1D*  getXReference() {
   //    combineReference(); 
@@ -726,6 +744,11 @@ protected:
 
   double m_ymax;
   double m_Qmax; 
+
+  /// pdf used for generation
+
+  std::string m_genwithpdf; 
+  int         m_genwithipdf; 
 
 };
 

@@ -34,10 +34,10 @@ public:
   
   // constructors etc
 
-  tsparse_base()       : m_Nx(0),  m_lx(1),  m_ux(0)    { }
-  tsparse_base(const int& nx) : m_Nx(nx), m_lx(0),  m_ux(nx-1) { } 
+  tsparse_base()       : m_Nx(0),  m_lx(1),  m_ux(0), m_empty(true)    { }
+  tsparse_base(const int& nx) : m_Nx(nx), m_lx(0),  m_ux(nx-1), m_empty(true) { } 
   tsparse_base(const int& nx, const int& lx, const int& _size=1)  
-    : m_Nx(nx), m_lx(lx), m_ux(lx+_size-1) { } 
+    : m_Nx(nx), m_lx(lx), m_ux(lx+_size-1), m_empty(true) { } 
 
   virtual ~tsparse_base() { } 
 
@@ -64,7 +64,7 @@ public:
   int xmin() const { return m_lx; } 
   int xmax() const { return m_ux; } 
 
-  bool empty() const { return ( m_ux<m_lx ); }
+  bool empty() const { return ( m_empty || m_ux<m_lx ); }
 
   // shouldn't really be in here, it's just for printing 
   static double mant(double x) { 
@@ -76,7 +76,9 @@ protected:
   int m_Nx; // number of elements
   int m_lx; // indices of lowest and highest occupied 
   int m_ux; // elements : (u)pper and (l)ower
-  
+
+  bool m_empty; /// is the grid empty - need this to test in case the grid is untrimmed
+
 };
 
 

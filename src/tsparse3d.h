@@ -98,6 +98,9 @@ public:
     m_lx = xmin;
     m_ux = xmax;
     m_v  = m_vnew;
+
+    m_empty = false;
+    if ( empty() ) m_empty = true;
   }
 
 

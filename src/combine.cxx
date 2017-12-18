@@ -10,6 +10,7 @@
 
 
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <vector>
@@ -18,6 +19,11 @@
 #include <sys/stat.h>
 
 #include <algorithm>
+
+#include <regex>
+#include <map>
+
+#include "simpletimer.h"
 
 
 #include "appl_grid/appl_grid.h"
@@ -65,6 +71,8 @@ int usage(std::ostream& s, int argc, char** argv) {
   s << "    -w, --wscale   value\t rescale the weight normalisation for the output grid\n";
   s << "        --weight   value\t set the value of the weight normalisation for the output grid directly\n";
   s << "    -n, --normfile value\t file containing bin-by-bin normalisations for adding grids\n";
+  s << "    -p, --pdf      value\t set the default pdf to value\n";
+  s << "    -i, --iset     value\t set the default set from the pdf group  to value\n";
   s << "    -a, --all           \t add all grids (default)\n";
   s << "        --optimise      \t optimise the output grid\n";
   s << "        --compress value\t try to reduce the number of parton luminosity\n"
@@ -398,76 +406,107 @@ double exclude( Xsection xsec, TH1D* ref, double chi2_limit=5 ) {
 }
 
 
+std::vector<std::string> split( const std::string& input) { 
+    std::istringstream buffer(input);
+    std::vector<std::string> ret( (std::istream_iterator<std::string>(buffer)), 
+                                 std::istream_iterator<std::string>());
+    return ret;
+}
 
 
+double purestod( const std::string& s ) { return std::stod(s); }
 
 class NormVal { 
 
 public:
 
-  NormVal( const std::string& f, int n=0 ) : mfile(f), mif(0), mbins(n) { 
-    if ( mfile!="" ) { 
-      /// first test if file actually exists ...
-      if ( !appl::file_exists( mfile)  ) {
-	std::cerr << "whoops, specified grid weight file does not exist" << std::endl;
-	return;
-      }
-      /// then open it ...
-      mif = new std::ifstream(mfile.c_str());
-      /// test it opened properly ... 
+  typedef std::map< std::string, std::vector<double> > map_type;
+
+public:
+
+  NormVal( const std::string& f ) : mfile(f), mif(0) { 
+    if ( mfile=="" ) return; 
+    
+    /// first test if file actually exists ...
+    if ( !appl::file_exists( mfile)  ) {
+      std::cerr << "whoops, specified grid weight file does not exist" << std::endl;
+      return;
     }
-    else std::cerr << "whoops, no grid weight file specified" << std::endl;
+    
+    /// then open it ...
+    mif = new std::ifstream(mfile.c_str());
+
   } 
   
   
-  
-  std::vector<double> getentries() { 
 
-    std::vector<double> v;
-    
-    if ( mbins==0 ) { 
-      std::cerr << "whoops, no bins specified" << std::endl;
-      return v;
+ 
+ 
+  void read() { 
+
+    if ( mif==0 || mgridnames.size() ) return;
+
+    std::cout << "NormVal::read() " << mfile << std::endl;
+
+    mgridnames.clear();
+
+    std::string line = "";
+
+    int Ngrids = 0;
+
+    while ( std::getline( *mif, line ) ) { 
+
+      if ( line.find("#")==0 ) continue;
+
+      std::vector<std::string> vs = split( line );
+
+      if ( vs.size() ) { 
+	Ngrids++;
+	mgridnames.push_back(vs[0]);
+	std::vector<double> v; v.reserve( vs.size()-1 );
+	for ( size_t i=1 ; i<vs.size() ; i++ ) v.push_back( std::stod(vs[i]) );
+	mmap.insert( map_type::value_type( mgridnames.back(), v ) );
+      }
     }
 
-    if ( mif==0 ) return v;
-
-    //    mnormval.push_back(std::vector<double>(mnbins,0));
-  
-    //    std::vector<double>& v = mnormval.back();
-  
-    v = std::vector<double>( mbins, 0);
-
-    double in;
-    int i = 0;
-    while ( *mif >> in ) {
-      //     std::cout << "in " << in << std::endl;
-      v[i++] = in;
-      if ( i==mbins ) return  v;
-    }
-
-    if ( i<mbins ) { 
-      std::cerr << "whoops, too few bins specifed: " << i << " < " << mbins << std::endl;
-      return     std::vector<double>();
-    }
-
-    return v;
   }
+
     
   std::ifstream* stream() { return mif; }
 
+  const std::vector<double>& weights( const std::string& s ) {
+    map_type::const_iterator it = mmap.find( s );
+    if ( it==mmap.end() ) throw appl::grid::exception( std::string( "grid::grid() find weights for grid : ")+s ); 
+    return it->second;
+  } 
+
+  const std::vector<std::string>& grids() const { return mgridnames; }
+
+  map_type::const_iterator begin() const { return mmap.begin(); }
+  map_type::const_iterator end()   const { return mmap.end(); }
+
+  map_type gridmap() const { return mmap; }
+
 private:
   
-  std::string                         mfile;
-  std::ifstream*                      mif;
-
-  int                                 mbins;
+  std::string                mfile;
+  std::ifstream*             mif;
+  std::vector<std::string>   mgridnames;
   
-  std::vector< std::vector<double> > mnormval;
+  //  std::vector< std::vector<double> > mnormval;
+  map_type  mmap;
 
 };
 
 
+std::ostream& operator<<( std::ostream& s, const NormVal& n ) { 
+  NormVal::map_type::const_iterator it = n.begin();
+  while ( it!=n.end() ) { 
+    s << "\t" << it->first << " : " << it->second.size() << "\n";
+    it++;
+  }
+  return s;
+}
 
 ///  if requested, calculate the mean, median etc of all the cross sections
 ///  from the grids, and exclude any (complete) grids where the xsection in 
@@ -562,9 +601,12 @@ int main(int argc, char** argv) {
 
   bool optimise = false;
   bool shrink   = false;
+
   std::string newpdfname = "";
   std::string normfile   = "";
 
+  std::string pdfname = ""; 
+  int         ipdf    = 0;
 
   /// handle configuration parameters
   for ( int i=1 ; i<argc ; i++ ) { 
@@ -629,9 +671,17 @@ int main(int argc, char** argv) {
     else if ( std::string(argv[i])=="-a" || std::string(argv[i])=="--all" ) addall = true;
     else if ( std::string(argv[i])=="-n" || std::string(argv[i])=="--normfile" ) { 
       ++i;
-      if ( i<argc ) { 
-	normfile = argv[i];
-      }
+      if ( i<argc ) normfile = argv[i];
+      else  return usage( std::cerr, argc, argv );
+    }
+    else if ( std::string(argv[i])=="-p" || std::string(argv[i])=="--pdf" ) { 
+      ++i;
+      if ( i<argc ) pdfname = argv[i];
+      else  return usage( std::cerr, argc, argv );
+    }
+    else if ( std::string(argv[i])=="-i" || std::string(argv[i])=="--ipdf" ) { 
+      ++i;
+      if ( i<argc ) ipdf = std::atoi(argv[i]);
       else  return usage( std::cerr, argc, argv );
     }
     else if ( std::string(argv[i])[0]=='-' ) return usage( std::cerr, argc, argv ); 
@@ -645,11 +695,32 @@ int main(int argc, char** argv) {
     if ( !rset ) rscale = dscale; 
   }
 
-  if ( fgrids.size()<1 ) return usage(std::cerr, argc, argv);
-
   if ( output_grid=="" ) return usage(std::cerr, argc, argv);
 
+  /// if reading in normalisation file ...
+
   NormVal* nv = 0;
+
+  std::cout << "normfile: " << normfile << std::endl;
+
+  if ( normfile!="" ) {
+    
+    /// read in all the coefficients and the grid file names ...
+    
+    if ( nv==0 ) nv = new NormVal( normfile );
+
+    nv->read();  //    std::cout << "NormVal:\n" << *nv << std::endl;
+
+    /// get all the grid files names to open ...
+
+    fgrids = nv->grids(); 
+
+  }
+
+
+  //  if ( fgrids.size()<1 && normfile!="" ) return usage(std::cerr, argc, argv);
+  if ( fgrids.size()<1 ) return usage(std::cerr, argc, argv);
+
 
   /// before adding the grids together, need tpo go through them to reject
   /// the outliers
@@ -704,24 +775,7 @@ int main(int argc, char** argv) {
 
   /// now add the grids together
   
-  appl::grid  g( fgrids[0] );
-
-  g.untrim();
-
-  if ( normfile!="" ) {
-
-    if ( nv==0 ) nv = new NormVal( normfile, g.Nobs() );
-
-    std::vector<double> v = nv->getentries();
-
-    if ( v.size()!=unsigned(g.Nobs()) ) { 
-      std::cerr << argv[0] << " mismatched number of weight file bins: " <<  v.size() << " " << g.Nobs() << std::endl; 
-      return 0; //usage( std::cout, argc, argv );
-    }
-
-    g *= v;
-
-  }
+  appl::grid*  gp = 0;
 
   /// will use the rms of the different reference histograms to estimate the proper 
   /// uncertainties
@@ -737,43 +791,63 @@ int main(int argc, char** argv) {
 
 #endif
 
-  if ( verbose ) std::cout << g.getDocumentation() << std::endl;
-
-  for ( unsigned i=1 ; i<fgrids.size() ; i++ ) { 
+  for ( unsigned i=0 ; i<fgrids.size() ; i++ ) { 
 
     double t = appl_timer_stop( tstart )*0.001; 
 
-    double remaining = t*fgrids.size()/i - t;
+    double remaining = fgrids.size()*t/i - t;
 
     std::cout << "applgrid-combine: adding grid " << i+1 << " of " << fgrids.size() 
 	      << "\ttime so far " << t << "s"  
 	      << "\testimated time remaining " << remaining << "s"  
 	      << std::endl;  
 
-    appl::grid  _g( fgrids[i] );
+    appl::grid*  _gp = new appl::grid( fgrids[i] );
+    
+    appl::grid& _g = *_gp;
+
     _g.untrim();
     if ( verbose ) std::cout << _g.getDocumentation() << std::endl;
 
     if ( nv!=0 ) { 
 
-      std::vector<double> v = nv->getentries();
-      if ( v.size()!=unsigned(_g.Nobs()) ) { 
-	std::cerr << argv[0] << " mismatched number of weight file bins: " <<  v.size() << " " << g.Nobs() << std::endl; 
-	return -1; // usage( std::cout, argc, argv );
+      std::vector<double> vc = nv->weights( fgrids[i] );
+
+      if ( vc.size() != size_t(_g.Nobs()) ) { 
+	std::cerr << "bin size mismatch: " << vc.size() << " " << _g.Nobs() << std::endl;
+	std::exit(-1);
       }
 
-      _g *= v;
+      if ( _g.run() ) { 
+	_g *= 1/_g.run();
+	_g.run() = 0;
+      }
+
+      //      std::cout << "vc.size: " << vc.size() << std::endl;
+      //      for ( size_t iv=0 ; iv<vc.size() ; iv++ ) vc[iv] *= fgrids.size(); 
+
+      std::cout << "scaling grid: " << fgrids[i] << std::endl;
+
+      _g *= vc;
 
     }
 
-    g += _g;
+    if ( i==0 )  gp  = _gp;  
+    else         { 
+      (*gp) += _g;
+      delete _gp;
+    }
 
   }
 
+  if ( gp==0 ) { std::cerr << "couldn't open grid " << std::endl; std::exit(-1); }
+
+  appl::grid& g = *gp;
+  
   ///  for ( int i=0 ; i<h->GetNbinsX() ; i++ ) { std::cout << "h " << i << " " << h->GetBinContent(i+1) << std::endl; }   
   ///  std::cout << "raw " << xsec << "\n" << xsec.mean() << "\n" << (xsec*fgrids.size()).mean() << std::endl;
   
-  std::cout << "rintegral " << integral( g.getReference() ) << std::endl;
+  //  std::cout << "rintegral " << integral( g.getReference() ) << std::endl;
 
 
   if ( rscale!=1 ) { 
@@ -808,6 +882,10 @@ int main(int argc, char** argv) {
   }
 
 
+  if ( pdfname!="" ) {
+    g.setGeneratedPDF( pdfname );
+    g.setGeneratediPDF( ipdf );
+  }
 
   //  std::cout << "writing " << output_grid << std::endl;
   g.Write(output_grid);
@@ -816,7 +894,7 @@ int main(int argc, char** argv) {
   
   std::cout << argv[0] << ": added " << fgrids.size() << " grids in " << t << " s" << std::endl; 
   std::cout << argv[0] << ": output to  " << output_grid << std::endl; 
-    
+  
 
   /// stupid threads don't always die properly
   std::exit(0);

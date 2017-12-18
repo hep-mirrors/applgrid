@@ -98,6 +98,10 @@ public:
 
   void restoreDuplicates();
 
+public: 
+
+  static void runlatex( bool b=true ) { m_runlatex=b; } 
+
 private:
 
   /// this might eventually become a std::string encoding the grid
@@ -120,6 +124,10 @@ private:
 
   /// NNLO code process lookup 
   std::map<int, int>  m_proclookup;
+
+private:
+
+  static bool m_runlatex;
 
 };
 

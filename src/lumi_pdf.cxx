@@ -28,6 +28,7 @@ std::string str_replace( std::string s ) {
 
 void latex( const lumi_pdf& p, const std::string& d);
 
+bool lumi_pdf::m_runlatex = false;
 
 lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) : // , int Wcharge ) :  //, bool amcflag ) : 
   appl_pdf(s), m_filename(s), 
@@ -120,9 +121,7 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<int>& combinations ) 
   //  lumi_pdf* _pdf = dynamic_cast<lumi_pdf*>(appl::appl_pdf::getpdf(name()));
   //  std::cout << "done " << _pdf << _pdf->decideSubProcess( 0, 0 ) << std::endl;
 
-  std::cout << *this << std::endl;
-
-  //  latex( *this, ".pdf" );
+  //  std::cout << *this << std::endl;
 
 }
 
@@ -155,6 +154,8 @@ lumi_pdf::lumi_pdf(const std::string& s, const std::vector<combination>& combina
   m_Nproc = m_combinations.size();
 
   create_lookup();
+
+  //  std::cout << *this << std::endl; 
   
 }
 
@@ -335,7 +336,10 @@ void lumi_pdf::removeDuplicates() {
 
   create_lookup();
 
+  if ( m_runlatex ) latex( *this, ".pdf" );
+
   std::cout << size() << std::endl; 
+
 }
    
 
@@ -379,7 +383,7 @@ void lumi_pdf::restoreDuplicates() {
 #include <fstream>
 #include <cstdlib>
 
-
+/// decode as a latex table, and create pdf file
 
 void latex( const lumi_pdf& p, const std::string& d) {
 
@@ -449,19 +453,16 @@ void latex( const lumi_pdf& p, const std::string& d) {
 
 
   for ( int i=0 ; i<p.Nproc() ; i++ ) { 
-    //    std::cout << p[i] << std::endl;
-  
+
     const combination& c = p[i];
 
     const std::vector<int>& ind = c.index();
 
-   
     int nrows = (ind.size()+27)/28;
 
     zj << "\\makecell{ " << i;
     for ( int ig=1 ; ig<nrows ; ig++ ) zj << " \\\\ \\ ";
     zj << "}\t&\t";
-
 
 
     zj << "\\makecell[l]{";
@@ -488,7 +489,6 @@ void latex( const lumi_pdf& p, const std::string& d) {
       if ( (j+1)%maxpairs==0 ) zj << " \\\\ \\ ";
 
       zj << "($" << f[p0] << "$, $" << f[p1] << "$)\t";  
-
       
     }
     for ( int ig=1 ; ig<nrows ; ig++ ) zj << " \\\\ \\ ";
@@ -503,13 +503,10 @@ void latex( const lumi_pdf& p, const std::string& d) {
   zj << "\\end{tabular}\n";
   zj << "\\end{minipage}\n";
 
-
   zj << "}\n";
   zj << "\\end{document}\n";
 
-
   zj.close();
-
 
   std::system( (std::string("pdflatex ")+ d+p.name()+".tex").c_str() );
 

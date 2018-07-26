@@ -15,21 +15,21 @@
 /// externally defined alpha_s and pdf routines for fortran 
 /// callable convolution wrapper
 extern "C" double fnalphas_(const double& Q);
+extern "C" void   fnpdf_( const double& x, const double& Q, double* xf);
 
 
-extern "C" void   fnpdf_(const double& x, const double& Q, double* xf);
 
 /// create a grid
-extern "C" void bookgrid_(int& id, const int& Nobs, const double* binlims);
+extern "C" void bookgrid_( int& id, const int& Nobs, const double* binlims);
 
 /// delete a grid
-extern "C" void releasegrid_(const int& id);
+extern "C" void releasegrid_( const int& id );
 
 /// delete all grids
 extern "C" void releasegrids_();
 
 /// read a grid from a file
-extern "C" void readgrid_(int& id, const char* s, int _len);
+extern "C" void readgrid_( int& id, const char* s, int _len);
 
 /// write to a file 
 extern "C" void writegrid_(const int& id, const char* s, int _len);

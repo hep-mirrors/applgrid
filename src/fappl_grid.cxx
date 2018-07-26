@@ -65,7 +65,7 @@ void bookgrid_(int& id, const int& Nobs, const double* binlims)
 }
 
 
-void readgrid_(int& id, const char* _s, int _len) {
+void readgrid_( int& id, const char* _s, int _len) {
   std::string s(_s,0,_len);
   id = idcounter++;
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
@@ -165,30 +165,26 @@ void redefine_(const int& id,
 
 int getnbins_(const int& id) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
-  if ( gitr!=_grid.end() ) return gitr->second->Nobs();
-  else  throw_exception( "No grid with id ", id );  
-  return 0; // just to shut up the compiler
+  if ( gitr==_grid.end() ) throw_exception( "No grid with id ", id );  
+  return gitr->second->Nobs();
 }
 
 int getbinnumber_(const int& id, double& x) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
-  if ( gitr!=_grid.end() ) return gitr->second->obsbin(x);
-  else  throw_exception( "No grid with id ", id );  
-  return 0; // just to shut up the compiler
+  if ( gitr==_grid.end() ) throw_exception( "No grid with id ", id );  
+  return gitr->second->obsbin(x);
 }
 
 double getbinlowedge_(const int& id, int& bin) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
-  if ( gitr!=_grid.end() ) return gitr->second->obslow(bin);
-  else  throw_exception( "No grid with id ", id );  
-  return 0; // just to shut up the compiler
+  if ( gitr==_grid.end() ) throw_exception( "No grid with id ", id );  
+  return gitr->second->obslow(bin);
 }
 
 double getbinwidth_(const int& id, const int& bin) { 
   std::map<int,appl::grid*>::iterator gitr = _grid.find(id);
-  if ( gitr!=_grid.end() ) return gitr->second->deltaobs(bin);
-  else  throw_exception( "No grid with id ", id );
-  return 0; // just to shut up the compiler  
+  if ( gitr==_grid.end() ) throw_exception( "No grid with id ", id );
+  return gitr->second->deltaobs(bin);
 }
 
 

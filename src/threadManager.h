@@ -19,17 +19,12 @@ class threadManager {
 public:
 
   threadManager(const string& s) : 
-    mname(s), mrunning(false), mprocessing(false), mterminate(false) { } 
+    mname(s), mrunning(false), mprocessing(false), mterminate(false) { init_mutex(); } 
   
   threadManager(const threadManager& t) : 
-    mname(t.mname), mrunning(false), mprocessing(false), mterminate(false) { }   
+    mname(t.mname), mrunning(false), mprocessing(false), mterminate(false) { init_mutex(); }   
 
-  virtual void start_thread() {
-
-    //    return;
-
-    mrunning = true;
-    
+  void init_mutex() {  
     pthread_mutex_t tmpproc_mux = PTHREAD_MUTEX_INITIALIZER;
     proc_mux = tmpproc_mux;
 
@@ -43,17 +38,17 @@ public:
     pthread_cond_t tmprun_cv = PTHREAD_COND_INITIALIZER;
     run_cv  = tmprun_cv;
     
-    
-
-
-    
+      
     pthread_mutex_t tmpmu = PTHREAD_MUTEX_INITIALIZER;  
     mlock  = tmpmu;
+  }
+
+  virtual void start_thread() {
+    mrunning = true;
     //    pthread_cond_t tmpcd = PTHREAD_COND_INITIALIZER;
     //   std::cout << "starting thread" ;
     mstatus = pthread_create( &mthread, 0, manage, this ); 
     //  std::cout << "thread started " << this << "  " << mname << std::endl;
-
   }
   
   virtual ~threadManager() { 

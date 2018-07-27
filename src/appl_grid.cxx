@@ -45,6 +45,35 @@
 #include "Splitting.h"
 
 
+/// in case of non c++11 compliant compilation, define
+/// some c++11 type replacemant functions
+
+#if __cplusplus <= 199711L
+// #warning Not using C++11 compilation - using substitute functions
+
+namespace std {
+
+int stoi( const std::string s ) { return atoi(s.c_str()); }
+
+std::string to_string( int i ) {
+    char a[16];
+    sprintf( a, "%d", i );
+    return a;
+}
+
+
+std::string to_string( double f ) {
+    char a[178];
+    sprintf( a, "%lf", f );
+    return a;
+}
+
+}
+
+#endif
+
+
+
 template<typename T>
 std::ostream& operator<<(std::ostream& s, const std::vector<T>& v) {
   for ( unsigned i=0 ; i<v.size() ; i++ ) s << "\t" << v[i];
@@ -1605,7 +1634,6 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
     return hvec;
   } 
   
-
   /// NB: in the following code, the return values is stored in a class variable that 
   ///     must be accessed when each convolution has finished since the convolution 
   ///     itself might not be happening in this thread
@@ -1642,7 +1670,7 @@ std::vector<double> appl::grid::vconvolute(void (*pdf1)(const double& , const do
 
       /// now do the convolution proper
 
-      //      std::cout << "nloops " << nloops << std::endl;
+      //      std::cout << iobs << "\tnloops " << nloops << std::endl;
 
       if ( nloops==0 ) {
 	/// leading order cross section

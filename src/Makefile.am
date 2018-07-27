@@ -20,10 +20,14 @@ ROOTGLIBS  = $(shell root-config --nonew --glibs)
 ROOTARCH   = $(shell root-config --ldflags)
 
 
+
+FRTLIB   = $(shell gfortran -print-file-name=libgfortran.a)
+FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
+
 if USE_HOPPET 
   HOPPETDIR    = $(shell hoppet-config --prefix)
   HOPPETCFLAGS = $(shell hoppet-config --cxxflags)
-  HOPPETLIBS   = $(shell hoppet-config --libs)
+  HOPPETLIBS   = $(shell hoppet-config --libs) 
 else
   HOPPETDIR    = 
   HOPPETCFLAGS = 
@@ -38,15 +42,17 @@ else
   LHAPDFCFLAGS = 
 endif
 
+ROOTCINT=rootcint
+AM_CXXFLAGS = $(ROOTARCH) -O3 -DDATADIR=\"@datadir@/$(PACKAGE)\" -Wall -Wextra -fPIC  -I. -I.. -I$(srcdir) $(LHAPDFCXXFLAGS) $(ROOTCFLAGS)  $(HOPPETCFLAGS) -fPIC
 
-FRTLIB   = $(shell gfortran -print-file-name=libgfortran.a)
-FRTLLIB  = -L$(subst /libgfortran.a, ,$(FRTLIB) ) -lgfortran 
+AM_LDFLAGS = $(ROOTARCH) -O3  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS)  $(FRTLLIB)  
 
 
 bin_PROGRAMS = applgrid-combine
 applgrid_combine_SOURCES = combine.cxx
 applgrid_combine_LDADD   = 
-applgrid_combine_LDFLAGS = $(ROOTARCH) -L. -lAPPLgrid $(ROOTLIBS) $(HOPPETLIBS) $(FRTLLIB) $(FRTLIB) 
+applgrid_combine_CXXFLAGS = -std=c++0x $(AM_CXXFLAGS)
+applgrid_combine_LDFLAGS = $(ROOTARCH) -L. -lAPPLgrid $(ROOTLIBS) $(HOPPETLIBS)  $(FRTLLIB) $(FRTLIB) 
 
 
 
@@ -55,10 +61,10 @@ libAPPLgrid_la_SOURCES = \
 	appl_grid.cxx		appl_igrid.cxx       fastnlo.cxx \
 	appl_timer.cxx          appl_pdf.cxx         \
 	nlojet_pdf.cxx		nlojetpp_pdf.cxx     \
-	mcfmw_pdf.cxx		mcfmwjet_pdf.cxx \
-	 mcfmwc_pdf.cxx       \
-	mcfmz_pdf.cxx mcfmzjet_pdf.cxx  \
-	 mcfmQQ_pdf.cxx       \
+	mcfmw_pdf.cxx		mcfmwjet_pdf.cxx     \
+	mcfmwc_pdf.cxx                               \
+	mcfmz_pdf.cxx mcfmzjet_pdf.cxx               \
+	mcfmQQ_pdf.cxx                               \
 	jetrad_pdf.cxx		dis_pdf.cxx          \
 	generic_pdf.cxx         basic_pdf.cxx        \
 	combination.cxx         lumi_pdf.cxx         \
@@ -77,12 +83,6 @@ library_include_HEADERS=../appl_grid/*.h
 
 # GSLLIBS=$(shell gsl-config --libs)
 # WDIR = $(shell pwd)
-
-ROOTCINT=rootcint
-AM_CXXFLAGS = $(ROOTARCH) -O3 -DDATADIR=\"@datadir@/$(PACKAGE)\" -Wall -Wextra -fPIC  -I. -I.. -I$(srcdir) $(LHAPDFCXXFLAGS) $(ROOTCFLAGS)  $(HOPPETCFLAGS) -fPIC
-
-AM_LDFLAGS = $(ROOTARCH) -O3  $(ROOTLIBS) $(FCLIBS) $(HOPPETLIBS) $(FRTLLIB)
-
 
 
 # if WITHCLING
